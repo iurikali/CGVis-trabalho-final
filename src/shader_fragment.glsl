@@ -5,7 +5,7 @@
 // interpolação da posição global e a normal de cada vértice, definidas em
 // "shader_vertex.glsl" e "main.cpp".
 in vec4 position_world;
-in vec4 normal;
+in vec4 frag_normal;
 
 // Posição do vértice atual no sistema de coordenadas local do modelo.
 in vec4 position_model;
@@ -22,6 +22,7 @@ uniform mat4 projection;
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2
+#define CHARACTER 3
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -56,7 +57,7 @@ void main()
 
     // Normal do fragmento atual, interpolada pelo rasterizador a partir das
     // normais de cada vértice.
-    vec4 n = normalize(normal);
+    vec4 n = normalize(frag_normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
     vec4 l = normalize(vec4(1.0,1.0,0.0,0.0));
@@ -133,6 +134,18 @@ void main()
 
 		// Obtemos a refletância difusa a partir da leitura da imagem TextureImage1
 		Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
+    }
+    else if ( object_id == CHARACTER )
+    {
+        // Pega as coordenadas UV lidas lá no Vertex Shader
+        U = texcoords.x;
+        V = 1.0 - texcoords.y;
+
+        // O GLTF costuma salvar o eixo V invertido em relação ao padrão do OBJ.
+        // Tente usar V normal. Se a textura ficar de ponta-cabeça, troque a linha acima por:
+        // V = 1.0 - texcoords.y;
+
+        Kd0 = texture(TextureImage2, vec2(U,V)).rgb; 
     }
 
     // Equação de Iluminação

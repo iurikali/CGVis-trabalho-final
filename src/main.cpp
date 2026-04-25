@@ -30,6 +30,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+#include <functional>
 
 // Headers das bibliotecas OpenGL
 #include <glad/glad.h>   // Criação de contexto OpenGL 3.3
@@ -42,6 +43,9 @@
 
 // Headers da biblioteca para carregar modelos obj
 #include <tiny_obj_loader.h>
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#include <tiny_gltf.h>
+#include <glm/gtc/quaternion.hpp>
 
 #include <stb_image.h>
 
@@ -153,6 +157,9 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+void LoadAnimatedGLTFModel(const char* filename, const char* object_name);
+
+
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
 struct SceneObject
@@ -165,6 +172,50 @@ struct SceneObject
     glm::vec3    bbox_min; // Axis-Aligned Bounding Box do objeto
     glm::vec3    bbox_max;
 };
+
+//Estrutura do gltf para animações, Gemini que montou
+// Definimos o limite máximo de ossos que um vértice pode estar ligado (padrão da indústria é 4)
+#define MAX_BONE_INFLUENCE 4
+
+// Nova estrutura de vértice que a GPU vai receber
+struct AnimatedVertex {
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 texcoords;
+    glm::ivec4 boneIDs;  // Vetor de inteiros (IDs dos ossos)
+    glm::vec4 weights;   // Vetor de floats (Pesos)
+};
+
+// Estrutura atualizada para guardar os dados do objeto animado
+struct AnimatedSceneObject {
+    std::string name;
+    size_t first_index;
+    size_t num_indices;
+    GLenum rendering_mode;
+    GLuint vertex_array_object_id;
+    glm::vec3 bbox_min;
+    glm::vec3 bbox_max;
+    
+    // Matrizes que levam o vértice do espaço do modelo para o espaço do osso
+    std::vector<glm::mat4> inverseBindMatrices; 
+    GLuint diffuse_texture_id = 0;
+};
+
+// Dicionário para guardar nossos objetos animados (separado do g_VirtualScene estático)
+std::map<std::string, AnimatedSceneObject> g_AnimatedScene;
+
+// VARIÁVEL NOVA: Guarda o modelo na memória global para podermos ler os nós e animações
+tinygltf::Model g_GltfModel;
+
+// Array global que será enviado para o Shader a cada frame
+const int MAX_BONES = 100;
+glm::mat4 g_FinalBoneMatrices[MAX_BONES];
+
+int g_CurrentAnimationIndex = 0;
+
+int GetJointIndex(int nodeIndex);
+glm::mat4 GetNodeTransform(int nodeIndex, float currentTime);
+void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj, float currentTime);
 
 // Abaixo definimos variáveis globais utilizadas em várias funções do código.
 
@@ -321,6 +372,14 @@ int main(int argc, char* argv[])
         BuildTrianglesAndAddToVirtualScene(&model);
     }
 
+    LoadAnimatedGLTFModel("../../data/personagem.glb", "the_character");
+
+    for(int i = 0; i < MAX_BONES; i++) {
+        g_FinalBoneMatrices[i] = Matrix_Identity();
+    }
+
+    GLint g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
+
     // Inicializamos o código para renderização de texto.
     TextRendering_Init();
 
@@ -413,6 +472,7 @@ int main(int argc, char* argv[])
         #define SPHERE 0
         #define BUNNY  1
         #define PLANE  2
+        #define CHARACTER 3
 
         // Desenhamos o modelo da esfera
         model = Matrix_Translate(-1.0f,0.0f,0.0f)
@@ -421,20 +481,58 @@ int main(int argc, char* argv[])
               * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
+        //DrawVirtualObject("the_sphere");
 
         // Desenhamos o modelo do coelho
         model = Matrix_Translate(1.0f,0.0f,0.0f)
               * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, BUNNY);
-        DrawVirtualObject("the_bunny");
+        //DrawVirtualObject("the_bunny");
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         DrawVirtualObject("the_plane");
+
+        // Desenho do personagem animado
+        model = Matrix_Translate(0.0f, 0.0f, 0.0f);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, CHARACTER);
+
+        // Pegamos o tempo contínuo do jogo
+        float tempoAtualAnimacao = (float)glfwGetTime();
+
+        if (!g_GltfModel.scenes.empty()) {
+            int sceneIndex = g_GltfModel.defaultScene > -1 ? g_GltfModel.defaultScene : 0;
+            const tinygltf::Scene& scene = g_GltfModel.scenes[sceneIndex];
+            
+            // Começa a recursão passando o TEMPO!
+            for (int rootNode : scene.nodes) {
+                ProcessSkeletonNode(rootNode, Matrix_Identity(), g_AnimatedScene["the_character"], tempoAtualAnimacao);
+            }
+        }
+
+        // Enviamos o array de 100 matrizes dos ossos para o Shader
+        glUniformMatrix4fv(g_bones_uniform, MAX_BONES, GL_FALSE, glm::value_ptr(g_FinalBoneMatrices[0]));
+
+        // --- CÓDIGO NOVO: Ativa a textura do modelo ---
+        if (g_AnimatedScene["the_character"].diffuse_texture_id != 0) {
+            glActiveTexture(GL_TEXTURE2); // Usamos a unidade 2 (0 e 1 são o chão e a parede)
+            glBindTexture(GL_TEXTURE_2D, g_AnimatedScene["the_character"].diffuse_texture_id);
+            glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+        }
+
+        // Desenha o objeto do GLTF
+        glBindVertexArray(g_AnimatedScene["the_character"].vertex_array_object_id);
+        glDrawElements(
+            g_AnimatedScene["the_character"].rendering_mode,
+            g_AnimatedScene["the_character"].num_indices,
+            GL_UNSIGNED_INT,
+            (void*)0
+        );
+        glBindVertexArray(0);
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
@@ -1586,3 +1684,364 @@ void PrintObjModelInfo(ObjModel* model)
 // set makeprg=cd\ ..\ &&\ make\ run\ >/dev/null
 // vim: set spell spelllang=pt_br :
 
+//Funcao que carrega GLTF 
+//GEMINI
+// Função que carrega GLTF (Corrigida para ler múltiplos Meshes e Primitives)
+void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
+{
+    tinygltf::Model model;
+    tinygltf::TinyGLTF loader;
+    std::string err, warn;
+
+    // Tenta carregar como binário (.glb). Se falhar, tenta ASCII (.gltf)
+    bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
+    if (!ret) ret = loader.LoadASCIIFromFile(&model, &err, &warn, filename);
+
+    if (!warn.empty()) printf("Aviso GLTF: %s\n", warn.c_str());
+    if (!err.empty()) printf("Erro GLTF: %s\n", err.c_str());
+    if (!ret) {
+        fprintf(stderr, "Falha ao carregar o modelo animado %s\n", filename);
+        return;
+    }
+
+    std::vector<AnimatedVertex> global_vertices;
+    std::vector<GLuint> global_indices;
+    
+    glm::vec3 bbox_min = glm::vec3(std::numeric_limits<float>::max());
+    glm::vec3 bbox_max = glm::vec3(std::numeric_limits<float>::lowest());
+
+    // Loop por TODOS os meshes e TODAS as primitivas
+    for (const auto& mesh : model.meshes) {
+        for (const auto& primitive : mesh.primitives) {
+            
+            // O offset é crucial! Garante que os índices das próximas primitivas 
+            // apontem para os vértices corretos que foram adicionados no final do array.
+            size_t vertexOffset = global_vertices.size();
+
+            // 1. Descobre o número de vértices desta primitiva
+            int posAccessorIndex = primitive.attributes.at("POSITION");
+            size_t vertexCount = model.accessors[posAccessorIndex].count;
+
+            // Aloca espaço no vetor global
+            size_t oldSize = global_vertices.size();
+            global_vertices.resize(oldSize + vertexCount);
+
+            // Inicializa os novos vértices com segurança
+            for (size_t i = oldSize; i < global_vertices.size(); ++i) {
+                global_vertices[i].position = glm::vec3(0.0f);
+                global_vertices[i].normal = glm::vec3(0.0f);
+                global_vertices[i].texcoords = glm::vec2(0.0f);
+                global_vertices[i].boneIDs = glm::ivec4(0);
+                global_vertices[i].weights = glm::vec4(0.0f);
+            }
+
+            // Função Helper adaptada para o loop
+            auto extractData = [&](const std::string& attributeName, const std::function<void(size_t, const unsigned char*, int)>& processItem) {
+                if (primitive.attributes.find(attributeName) == primitive.attributes.end()) return;
+                
+                const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at(attributeName)];
+                const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+                const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+                
+                const unsigned char* dataPtr = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
+                int stride = bufferView.byteStride == 0 ? tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type) : bufferView.byteStride;
+
+                for (size_t i = 0; i < accessor.count; ++i) {
+                    processItem(oldSize + i, dataPtr + (i * stride), accessor.componentType);
+                }
+            };
+
+            // Lendo POSITION
+            extractData("POSITION", [&](size_t globalIdx, const unsigned char* ptr, int type) {
+                const float* fPtr = reinterpret_cast<const float*>(ptr);
+                global_vertices[globalIdx].position = glm::vec3(fPtr[0], fPtr[1], fPtr[2]);
+                bbox_min = glm::min(bbox_min, global_vertices[globalIdx].position);
+                bbox_max = glm::max(bbox_max, global_vertices[globalIdx].position);
+            });
+
+            // Lendo NORMAL
+            extractData("NORMAL", [&](size_t globalIdx, const unsigned char* ptr, int type) {
+                const float* fPtr = reinterpret_cast<const float*>(ptr);
+                global_vertices[globalIdx].normal = glm::vec3(fPtr[0], fPtr[1], fPtr[2]);
+            });
+
+            // Lendo TEXCOORD_0
+            extractData("TEXCOORD_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
+                const float* fPtr = reinterpret_cast<const float*>(ptr);
+                global_vertices[globalIdx].texcoords = glm::vec2(fPtr[0], fPtr[1]);
+            });
+
+            // Lendo JOINTS_0
+            extractData("JOINTS_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
+                if (type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                    const unsigned short* sPtr = reinterpret_cast<const unsigned short*>(ptr);
+                    global_vertices[globalIdx].boneIDs = glm::ivec4(sPtr[0], sPtr[1], sPtr[2], sPtr[3]);
+                } else if (type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+                    const unsigned char* bPtr = ptr;
+                    global_vertices[globalIdx].boneIDs = glm::ivec4(bPtr[0], bPtr[1], bPtr[2], bPtr[3]);
+                }
+            });
+
+            // Lendo WEIGHTS_0
+            extractData("WEIGHTS_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
+                const float* fPtr = reinterpret_cast<const float*>(ptr);
+                global_vertices[globalIdx].weights = glm::vec4(fPtr[0], fPtr[1], fPtr[2], fPtr[3]);
+            });
+
+            // Lendo INDICES (com o offset aplicado!)
+            if (primitive.indices >= 0) {
+                const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
+                const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccessor.bufferView];
+                const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
+                
+                const void* indexDataPtr = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
+                
+                for (size_t i = 0; i < indexAccessor.count; ++i) {
+                    GLuint indexVal = 0;
+                    if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                        indexVal = static_cast<GLuint>(((const unsigned short*)indexDataPtr)[i]);
+                    } else if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+                        indexVal = ((const unsigned int*)indexDataPtr)[i];
+                    } else if (indexAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+                        indexVal = static_cast<GLuint>(((const unsigned char*)indexDataPtr)[i]);
+                    }
+                    global_indices.push_back(indexVal + vertexOffset);
+                }
+            }
+        }
+    }
+
+    // Criação do VAO e VBOs na GPU
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+    glBindVertexArray(vertex_array_object_id);
+
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, global_vertices.size() * sizeof(AnimatedVertex), global_vertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, position));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, normal));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, texcoords));
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribIPointer(3, 4, GL_INT, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, boneIDs));
+
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, weights));
+
+    GLuint EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, global_indices.size() * sizeof(GLuint), global_indices.data(), GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+
+    // Salva na Cena Virtual
+    AnimatedSceneObject obj;
+    obj.name = object_name;
+    obj.first_index = 0;
+    obj.num_indices = global_indices.size();
+    obj.rendering_mode = GL_TRIANGLES;
+    obj.vertex_array_object_id = vertex_array_object_id;
+    obj.bbox_min = bbox_min;
+    obj.bbox_max = bbox_max;
+
+    //Parte nova que calcula a inversa
+    // O esqueleto inteiro (skin) guarda as matrizes que revertem o osso para a T-Pose
+    if (!model.skins.empty()) {
+        const tinygltf::Skin& skin = model.skins[0]; // Pega o primeiro esqueleto
+        int ibmAccessorIndex = skin.inverseBindMatrices;
+        
+        if (ibmAccessorIndex >= 0) {
+            const tinygltf::Accessor& accessor = model.accessors[ibmAccessorIndex];
+            const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+            const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+            
+            // O ponteiro cru para os floats na memória
+            const float* ptr = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+            
+            // Lemos de 16 em 16 floats (uma matriz 4x4)
+            for (size_t i = 0; i < accessor.count; ++i) {
+                glm::mat4 inverseBind = glm::make_mat4(ptr + (i * 16));
+                obj.inverseBindMatrices.push_back(inverseBind);
+            }
+        }
+    }
+
+    // Salva na memória global para as outras funções usarem!
+    g_GltfModel = model;
+
+
+obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
+
+    // --- CÓDIGO NOVO: Carregamento da Textura do GLTF ---
+    // Pega a primeira malha e a primeira primitiva para extrair o material
+    if (!model.meshes.empty() && !model.meshes[0].primitives.empty()) {
+        int materialIndex = model.meshes[0].primitives[0].material;
+        
+        // Verifica se existe um material aplicado
+        if (materialIndex >= 0 && materialIndex < model.materials.size()) {
+            const tinygltf::Material& material = model.materials[materialIndex];
+            
+            // Pega o índice da textura de cor base (Diffuse Map)
+            int baseColorTextureIndex = material.pbrMetallicRoughness.baseColorTexture.index;
+            
+            if (baseColorTextureIndex >= 0 && baseColorTextureIndex < model.textures.size()) {
+                int imageIndex = model.textures[baseColorTextureIndex].source;
+                
+                if (imageIndex >= 0 && imageIndex < model.images.size()) {
+                    tinygltf::Image& image = model.images[imageIndex];
+
+                    glActiveTexture(GL_TEXTURE2);
+
+                    // Gera a textura no OpenGL
+                    glGenTextures(1, &obj.diffuse_texture_id);
+                    glBindTexture(GL_TEXTURE_2D, obj.diffuse_texture_id);
+
+                    // Configura os parâmetros de repetição e filtro
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                    // Descobre se a imagem tem 3 canais (RGB) ou 4 canais (RGBA)
+                    GLenum format = GL_RGBA;
+                    if (image.component == 3) format = GL_RGB;
+
+                    // Envia os bytes crus (image.image) para a GPU!
+                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                    glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.image.data());
+                    glGenerateMipmap(GL_TEXTURE_2D);
+
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    printf("Textura extraida do GLTF com sucesso! (%dx%d, %d canais)\n", image.width, image.height, image.component);
+                }
+            }
+        }
+    }
+    // ----------------------------------------------------
+
+    g_AnimatedScene[object_name] = obj;
+    printf("Modelo GLTF '%s' carregado com sucesso! (Vértices: %lu, Índices: %lu)\n", 
+           object_name, global_vertices.size(), global_indices.size());
+}
+
+//Gemini
+// Função auxiliar: Descobre qual é o ID do osso (joint) dado o ID do Nó (Node)
+int GetJointIndex(int nodeIndex) {
+    if (g_GltfModel.skins.empty()) return -1;
+    const auto& joints = g_GltfModel.skins[0].joints;
+    for (size_t i = 0; i < joints.size(); ++i) {
+        if (joints[i] == nodeIndex) return i;
+    }
+    return -1;
+}
+
+// Função nova que calcula a posição de um osso em um tempo específico
+glm::mat4 GetNodeTransform(int nodeIndex, float currentTime) {
+    tinygltf::Node& node = g_GltfModel.nodes[nodeIndex];
+    
+    // Valores padrão da Pose Base
+    glm::vec3 T(0.0f); if(node.translation.size() == 3) T = glm::vec3(node.translation[0], node.translation[1], node.translation[2]);
+    glm::quat R = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); if(node.rotation.size() == 4) R = glm::quat(node.rotation[3], node.rotation[0], node.rotation[1], node.rotation[2]);
+    glm::vec3 S(1.0f); if(node.scale.size() == 3) S = glm::vec3(node.scale[0], node.scale[1], node.scale[2]);
+    
+    // Se o modelo não tem animações carregadas, retorna a pose base estática
+    if (g_GltfModel.animations.empty()) {
+        if(node.matrix.size() == 16) return glm::make_mat4(node.matrix.data());
+        return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
+    }
+
+    // Trava de segurança: se pedirmos a animação 5 e só tivermos 2, ele não "crasha" o C++
+    if (g_CurrentAnimationIndex >= g_GltfModel.animations.size()) {
+        g_CurrentAnimationIndex = 0;
+    }
+
+    // Usa a animação selecionada dinamicamente
+    const tinygltf::Animation& anim = g_GltfModel.animations[g_CurrentAnimationIndex]; 
+    bool isNodeAnimated = false;
+
+    // Procura se esse osso se mexe nessa animação
+    for (const auto& channel : anim.channels) {
+        if (channel.target_node != nodeIndex) continue;
+
+        const tinygltf::AnimationSampler& sampler = anim.samplers[channel.sampler];
+        const tinygltf::Accessor& inputAcc = g_GltfModel.accessors[sampler.input];   // Tempo
+        const tinygltf::Accessor& outputAcc = g_GltfModel.accessors[sampler.output]; // Valores
+
+        const tinygltf::BufferView& inputView = g_GltfModel.bufferViews[inputAcc.bufferView];
+        const float* times = reinterpret_cast<const float*>(&g_GltfModel.buffers[inputView.buffer].data[inputView.byteOffset + inputAcc.byteOffset]);
+
+        // Faz o loop da animação (Ex: se a animação dura 2s e estamos no segundo 5s, o tempo será 1s)
+        float maxTime = times[inputAcc.count - 1];
+        float animTime = fmod(currentTime, maxTime);
+
+        // Acha entre quais Keyframes nós estamos
+        int p0 = 0, p1 = 0;
+        for (size_t i = 0; i < inputAcc.count - 1; ++i) {
+            if (animTime < times[i + 1]) {
+                p0 = i; p1 = i + 1; break;
+            }
+        }
+        
+        // Fator de interpolação (0.0 a 1.0)
+        float factor = (animTime - times[p0]) / (times[p1] - times[p0]);
+
+        const tinygltf::BufferView& outputView = g_GltfModel.bufferViews[outputAcc.bufferView];
+        const float* values = reinterpret_cast<const float*>(&g_GltfModel.buffers[outputView.buffer].data[outputView.byteOffset + outputAcc.byteOffset]);
+
+        isNodeAnimated = true;
+
+        if (channel.target_path == "translation") {
+            glm::vec3 start(values[p0*3], values[p0*3+1], values[p0*3+2]);
+            glm::vec3 end(values[p1*3], values[p1*3+1], values[p1*3+2]);
+            T = glm::mix(start, end, factor); // Interpolação linear
+        } 
+        else if (channel.target_path == "rotation") {
+            // GLTF salva como X,Y,Z,W. O construtor do GLM espera W,X,Y,Z.
+            glm::quat start(values[p0*4+3], values[p0*4], values[p0*4+1], values[p0*4+2]);
+            glm::quat end(values[p1*4+3], values[p1*4], values[p1*4+1], values[p1*4+2]);
+            R = glm::slerp(start, end, factor); // Interpolação esférica (Slerp)
+            R = glm::normalize(R);
+        } 
+        else if (channel.target_path == "scale") {
+            glm::vec3 start(values[p0*3], values[p0*3+1], values[p0*3+2]);
+            glm::vec3 end(values[p1*3], values[p1*3+1], values[p1*3+2]);
+            S = glm::mix(start, end, factor);
+        }
+    }
+
+    // Retorna a matriz recalculada para este frame!
+    if (!isNodeAnimated && node.matrix.size() == 16) {
+        return glm::make_mat4(node.matrix.data());
+    }
+    return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
+}
+
+// A função mágica que viaja pela árvore de ossos
+void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj, float currentTime) {
+    tinygltf::Node& node = g_GltfModel.nodes[nodeIndex];
+    
+    // --- MUDANÇA AQUI: Chamamos a função nova em vez de calcular estático ---
+    glm::mat4 localTransform = GetNodeTransform(nodeIndex, currentTime);
+
+    glm::mat4 globalTransform = parentTransform * localTransform;
+
+    int jointIndex = GetJointIndex(nodeIndex);
+    if (jointIndex != -1 && jointIndex < MAX_BONES && (size_t)jointIndex < obj.inverseBindMatrices.size()) {
+        glm::mat4 inverseBind = obj.inverseBindMatrices[jointIndex];
+        g_FinalBoneMatrices[jointIndex] = globalTransform * inverseBind;
+    }
+
+    // Passamos o currentTime para os filhos também
+    for (int childIndex : node.children) {
+        ProcessSkeletonNode(childIndex, globalTransform, obj, currentTime);
+    }
+}
