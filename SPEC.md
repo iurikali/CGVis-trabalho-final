@@ -53,11 +53,9 @@
 > - Coloquei aqui **três imagens** capturadas do vídeo acima, que você
 >   irá usar como ilustração para as explicações que vêm abaixo.
 
-<mark>`
 ![alt text](image.png)
 ![alt text](image-1.png)
-![alt text](image-2.png)`
-</mark>
+![alt text](image-2.png)
 
 ## Especificação textual
 
