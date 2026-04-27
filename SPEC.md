@@ -15,7 +15,7 @@
 ## Detalhes do que será implementado
 
 - **Título do trabalho**: <mark>`Créxi Bandecute`</mark>
-- **Parágrafo curto descrevendo o que será implementado**: <mark>`Uma versão simplificado do jogo Crash Bandicoot (1996)`</mark>
+- **Parágrafo curto descrevendo o que será implementado**: <mark>`Uma versão simplificado do jogo Crash Bandicoot (1996).`</mark>
 
 ## Especificação visual
 
@@ -66,7 +66,7 @@
 Para cada um dos requisitos abaixo (detalhados no [Enunciado do Trabalho final - Moodle](https://moodle.ufrgs.br/mod/assign/view.php?id=6018620)), escreva um parágrafo **curto** explicando como este requisito será atendido, apontando itens específicos do vídeo/imagens que você incluiu acima que atendem estes requisitos.
 
 ### Malhas poligonais complexas
-<mark>`Personagem principal e inimigos.`</mark>
+<mark>`Personagem principal, inimigos e decorações do ambiente.`</mark>
 
 ### Transformações geométricas controladas pelo usuário
 <mark>`Movimentação do personagem nas quatro direções, um pulo e giro (ataque)`</mark>
@@ -75,15 +75,18 @@ Para cada um dos requisitos abaixo (detalhados no [Enunciado do Trabalho final -
 <mark>`Câmera principal atrás do personagem e uma câmera em primeira pessoa. Pode alternar entre elas.`</mark>
 
 ### Instâncias de objetos
-<mark>`Várias instâncias de caixas, frutas, inimigos e espinhos.`</mark>
+<mark>`Várias instâncias de caixas, frutas, inimigos, espinhos e decorações do ambiente.`</mark>
 
 ### Testes de intersecção
-<mark>`- Testes físicos com o plano, com obstáculos e caixas. 
-       - Testes de trigger com as frutas, inimigos e espinhos.
-       - Teste de hitbox do giro do personagem.`</mark>
+- Testes físicos com o chão (plano), com obstáculos, caixas e com a escadaria. 
+- Testes de trigger com as frutas, inimigos e espinhos.
+- Teste de hitbox do giro do personagem.
 
 ### Modelos de Iluminação em todos os objetos
-<mark>`Iluminação global.`</mark>
+<mark>
+Iluminação local: cada objeto terá será iluminado por uma fonte de luz global (por exemplo, o sol da cena). 
+Alguns objetos terão iluminação diferente: por exemplo, as frutas terão mais brilho que outros objetos.
+</mark>
 
 ### Mapeamento de texturas em todos os objetos
 <mark>`Todos os objetos terão textura.`</mark>
@@ -92,9 +95,9 @@ Para cada um dos requisitos abaixo (detalhados no [Enunciado do Trabalho final -
 <mark>`Um inimigo terá movimentação com curva de Bézier cúbica.`</mark>
 
 ### Animações baseadas no tempo ($\Delta t$)
-<mark>` - Movimentação do personagem.
-        - Câmera
-        - Inimigos`</mark>
+- Movimentação do personagem.
+- Câmera
+- Inimigos
 
 ## Limitações esperadas
 
@@ -105,10 +108,11 @@ Para cada um dos requisitos abaixo (detalhados no [Enunciado do Trabalho final -
 > - Para cada item, **explique por que** não será implementado ou por
 >   que será implementado parcialmente.
 
-<mark>` - O chão será plano, não ter que criar um terreno em um software de modelagem.
-        - Todas as caixas serão iguais para conseguir focar mais no personagem e não tanto nos objetos.
-        - Não vai ter a máscara de vida extra para deixar o jogo mais difícil.
-        - Substuição de buracos por espinhos para facilitar a montagem da fase.
-        - Somente o primeiro inimigo que apareceu no vídeo vai aparecer, pois a sua movimentação é mais simples (somente em um eixo) e um novo que seguirá uma curva de Bézier.
-        - Simplificações na montagem da fase para facilitar o desenvolvimento.
-        - Partículas, animações complexas, HUD e sombras, pois escapa do escopo do trabalho.`</mark>
+- O chão será plano, não ter que criar um terreno em um software de modelagem.
+ - Todas as caixas serão iguais para conseguir focar mais no personagem e não tanto nos objetos.
+ - Não vai ter a máscara de vida extra para deixar o jogo mais difícil.
+ - Substuição de buracos por espinhos para facilitar a montagem da fase.
+ - Somente o primeiro inimigo que apareceu no vídeo vai aparecer, pois a sua movimentação é mais simples (somente em um eixo) e um novo que seguirá uma curva de Bézier.
+ - Simplificações na montagem da fase para facilitar o desenvolvimento.
+ - Partículas, animações complexas, HUD e sombras, pois escapa do escopo do trabalho.
+        
