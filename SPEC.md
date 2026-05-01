@@ -6,20 +6,21 @@
 
 ## Integrantes da dupla
 
-- **Aluno 1 - Nome**: <mark>`<preencher>`</mark>
-- **Aluno 1 - Cartão UFRGS**: <mark>`<preencher>`</mark>
+- **Aluno 1 - Nome**: <mark>`Iuri Kali Sieczkowski de Carvalho`</mark>
+- **Aluno 1 - Cartão UFRGS**: <mark>`00580709`</mark>
 
-- **Aluno 2 - Nome**: <mark>`<preencher>`</mark>
-- **Aluno 2 - Cartão UFRGS**: <mark>`<preencher>`</mark>
+- **Aluno 2 - Nome**: <mark>`Rafael Hillebrand Alexandrini`</mark>
+- **Aluno 2 - Cartão UFRGS**: <mark>`00587786`</mark>
 
 ## Detalhes do que será implementado
 
-- **Título do trabalho**: <mark>`<preencher>`</mark>
-- **Parágrafo curto descrevendo o que será implementado**: <mark>`<preencher>`</mark>
+- **Título do trabalho**: <mark>`Créxi Bandecute`</mark>
+- **Parágrafo curto descrevendo o que será implementado**: <mark>`Uma versão simplificado do jogo Crash Bandicoot (1996).`</mark>
 
 ## Especificação visual
 
 ### Vídeo - Link
+
 
 > [!IMPORTANT]
 > - Coloque aqui um link para um vídeo que mostre a aplicação gráfica
@@ -34,7 +35,7 @@
 >   do próprio repositório. Mas, garanta que qualquer um tenha
 >   permissão de acesso ao vídeo através deste link.
 
-<mark>`<preencher>`</mark>
+<mark>`https://youtu.be/8IFNBiRymu4`</mark>
 
 ### Vídeo - Timestamp
 
@@ -43,8 +44,8 @@
 >   será a base de comparação para avaliar se o seu trabalho final
 >   conseguiu ou não reproduzir a referência.
 
-- **Timestamp inicial**: <mark>`<preencher>`</mark>
-- **Timestamp final**: <mark>`<preencher>`</mark>
+- **Timestamp inicial**: <mark>`00:00`</mark>
+- **Timestamp final**: <mark>`00:30`</mark>
 
 ### Imagens
 
@@ -52,7 +53,9 @@
 > - Coloquei aqui **três imagens** capturadas do vídeo acima, que você
 >   irá usar como ilustração para as explicações que vêm abaixo.
 
-<mark>`<preencher>`</mark>
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
 
 ## Especificação textual
 
@@ -63,31 +66,38 @@
 Para cada um dos requisitos abaixo (detalhados no [Enunciado do Trabalho final - Moodle](https://moodle.ufrgs.br/mod/assign/view.php?id=6018620)), escreva um parágrafo **curto** explicando como este requisito será atendido, apontando itens específicos do vídeo/imagens que você incluiu acima que atendem estes requisitos.
 
 ### Malhas poligonais complexas
-<mark>`<preencher>`</mark>
+<mark>`Personagem principal, inimigos e decorações do ambiente.`</mark>
 
 ### Transformações geométricas controladas pelo usuário
-<mark>`<preencher>`</mark>
+<mark>`Movimentação do personagem nas quatro direções, um pulo e giro (ataque)`</mark>
 
 ### Diferentes tipos de câmeras
-<mark>`<preencher>`</mark>
+<mark>`Câmera principal atrás do personagem e uma câmera em primeira pessoa. Pode alternar entre elas.`</mark>
 
 ### Instâncias de objetos
-<mark>`<preencher>`</mark>
+<mark>`Várias instâncias de caixas, frutas, inimigos, espinhos e decorações do ambiente.`</mark>
 
 ### Testes de intersecção
-<mark>`<preencher>`</mark>
+- Testes físicos com o chão (plano), com obstáculos, caixas e com a escadaria. 
+- Testes de trigger com as frutas, inimigos e espinhos.
+- Teste de hitbox do giro do personagem.
 
 ### Modelos de Iluminação em todos os objetos
-<mark>`<preencher>`</mark>
+<mark>
+Iluminação local: cada objeto terá será iluminado por uma fonte de luz global (por exemplo, o sol da cena). 
+Alguns objetos terão iluminação diferente: por exemplo, as frutas terão mais brilho que outros objetos.
+</mark>
 
 ### Mapeamento de texturas em todos os objetos
-<mark>`<preencher>`</mark>
+<mark>`Todos os objetos terão textura.`</mark>
 
 ### Movimentação com curva Bézier cúbica
-<mark>`<preencher>`</mark>
+<mark>`Um inimigo terá movimentação com curva de Bézier cúbica.`</mark>
 
 ### Animações baseadas no tempo ($\Delta t$)
-<mark>`<preencher>`</mark>
+- Movimentação do personagem.
+- Câmera
+- Inimigos
 
 ## Limitações esperadas
 
@@ -98,4 +108,11 @@ Para cada um dos requisitos abaixo (detalhados no [Enunciado do Trabalho final -
 > - Para cada item, **explique por que** não será implementado ou por
 >   que será implementado parcialmente.
 
-<mark>`<preencher>`</mark>
+- O chão será plano, não ter que criar um terreno em um software de modelagem.
+ - Todas as caixas serão iguais para conseguir focar mais no personagem e não tanto nos objetos.
+ - Não vai ter a máscara de vida extra para deixar o jogo mais difícil.
+ - Substuição de buracos por espinhos para facilitar a montagem da fase.
+ - Somente o primeiro inimigo que apareceu no vídeo vai aparecer, pois a sua movimentação é mais simples (somente em um eixo) e um novo que seguirá uma curva de Bézier.
+ - Simplificações na montagem da fase para facilitar o desenvolvimento.
+ - Partículas, animações complexas, HUD e sombras, pois escapa do escopo do trabalho.
+        

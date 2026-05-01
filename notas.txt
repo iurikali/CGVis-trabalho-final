@@ -1,0 +1,24 @@
+Crash:
+    - Movimenção
+    - pulo
+    - Giro
+
+Caixa: 
+    - Quebra e drop frutas
+    - Quebrar pular em cima
+    
+Fruta:
+    - Coletável
+
+Inimigo:
+    - Movimentação só em um eixo
+    - Matar o Crash
+    - Morrer se tomar o giro ou pular
+
+Objeto de morte:
+    - Morre ao encostar
+
+- Camera normal atrás do personagem
+- Camera primeira pessoa
+
+- Inimigo com curva de bezier
