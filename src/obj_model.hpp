@@ -1,4 +1,4 @@
-
+#pragma once
 
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
@@ -58,7 +58,7 @@ struct ObjModel
     }
 };
 
-// 
+// void BuildTrianglesAndAddToVirtualScene(ObjModel*); // Constrói representação de um ObjModel como malha de triângulos para renderização
 // void ComputeNormals(ObjModel* model); // Computa normais de um ObjModel, caso não existam.
 // void PrintObjModelInfo(ObjModel*); // Função para debugging
 
