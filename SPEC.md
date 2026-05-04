@@ -116,3 +116,4 @@ Alguns objetos terão iluminação diferente: por exemplo, as frutas terão mais
  - Simplificações na montagem da fase para facilitar o desenvolvimento.
  - Partículas, animações complexas, HUD e sombras, pois escapa do escopo do trabalho.
         
+> Comentário Professor: OK
