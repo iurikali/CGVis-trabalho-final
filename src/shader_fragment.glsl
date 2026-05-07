@@ -31,10 +31,9 @@ uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
 // Variáveis para acesso das imagens de textura
-uniform sampler2D TextureImage0;
-uniform sampler2D TextureImage1;
-uniform sampler2D TextureImage2;
-uniform sampler2D TextureImage3;
+#define NUM_TEXTURAS 5
+uniform int texture_id;
+uniform sampler2D TextureImages[NUM_TEXTURAS];
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -73,6 +72,7 @@ void main()
 
 	// Coeficiente de refletância difusa
 	vec3 Kd0;
+    
 
     if ( object_id == SPHERE )
     {
@@ -99,8 +99,8 @@ void main()
         U = (theta + M_PI) / 2.0 / M_PI;
         V = (phi + M_PI_2) / M_PI;
 
-		// Obtemos a refletância difusa a partir da leitura da imagem TextureImage0
-		Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
+		// Obtemos a refletância difusa a partir da leitura da imagem
+		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;
     }
     else if ( object_id == BUNNY )
     {
@@ -125,8 +125,8 @@ void main()
         U = (position_model.x - minx) / (maxx - minx);
         V = (position_model.y - miny) / (maxy - miny);
 
-		// Obtemos a refletância difusa a partir da leitura da imagem TextureImage0
-		Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
+		// Obtemos a refletância difusa a partir da leitura da imagem 
+		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;
     }
     else if ( object_id == PLANE )
     {
@@ -134,8 +134,8 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
-		// Obtemos a refletância difusa a partir da leitura da imagem TextureImage1
-		Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
+		// Obtemos a refletância difusa a partir da leitura da imagem
+		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;
     }
     else if ( object_id == CHARACTER )
     {
@@ -147,14 +147,14 @@ void main()
         // Tente usar V normal. Se a textura ficar de ponta-cabeça, troque a linha acima por:
         // V = 1.0 - texcoords.y;
 
-        Kd0 = texture(TextureImage3, vec2(U,V)).rgb; 
+        Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb; 
     }
     else if ( object_id == CUBE )
     {
         U = texcoords.x;
         V = 1.0 - texcoords.y;
 
-		Kd0 = texture(TextureImage2, vec2(U,V)).rgb;   
+		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;   
     }
 
     // Equação de Iluminação

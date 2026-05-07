@@ -202,11 +202,13 @@ GLint g_model_uniform;
 GLint g_view_uniform;
 GLint g_projection_uniform;
 GLint g_object_id_uniform;
+GLint g_texture_id_uniform;
 GLint g_bbox_min_uniform;
 GLint g_bbox_max_uniform;
 
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
+
 
 int main(int argc, char* argv[])
 {
@@ -221,7 +223,7 @@ int main(int argc, char* argv[])
 
     // Definimos o callback para impressão de erros da GLFW no terminal
     glfwSetErrorCallback(ErrorCallback);
-
+    
     // Pedimos para utilizar OpenGL versão 3.3 (ou superior)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -229,11 +231,11 @@ int main(int argc, char* argv[])
     #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
-
+    
     // Pedimos para utilizar o perfil "core", isto é, utilizaremos somente as
     // funções modernas de OpenGL.
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+    
     // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
     // de pixels, e com título "INF01047 ...".
     GLFWwindow* window;
@@ -244,7 +246,7 @@ int main(int argc, char* argv[])
         fprintf(stderr, "ERROR: glfwCreateWindow() failed.\n");
         std::exit(EXIT_FAILURE);
     }
-
+    
     // Definimos a função de callback que será chamada sempre que o usuário
     // pressionar alguma tecla do teclado ...
     glfwSetKeyCallback(window, KeyCallback);
@@ -257,34 +259,43 @@ int main(int argc, char* argv[])
 
     // Indicamos que as chamadas OpenGL deverão renderizar nesta janela
     glfwMakeContextCurrent(window);
-
+    
     // Carregamento de todas funções definidas por OpenGL 3.3, utilizando a
     // biblioteca GLAD.
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-
+    
     // Definimos a função de callback que será chamada sempre que a janela for
     // redimensionada, por consequência alterando o tamanho do "framebuffer"
     // (região de memória onde são armazenados os pixels da imagem).
     glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
     FramebufferSizeCallback(window, 800, 600); // Forçamos a chamada do callback acima, para definir g_ScreenRatio.
-
+    
     // Imprimimos no terminal informações sobre a GPU do sistema
     const GLubyte *vendor      = glGetString(GL_VENDOR);
     const GLubyte *renderer    = glGetString(GL_RENDERER);
     const GLubyte *glversion   = glGetString(GL_VERSION);
     const GLubyte *glslversion = glGetString(GL_SHADING_LANGUAGE_VERSION);
-
+    
     printf("GPU: %s, %s, OpenGL %s, GLSL %s\n", vendor, renderer, glversion, glslversion);
-
+    
     // Carregamos os shaders de vértices e de fragmentos que serão utilizados
     // para renderização. Veja slides 180-200 do documento Aula_03_Rendering_Pipeline_Grafico.pdf.
     //
     LoadShadersFromFiles();
-
+    
     // Carregamos duas imagens para serem utilizadas como textura
-    LoadTextureImage("../../data/red_brick_diff_1k.jpg");      // TextureImage0
-    LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); // TextureImage1
-    LoadTextureImage("../../data/cobblestone.jpg"); // TextureImage2
+    // Número de texturas existentes ! atualizar no shader_fragment também
+    #define NUM_TEXTURAS 5
+    LoadTextureImage("../../data/red_brick_diff_1k.jpg");      
+    LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); 
+    LoadTextureImage("../../data/cobblestone.jpg"); 
+    LoadTextureImage("../../data/grass_block.jpg"); // é sobrescrito pelo character
+    LoadTextureImage("../../data/grass_block.jpg"); 
+    #define RED_BRICK 0
+    #define ROCKY_TERRAIN 1
+    #define COBBLESTONE 2
+    #define CHARACTER_TEXTURE 3 // por enquanto está hardcoded como o terceiro
+    #define GRASS_BLOCK 4
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
@@ -409,6 +420,7 @@ int main(int argc, char* argv[])
               * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
+        glUniform1i(g_texture_id_uniform, RED_BRICK);
         //DrawVirtualObject("the_sphere");
 
         // Desenhamos o modelo do coelho
@@ -416,23 +428,34 @@ int main(int argc, char* argv[])
               * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, BUNNY);
+        glUniform1i(g_texture_id_uniform, RED_BRICK);
         DrawVirtualObject("the_bunny");
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
+        glUniform1i(g_texture_id_uniform, ROCKY_TERRAIN);
         DrawVirtualObject("the_plane");
-
+        
         model = Matrix_Translate(-1.3f, 0.0f, 0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, CUBE);
+        glUniform1i(g_texture_id_uniform, COBBLESTONE);
         DrawVirtualObject("the_cube");
+
+        model = Matrix_Translate(-1.3f, 1.0f, 0.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, PLANE);
+        glUniform1i(g_texture_id_uniform, GRASS_BLOCK);
+        DrawVirtualObject("the_cube");
+        
 
         // Desenho do personagem animado
         model = Matrix_Translate(0.0f, 0.0f, 0.0f);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, CHARACTER);
+        glUniform1i(g_texture_id_uniform, CHARACTER_TEXTURE);
 
         // Pegamos o tempo contínuo do jogo
         float tempoAtualAnimacao = (float)glfwGetTime();
@@ -452,7 +475,7 @@ int main(int argc, char* argv[])
 
         // --- CÓDIGO NOVO: Ativa a textura do modelo ---
         if (g_AnimatedScene["the_character"].diffuse_texture_id != 0) {
-            glActiveTexture(GL_TEXTURE3); // Usamos a unidade 2 (0 e 1 são o chão e a parede)
+            glActiveTexture(GL_TEXTURE3); // Usamos a unidade 3 (0 e 1 são o chão e a parede)
             glBindTexture(GL_TEXTURE_2D, g_AnimatedScene["the_character"].diffuse_texture_id);
             glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
         }
@@ -625,15 +648,16 @@ void LoadShadersFromFiles()
     g_view_uniform       = glGetUniformLocation(g_GpuProgramID, "view"); // Variável da matriz "view" em shader_vertex.glsl
     g_projection_uniform = glGetUniformLocation(g_GpuProgramID, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
     g_object_id_uniform  = glGetUniformLocation(g_GpuProgramID, "object_id"); // Variável "object_id" em shader_fragment.glsl
+    g_texture_id_uniform  = glGetUniformLocation(g_GpuProgramID, "texture_id"); // Variável "texture_id" em shader_fragment.glsl
     g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
     g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
 
     // Variáveis em "shader_fragment.glsl" para acesso das imagens de textura
     glUseProgram(g_GpuProgramID);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
+    int texture_values[NUM_TEXTURAS];
+    for (int i=0; i<NUM_TEXTURAS; i++)
+        texture_values[i] = i;
+    glUniform1iv(glGetUniformLocation(g_GpuProgramID, "TextureImages"), NUM_TEXTURAS, texture_values);
     glUseProgram(0);
 }
 

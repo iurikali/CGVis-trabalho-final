@@ -73,3 +73,22 @@ Pra facilitar, ignorar a animação por enquanto.
 No futuro, definir uns mapeamentos de textura para modelo genéricos (esfera, plano, cubo, modelo, modelo invertido) 
 para poder definir só na criação do objeto, só alterando o shader quando precisar um novo.
     
+GameObject(
+    string model_name,
+    vec3 transform,
+    int texture,
+    int render_type
+)
+get_transform()
+    return transform
+get_render_type()
+    return render_type
+get_texture()
+    return texture_id
+
+
+    model = object.get_transform(tempo)
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, object.get_render_type());
+    glUniform1i(g_texture_id_uniform, object.get_texture());
+    DrawVirtualObject(object.get_model()); 
