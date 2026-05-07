@@ -1,0 +1,75 @@
+ Ideal:
+         modelo, textura, posição
+
+         Atual:
+         Load texture
+         ObjModel bunnymodel("../../data/bunny.obj");
+         ComputeNormals(&bunnymodel);
+         BuildTrianglesAndAddToVirtualScene(&bunnymodel);
+         while()
+         #define id de objeto 
+             No fragment shader é definido object_id, 
+             que define o mapeamento das texturas no objeto
+             Define também a textura que será usada pro objeto
+             Ideia: não mapear por objeto, mas por tipo de mapeamento (esférico, cilíndrico, achatamento e específicos de modelo)
+         Define model (posição, rotação, escala)
+         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model)); Carrega model
+         glUniform1i(g_object_id_uniform, BUNNY); Usa o id de objeto 
+         DrawVirtualObject();
+
+Na prática:
+    Baixar modelo, adicionar a /data
+    Baixar textura, adicionar a /data
+    LoadTextureImage("../../data/cobblestone.jpg");  isso vai para shader_fragment
+    Adicionar uniform sampler2D TextureImage3; no shader_fragment
+    Adiciona glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); em void LoadShadersFromFiles()
+    (Estou movendo a textura do objeto animado para TextureImage3, porque está sendo carregada depois)
+    (Não sei como as texturas dos objetos animados funcionam, vou focar nos fixos)
+    (Mudei de GL_TEXTURE2 para GL_TEXTURE3, pro animado ficar no 3)
+    Adicionar ObjModel cubemodel("../../data/cube.obj");
+            ComputeNormals(&cubemodel);
+            BuildTrianglesAndAddToVirtualScene(&cubemodel);
+    Dentro do while:
+        #define CUBE 4
+        model = Matrix_Translate(-1.0f, 0.0f, -1.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, CUBE);
+        DrawVirtualObject("the_cube");
+    No shader_fragment:
+        #define CUBE 4
+        else if ( object_id == CUBE )
+        {
+            U = texcoords.x;
+            V = 1.0 - texcoords.y;
+
+            Kd0 = texture(TextureImage1, vec2(U,V)).rgb;   
+        }
+        Essa é a forma de renderização da textura no modelo
+
+    Acho que é isso.
+
+
+g_VirtualScene é uma lista dos objetos e seus nomes. Acho que não vou precisar alterar.
+
+Ideia: lista de objetos (objeto, modelo, instancia, sei lá). No while chama:
+    model = object.get_transform(tempo)
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, object.get_render_type());
+    DrawVirtualObject(object.get_model()); 
+
+    Na criação de um objeto:
+        LoadTextureImage(texturepath)
+        ObjModel tempmodel(modelpath);
+        ComputeNormals(&tempmodel);
+        BuildTrianglesAndAddToVirtualScene(&tempmodel);
+        Alterar shader_fragment e LoadShadersFromFiles para incluir variável para a nova textura
+
+    Essa última parte é o que preciso pesquisar, como fazer arrays/vetores, pra poder definir só o número de texturas, não mapear manualmente.
+
+    Pra objetos estáticos, não precisa fazer uma classe para cada um. Para dinâmicos, vão herdar (composition?) de objeto, mas alterar o get_transform.
+
+
+Pra facilitar, ignorar a animação por enquanto.
+No futuro, definir uns mapeamentos de textura para modelo genéricos (esfera, plano, cubo, modelo, modelo invertido) 
+para poder definir só na criação do objeto, só alterando o shader quando precisar um novo.
+    

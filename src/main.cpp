@@ -284,6 +284,7 @@ int main(int argc, char* argv[])
     // Carregamos duas imagens para serem utilizadas como textura
     LoadTextureImage("../../data/red_brick_diff_1k.jpg");      // TextureImage0
     LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); // TextureImage1
+    LoadTextureImage("../../data/cobblestone.jpg"); // TextureImage2
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
@@ -297,6 +298,10 @@ int main(int argc, char* argv[])
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
     BuildTrianglesAndAddToVirtualScene(&planemodel);
+
+    ObjModel cubemodel("../../data/cube.obj");
+    ComputeNormals(&cubemodel);
+    BuildTrianglesAndAddToVirtualScene(&cubemodel);
 
     if ( argc > 1 )
     {
@@ -387,10 +392,15 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
+        // Instanciação de objetos
+
         #define SPHERE 0
         #define BUNNY  1
         #define PLANE  2
         #define CHARACTER 3
+        #define CUBE 4
+              
+
 
         // Desenhamos o modelo da esfera
         model = Matrix_Translate(-1.0f,0.0f,0.0f)
@@ -406,13 +416,18 @@ int main(int argc, char* argv[])
               * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, BUNNY);
-        //DrawVirtualObject("the_bunny");
+        DrawVirtualObject("the_bunny");
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         DrawVirtualObject("the_plane");
+
+        model = Matrix_Translate(-1.3f, 0.0f, 0.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, CUBE);
+        DrawVirtualObject("the_cube");
 
         // Desenho do personagem animado
         model = Matrix_Translate(0.0f, 0.0f, 0.0f);
@@ -437,9 +452,9 @@ int main(int argc, char* argv[])
 
         // --- CÓDIGO NOVO: Ativa a textura do modelo ---
         if (g_AnimatedScene["the_character"].diffuse_texture_id != 0) {
-            glActiveTexture(GL_TEXTURE2); // Usamos a unidade 2 (0 e 1 são o chão e a parede)
+            glActiveTexture(GL_TEXTURE3); // Usamos a unidade 2 (0 e 1 são o chão e a parede)
             glBindTexture(GL_TEXTURE_2D, g_AnimatedScene["the_character"].diffuse_texture_id);
-            glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+            glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
         }
 
         // Desenha o objeto do GLTF
@@ -618,6 +633,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
     glUseProgram(0);
 }
 
@@ -1387,7 +1403,7 @@ obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
                 if (imageIndex >= 0 && imageIndex < model.images.size()) {
                     tinygltf::Image& image = model.images[imageIndex];
 
-                    glActiveTexture(GL_TEXTURE2);
+                    glActiveTexture(GL_TEXTURE3);
 
                     // Gera a textura no OpenGL
                     glGenTextures(1, &obj.diffuse_texture_id);

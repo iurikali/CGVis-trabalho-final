@@ -23,6 +23,7 @@ uniform mat4 projection;
 #define BUNNY  1
 #define PLANE  2
 #define CHARACTER 3
+#define CUBE 4
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -33,6 +34,7 @@ uniform vec4 bbox_max;
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
+uniform sampler2D TextureImage3;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -60,7 +62,7 @@ void main()
     vec4 n = normalize(frag_normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,0.0,0.0));
+    vec4 l = normalize(vec4(1.0,1.0,1.0,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -145,7 +147,14 @@ void main()
         // Tente usar V normal. Se a textura ficar de ponta-cabeça, troque a linha acima por:
         // V = 1.0 - texcoords.y;
 
-        Kd0 = texture(TextureImage2, vec2(U,V)).rgb; 
+        Kd0 = texture(TextureImage3, vec2(U,V)).rgb; 
+    }
+    else if ( object_id == CUBE )
+    {
+        U = texcoords.x;
+        V = 1.0 - texcoords.y;
+
+		Kd0 = texture(TextureImage2, vec2(U,V)).rgb;   
     }
 
     // Equação de Iluminação
