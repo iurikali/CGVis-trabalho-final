@@ -42,6 +42,17 @@ out vec4 color;
 #define M_PI   3.14159265358979323846
 #define M_PI_2 1.57079632679489661923
 
+// Para evitar a indexação dinâmica (tava dando problema em placa AMD)
+vec3 get_texture_color(int id, vec2 uv) {
+    if (id == 0) return texture(TextureImages[0], uv).rgb;
+    else if (id == 1) return texture(TextureImages[1], uv).rgb;
+    else if (id == 2) return texture(TextureImages[2], uv).rgb;
+    else if (id == 3) return texture(TextureImages[3], uv).rgb;
+    else if (id == 4) return texture(TextureImages[4], uv).rgb;
+    
+    return vec3(1.0, 0.0, 1.0); // Retorna magenta se o id for inválido (ajuda no debug)
+}
+
 void main()
 {
     // Obtemos a posição da câmera utilizando a inversa da matriz que define o
@@ -100,7 +111,7 @@ void main()
         V = (phi + M_PI_2) / M_PI;
 
 		// Obtemos a refletância difusa a partir da leitura da imagem
-		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;
+		Kd0 = get_texture_color(texture_id, vec2(U,V));
     }
     else if ( object_id == BUNNY )
     {
@@ -126,7 +137,7 @@ void main()
         V = (position_model.y - miny) / (maxy - miny);
 
 		// Obtemos a refletância difusa a partir da leitura da imagem 
-		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;
+		Kd0 = get_texture_color(texture_id, vec2(U,V));
     }
     else if ( object_id == PLANE )
     {
@@ -135,7 +146,7 @@ void main()
         V = texcoords.y;
 
 		// Obtemos a refletância difusa a partir da leitura da imagem
-		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;
+		Kd0 = get_texture_color(texture_id, vec2(U,V));
     }
     else if ( object_id == CHARACTER )
     {
@@ -147,14 +158,14 @@ void main()
         // Tente usar V normal. Se a textura ficar de ponta-cabeça, troque a linha acima por:
         // V = 1.0 - texcoords.y;
 
-        Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb; 
+        Kd0 = get_texture_color(texture_id, vec2(U,V));
     }
     else if ( object_id == CUBE )
     {
         U = texcoords.x;
         V = 1.0 - texcoords.y;
 
-		Kd0 = texture(TextureImages[texture_id], vec2(U,V)).rgb;   
+		Kd0 = get_texture_color(texture_id, vec2(U,V)); 
     }
 
     // Equação de Iluminação
