@@ -131,22 +131,21 @@ struct AnimatedSceneObject {
     // Matrizes que levam o vértice do espaço do modelo para o espaço do osso
     std::vector<glm::mat4> inverseBindMatrices; 
     GLuint diffuse_texture_id = 0;
+
+    tinygltf::Model gltf_data;
+    int current_animation_index = 0;
 };
 
 // Dicionário para guardar nossos objetos animados (separado do g_VirtualScene estático)
 std::map<std::string, AnimatedSceneObject> g_AnimatedScene;
 
-// VARIÁVEL NOVA: Guarda o modelo na memória global para podermos ler os nós e animações
-tinygltf::Model g_GltfModel;
 
 // Array global que será enviado para o Shader a cada frame
 const int MAX_BONES = 100;
 glm::mat4 g_FinalBoneMatrices[MAX_BONES];
 
-int g_CurrentAnimationIndex = 0;
-
-int GetJointIndex(int nodeIndex);
-glm::mat4 GetNodeTransform(int nodeIndex, float currentTime);
+int GetJointIndex(int nodeIndex, AnimatedSceneObject& obj);
+glm::mat4 GetNodeTransform(int nodeIndex, float currentTime, AnimatedSceneObject& obj);
 void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj, float currentTime);
 
 // Abaixo definimos variáveis globais utilizadas em várias funções do código.
@@ -294,8 +293,9 @@ int main(int argc, char* argv[])
     #define RED_BRICK 0
     #define ROCKY_TERRAIN 1
     #define COBBLESTONE 2
-    #define CHARACTER_TEXTURE 3 // por enquanto está hardcoded como o terceiro
-    #define GRASS_BLOCK 4
+    #define GRASS_BLOCK 3
+    #define CHARACTER_TEXTURE 4 // por enquanto está hardcoded como o terceiro
+    
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
@@ -457,37 +457,39 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, CHARACTER);
         glUniform1i(g_texture_id_uniform, CHARACTER_TEXTURE);
 
+        AnimatedSceneObject& character = g_AnimatedScene["the_character"];
+        float tempoAtual = (float)glfwGetTime();
+
         // Pegamos o tempo contínuo do jogo
         float tempoAtualAnimacao = (float)glfwGetTime();
 
-        if (!g_GltfModel.scenes.empty()) {
-            int sceneIndex = g_GltfModel.defaultScene > -1 ? g_GltfModel.defaultScene : 0;
-            const tinygltf::Scene& scene = g_GltfModel.scenes[sceneIndex];
-            
-            // Começa a recursão passando o TEMPO!
-            for (int rootNode : scene.nodes) {
-                ProcessSkeletonNode(rootNode, Matrix_Identity(), g_AnimatedScene["the_character"], tempoAtualAnimacao);
+        if (!character.gltf_data.scenes.empty()) {
+            int sceneIndex = character.gltf_data.defaultScene > -1 ? character.gltf_data.defaultScene : 0;
+            for (int rootNode : character.gltf_data.scenes[sceneIndex].nodes) {
+                ProcessSkeletonNode(rootNode, Matrix_Identity(), character, tempoAtual);
             }
         }
 
         // Enviamos o array de 100 matrizes dos ossos para o Shader
         glUniformMatrix4fv(g_bones_uniform, MAX_BONES, GL_FALSE, glm::value_ptr(g_FinalBoneMatrices[0]));
 
-        // --- CÓDIGO NOVO: Ativa a textura do modelo ---
-        if (g_AnimatedScene["the_character"].diffuse_texture_id != 0) {
-            glActiveTexture(GL_TEXTURE3); // Usamos a unidade 3 (0 e 1 são o chão e a parede)
-            glBindTexture(GL_TEXTURE_2D, g_AnimatedScene["the_character"].diffuse_texture_id);
-            glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
+        // 4. Ativa a textura do monstro
+        GLint has_texture_uniform = glGetUniformLocation(g_GpuProgramID, "has_texture");
+        if (character.diffuse_texture_id != 0) 
+        {
+            // Ativa exatamente a Gaveta 4 (definida em CHARACTER_TEXTURE)
+            glActiveTexture(GL_TEXTURE0 + CHARACTER_TEXTURE); 
+            glBindTexture(GL_TEXTURE_2D, character.diffuse_texture_id);
+            glUniform1i(has_texture_uniform, 1); 
+        } 
+        else 
+        {
+            glUniform1i(has_texture_uniform, 0); 
         }
 
-        // Desenha o objeto do GLTF
-        glBindVertexArray(g_AnimatedScene["the_character"].vertex_array_object_id);
-        glDrawElements(
-            g_AnimatedScene["the_character"].rendering_mode,
-            g_AnimatedScene["the_character"].num_indices,
-            GL_UNSIGNED_INT,
-            (void*)0
-        );
+        // 5. Desenha o monstro
+        glBindVertexArray(character.vertex_array_object_id);
+        glDrawElements(character.rendering_mode, character.num_indices, GL_UNSIGNED_INT, (void*)0);
         glBindVertexArray(0);
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
@@ -1403,8 +1405,7 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
         }
     }
 
-    // Salva na memória global para as outras funções usarem!
-    g_GltfModel = model;
+    obj.gltf_data = model;
 
 
 obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
@@ -1427,7 +1428,7 @@ obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
                 if (imageIndex >= 0 && imageIndex < model.images.size()) {
                     tinygltf::Image& image = model.images[imageIndex];
 
-                    glActiveTexture(GL_TEXTURE3);
+                    glActiveTexture(GL_TEXTURE0 + g_NumLoadedTextures);
 
                     // Gera a textura no OpenGL
                     glGenTextures(1, &obj.diffuse_texture_id);
@@ -1462,117 +1463,79 @@ obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
 }
 
 //Gemini
-// Função auxiliar: Descobre qual é o ID do osso (joint) dado o ID do Nó (Node)
-int GetJointIndex(int nodeIndex) {
-    if (g_GltfModel.skins.empty()) return -1;
-    const auto& joints = g_GltfModel.skins[0].joints;
+int GetJointIndex(int nodeIndex, AnimatedSceneObject& obj) {
+    if (obj.gltf_data.skins.empty()) return -1;
+    const auto& joints = obj.gltf_data.skins[0].joints;
     for (size_t i = 0; i < joints.size(); ++i) {
         if (joints[i] == nodeIndex) return i;
     }
     return -1;
 }
 
-// Função nova que calcula a posição de um osso em um tempo específico
-glm::mat4 GetNodeTransform(int nodeIndex, float currentTime) {
-    tinygltf::Node& node = g_GltfModel.nodes[nodeIndex];
-    
-    // Valores padrão da Pose Base
+glm::mat4 GetNodeTransform(int nodeIndex, float currentTime, AnimatedSceneObject& obj) {
+    tinygltf::Node& node = obj.gltf_data.nodes[nodeIndex];
     glm::vec3 T(0.0f); if(node.translation.size() == 3) T = glm::vec3(node.translation[0], node.translation[1], node.translation[2]);
     glm::quat R = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); if(node.rotation.size() == 4) R = glm::quat(node.rotation[3], node.rotation[0], node.rotation[1], node.rotation[2]);
     glm::vec3 S(1.0f); if(node.scale.size() == 3) S = glm::vec3(node.scale[0], node.scale[1], node.scale[2]);
     
-    // Se o modelo não tem animações carregadas, retorna a pose base estática
-    if (g_GltfModel.animations.empty()) {
+    if (obj.gltf_data.animations.empty()) {
         if(node.matrix.size() == 16) return glm::make_mat4(node.matrix.data());
         return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
     }
 
-    // Trava de segurança: se pedirmos a animação 5 e só tivermos 2, ele não "crasha" o C++
-    if (g_CurrentAnimationIndex >= g_GltfModel.animations.size()) {
-        g_CurrentAnimationIndex = 0;
-    }
-
-    // Usa a animação selecionada dinamicamente
-    const tinygltf::Animation& anim = g_GltfModel.animations[g_CurrentAnimationIndex]; 
+    if (obj.current_animation_index >= obj.gltf_data.animations.size()) obj.current_animation_index = 0;
+    const tinygltf::Animation& anim = obj.gltf_data.animations[obj.current_animation_index]; 
     bool isNodeAnimated = false;
 
-    // Procura se esse osso se mexe nessa animação
     for (const auto& channel : anim.channels) {
         if (channel.target_node != nodeIndex) continue;
-
         const tinygltf::AnimationSampler& sampler = anim.samplers[channel.sampler];
-        const tinygltf::Accessor& inputAcc = g_GltfModel.accessors[sampler.input];   // Tempo
-        const tinygltf::Accessor& outputAcc = g_GltfModel.accessors[sampler.output]; // Valores
+        const tinygltf::Accessor& inputAcc = obj.gltf_data.accessors[sampler.input];
+        const tinygltf::Accessor& outputAcc = obj.gltf_data.accessors[sampler.output];
 
-        const tinygltf::BufferView& inputView = g_GltfModel.bufferViews[inputAcc.bufferView];
-        const float* times = reinterpret_cast<const float*>(&g_GltfModel.buffers[inputView.buffer].data[inputView.byteOffset + inputAcc.byteOffset]);
+        const tinygltf::BufferView& inputView = obj.gltf_data.bufferViews[inputAcc.bufferView];
+        const float* times = reinterpret_cast<const float*>(&obj.gltf_data.buffers[inputView.buffer].data[inputView.byteOffset + inputAcc.byteOffset]);
 
-        // Faz o loop da animação (Ex: se a animação dura 2s e estamos no segundo 5s, o tempo será 1s)
         float maxTime = times[inputAcc.count - 1];
         float animTime = fmod(currentTime, maxTime);
 
-        // Acha entre quais Keyframes nós estamos
         int p0 = 0, p1 = 0;
         for (size_t i = 0; i < inputAcc.count - 1; ++i) {
-            if (animTime < times[i + 1]) {
-                p0 = i; p1 = i + 1; break;
-            }
+            if (animTime < times[i + 1]) { p0 = i; p1 = i + 1; break; }
         }
         
-        // Fator de interpolação (0.0 a 1.0)
         float factor = (animTime - times[p0]) / (times[p1] - times[p0]);
-
-        const tinygltf::BufferView& outputView = g_GltfModel.bufferViews[outputAcc.bufferView];
-        const float* values = reinterpret_cast<const float*>(&g_GltfModel.buffers[outputView.buffer].data[outputView.byteOffset + outputAcc.byteOffset]);
+        const tinygltf::BufferView& outputView = obj.gltf_data.bufferViews[outputAcc.bufferView];
+        const float* values = reinterpret_cast<const float*>(&obj.gltf_data.buffers[outputView.buffer].data[outputView.byteOffset + outputAcc.byteOffset]);
 
         isNodeAnimated = true;
-
         if (channel.target_path == "translation") {
-            glm::vec3 start(values[p0*3], values[p0*3+1], values[p0*3+2]);
-            glm::vec3 end(values[p1*3], values[p1*3+1], values[p1*3+2]);
-            T = glm::mix(start, end, factor); // Interpolação linear
-        } 
-        else if (channel.target_path == "rotation") {
-            // GLTF salva como X,Y,Z,W. O construtor do GLM espera W,X,Y,Z.
+            T = glm::mix(glm::vec3(values[p0*3], values[p0*3+1], values[p0*3+2]), glm::vec3(values[p1*3], values[p1*3+1], values[p1*3+2]), factor);
+        } else if (channel.target_path == "rotation") {
             glm::quat start(values[p0*4+3], values[p0*4], values[p0*4+1], values[p0*4+2]);
             glm::quat end(values[p1*4+3], values[p1*4], values[p1*4+1], values[p1*4+2]);
-            R = glm::slerp(start, end, factor); // Interpolação esférica (Slerp)
-            R = glm::normalize(R);
-        } 
-        else if (channel.target_path == "scale") {
-            glm::vec3 start(values[p0*3], values[p0*3+1], values[p0*3+2]);
-            glm::vec3 end(values[p1*3], values[p1*3+1], values[p1*3+2]);
-            S = glm::mix(start, end, factor);
+            R = glm::normalize(glm::slerp(start, end, factor));
+        } else if (channel.target_path == "scale") {
+            S = glm::mix(glm::vec3(values[p0*3], values[p0*3+1], values[p0*3+2]), glm::vec3(values[p1*3], values[p1*3+1], values[p1*3+2]), factor);
         }
     }
 
-    // Retorna a matriz recalculada para este frame!
-    if (!isNodeAnimated && node.matrix.size() == 16) {
-        return glm::make_mat4(node.matrix.data());
-    }
+    if (!isNodeAnimated && node.matrix.size() == 16) return glm::make_mat4(node.matrix.data());
     return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
 }
 
-// A função mágica que viaja pela árvore de ossos
 void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj, float currentTime) {
-    tinygltf::Node& node = g_GltfModel.nodes[nodeIndex];
-    
-    // --- MUDANÇA AQUI: Chamamos a função nova em vez de calcular estático ---
-    glm::mat4 localTransform = GetNodeTransform(nodeIndex, currentTime);
-
+    tinygltf::Node& node = obj.gltf_data.nodes[nodeIndex];
+    glm::mat4 localTransform = GetNodeTransform(nodeIndex, currentTime, obj);
     glm::mat4 globalTransform = parentTransform * localTransform;
 
-    int jointIndex = GetJointIndex(nodeIndex);
+    int jointIndex = GetJointIndex(nodeIndex, obj);
     if (jointIndex != -1 && jointIndex < MAX_BONES && (size_t)jointIndex < obj.inverseBindMatrices.size()) {
-        glm::mat4 inverseBind = obj.inverseBindMatrices[jointIndex];
-        g_FinalBoneMatrices[jointIndex] = globalTransform * inverseBind;
+        g_FinalBoneMatrices[jointIndex] = globalTransform * obj.inverseBindMatrices[jointIndex];
     }
 
-    // Passamos o currentTime para os filhos também
     for (int childIndex : node.children) {
         ProcessSkeletonNode(childIndex, globalTransform, obj, currentTime);
     }
 }
-
-
 
