@@ -14,6 +14,7 @@ set(SOURCES
   src/glad.c
   src/tiny_gltf_loader.cpp
   src/game_object.cpp
+  src/player.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)

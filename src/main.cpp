@@ -56,6 +56,7 @@
 #include "obj_model.hpp"
 #include "textrendering.hpp"
 #include "game_object.hpp"
+#include "player.hpp"
 
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
@@ -343,7 +344,10 @@ int main(int argc, char* argv[])
     StaticObject grass("the_cube", CUBE, GRASS_BLOCK);
     grass.position = glm::vec3(-1.3f, 1.0f, 0.0f);
 
-    AnimatedObject player("the_character", CHARACTER, CHARACTER_TEXTURE);
+    /*AnimatedObject player("the_character", CHARACTER, CHARACTER_TEXTURE);
+    player.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    player.SetAnimation(0);*/
+    Player player("the_character", CHARACTER, CHARACTER_TEXTURE);
     player.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.SetAnimation(0);
 
