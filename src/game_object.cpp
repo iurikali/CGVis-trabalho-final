@@ -11,7 +11,8 @@ extern GLint g_model_uniform;
 extern GLint g_object_id_uniform;
 extern GLint g_texture_id_uniform;
 extern GLint g_bones_uniform;
-
+extern GLint g_bbox_min_uniform;
+extern GLint g_bbox_max_uniform;
 
 GameObject::GameObject(std::string n, int o_id, int t_id) : name(n), object_id(o_id), texture_id(t_id){}
 
@@ -37,6 +38,10 @@ void StaticObject::Draw()
 
     SceneObject& obj_data = g_VirtualScene[name];
     
+    
+    glUniform4f(g_bbox_min_uniform, obj_data.bbox_min.x, obj_data.bbox_min.y, obj_data.bbox_min.z, 1.0f);
+    glUniform4f(g_bbox_max_uniform, obj_data.bbox_max.x, obj_data.bbox_max.y, obj_data.bbox_max.z, 1.0f);
+
     glBindVertexArray(obj_data.vertex_array_object_id);
     glDrawElements(obj_data.rendering_mode, obj_data.num_indices, GL_UNSIGNED_INT, (void*)(obj_data.first_index * sizeof(GLuint)));
     glBindVertexArray(0);
@@ -114,7 +119,7 @@ void AnimatedObject::Draw()
     glBindVertexArray(0);
 }
 
-//Gemini
+//Gemini que fez essas 3 funcoes
 int AnimatedObject::GetJointIndex(int nodeIndex, AnimatedSceneObject& obj) {
     if (obj.gltf_data.skins.empty()) return -1;
     const auto& joints = obj.gltf_data.skins[0].joints;

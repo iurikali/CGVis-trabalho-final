@@ -182,6 +182,65 @@ GLint g_bones_uniform;
 GLuint g_NumLoadedTextures = 0;
 
 
+//Funcao que carrega as texturas e modelos de todos os objetos do jogo
+void AssetsLoader(int argc, char* argv[])
+{
+    // Número de texturas existentes ! atualizar no shader_fragment também
+    #define NUM_TEXTURAS 5
+
+    #define RED_BRICK 0
+    #define ROCKY_TERRAIN 1
+    #define COBBLESTONE 2
+    #define GRASS_BLOCK 3
+    #define CHARACTER_TEXTURE 4
+
+    #define SPHERE 0
+    #define BUNNY  1
+    #define PLANE  2
+    #define CHARACTER 3
+    #define CUBE 4
+
+
+    // Carregamos duas imagens para serem utilizadas como textura
+    LoadTextureImage("../../data/red_brick_diff_1k.jpg");      
+    LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); 
+    LoadTextureImage("../../data/cobblestone.jpg"); 
+    LoadTextureImage("../../data/grass_block.jpg");
+
+
+    // --------------------------- .OBJ -------------------------------
+    // Construímos a representação de objetos geométricos através de malhas de triângulos
+    ObjModel spheremodel("../../data/sphere.obj");
+    ComputeNormals(&spheremodel);
+    BuildTrianglesAndAddToVirtualScene(&spheremodel);
+
+    ObjModel bunnymodel("../../data/bunny.obj");
+    ComputeNormals(&bunnymodel);
+    BuildTrianglesAndAddToVirtualScene(&bunnymodel);
+
+    ObjModel planemodel("../../data/plane.obj");
+    ComputeNormals(&planemodel);
+    BuildTrianglesAndAddToVirtualScene(&planemodel);
+
+    ObjModel cubemodel("../../data/cube.obj");
+    ComputeNormals(&cubemodel);
+    BuildTrianglesAndAddToVirtualScene(&cubemodel);
+
+    if (argc > 1 )
+    {
+        ObjModel model(argv[1]);
+        BuildTrianglesAndAddToVirtualScene(&model);
+    }
+
+
+    // --------------------------- .GLTF -------------------------------
+    LoadAnimatedGLTFModel("../../data/personagem.glb", "the_character");
+
+    g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
+}
+
+
+
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
@@ -255,52 +314,9 @@ int main(int argc, char* argv[])
     //
     LoadShadersFromFiles();
     
-    // Carregamos duas imagens para serem utilizadas como textura
-    // Número de texturas existentes ! atualizar no shader_fragment também
-    #define NUM_TEXTURAS 5
-    LoadTextureImage("../../data/red_brick_diff_1k.jpg");      
-    LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); 
-    LoadTextureImage("../../data/cobblestone.jpg"); 
-    LoadTextureImage("../../data/grass_block.jpg"); // é sobrescrito pelo character
 
-    #define RED_BRICK 0
-    #define ROCKY_TERRAIN 1
-    #define COBBLESTONE 2
-    #define GRASS_BLOCK 3
-    #define CHARACTER_TEXTURE 4 // por enquanto está hardcoded como o terceiro
- 
-    #define SPHERE 0
-    #define BUNNY  1
-    #define PLANE  2
-    #define CHARACTER 3
-    #define CUBE 4
+    AssetsLoader(argc, argv);
 
-    // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel spheremodel("../../data/sphere.obj");
-    ComputeNormals(&spheremodel);
-    BuildTrianglesAndAddToVirtualScene(&spheremodel);
-
-    ObjModel bunnymodel("../../data/bunny.obj");
-    ComputeNormals(&bunnymodel);
-    BuildTrianglesAndAddToVirtualScene(&bunnymodel);
-
-    ObjModel planemodel("../../data/plane.obj");
-    ComputeNormals(&planemodel);
-    BuildTrianglesAndAddToVirtualScene(&planemodel);
-
-    ObjModel cubemodel("../../data/cube.obj");
-    ComputeNormals(&cubemodel);
-    BuildTrianglesAndAddToVirtualScene(&cubemodel);
-
-    if ( argc > 1 )
-    {
-        ObjModel model(argv[1]);
-        BuildTrianglesAndAddToVirtualScene(&model);
-    }
-
-    LoadAnimatedGLTFModel("../../data/personagem.glb", "the_character");
-
-    g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
 
     // Inicializamos o código para renderização de texto.
     TextRendering_Init();
@@ -313,9 +329,19 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+
     // INSTANCIAÇÃO (Orientação a Objetos)
     StaticObject ground("the_plane", PLANE, ROCKY_TERRAIN);
     ground.position = glm::vec3(0.0f, -1.1f, 0.0f);
+
+    StaticObject bunny("the_bunny", BUNNY, RED_BRICK);
+    bunny.position = glm::vec3(1.0f,0.0f,0.0f);
+
+    StaticObject cobblestone("the_cube", CUBE, COBBLESTONE);
+    cobblestone.position = glm::vec3(-1.3f, 0.0f, 0.0f);
+
+    StaticObject grass("the_cube", CUBE, GRASS_BLOCK);
+    grass.position = glm::vec3(-1.3f, 1.0f, 0.0f);
 
     AnimatedObject player("the_character", CHARACTER, CHARACTER_TEXTURE);
     player.position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -389,52 +415,11 @@ int main(int argc, char* argv[])
 
 
         // Instanciação de objetos
-
-
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f,0.0f,0.0f)
-              * Matrix_Rotate_Z(0.6f)
-              * Matrix_Rotate_X(0.2f)
-              * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        glUniform1i(g_texture_id_uniform, RED_BRICK);
-        //DrawVirtualObject("the_sphere");
-
-        // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f,0.0f,0.0f)
-              * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        glUniform1i(g_texture_id_uniform, RED_BRICK);
-        DrawVirtualObject("the_bunny");
-
-        // Desenhamos o plano do chão
-        /*model = Matrix_Translate(0.0f,-1.1f,0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, PLANE);
-        glUniform1i(g_texture_id_uniform, ROCKY_TERRAIN);
-        DrawVirtualObject("the_plane");*/
+        bunny.rotation = glm::vec3(g_AngleX + (float)glfwGetTime() * 0.1f, 0.0f, 0.0f);
+        bunny.Draw();
         ground.Draw();
-        
-        model = Matrix_Translate(-1.3f, 0.0f, 0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, CUBE);
-        glUniform1i(g_texture_id_uniform, COBBLESTONE);
-        DrawVirtualObject("the_cube");
-
-        model = Matrix_Translate(-1.3f, 1.0f, 0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, PLANE);
-        glUniform1i(g_texture_id_uniform, GRASS_BLOCK);
-        DrawVirtualObject("the_cube");
-        
-
-        // Desenho do personagem animado
-        /*model = Matrix_Translate(0.0f, 0.0f, 0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, CHARACTER);
-        glUniform1i(g_texture_id_uniform, CHARACTER_TEXTURE);*/
+        cobblestone.Draw();
+        grass.Draw();
 
         
         float current_time = (float)glfwGetTime();

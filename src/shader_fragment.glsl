@@ -163,7 +163,7 @@ void main()
     else if ( object_id == CUBE )
     {
         U = texcoords.x;
-        V = 1.0 - texcoords.y;
+        V = texcoords.y;
 
 		Kd0 = get_texture_color(texture_id, vec2(U,V)); 
     }
