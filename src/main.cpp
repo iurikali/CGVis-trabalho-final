@@ -55,7 +55,7 @@
 
 #include "obj_model.hpp"
 #include "textrendering.hpp"
-
+#include "game_object.hpp"
 
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
@@ -105,48 +105,20 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name);
 //     glm::vec3    bbox_max;
 // };
 
-//Estrutura do gltf para animações, Gemini que montou
-// Definimos o limite máximo de ossos que um vértice pode estar ligado (padrão da indústria é 4)
-#define MAX_BONE_INFLUENCE 4
-
-// Nova estrutura de vértice que a GPU vai receber
-struct AnimatedVertex {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texcoords;
-    glm::ivec4 boneIDs;  // Vetor de inteiros (IDs dos ossos)
-    glm::vec4 weights;   // Vetor de floats (Pesos)
-};
-
-// Estrutura atualizada para guardar os dados do objeto animado
-struct AnimatedSceneObject {
-    std::string name;
-    size_t first_index;
-    size_t num_indices;
-    GLenum rendering_mode;
-    GLuint vertex_array_object_id;
-    glm::vec3 bbox_min;
-    glm::vec3 bbox_max;
-    
-    // Matrizes que levam o vértice do espaço do modelo para o espaço do osso
-    std::vector<glm::mat4> inverseBindMatrices; 
-    GLuint diffuse_texture_id = 0;
-
-    tinygltf::Model gltf_data;
-    int current_animation_index = 0;
-};
 
 // Dicionário para guardar nossos objetos animados (separado do g_VirtualScene estático)
 std::map<std::string, AnimatedSceneObject> g_AnimatedScene;
 
 
 // Array global que será enviado para o Shader a cada frame
+/*
 const int MAX_BONES = 100;
 glm::mat4 g_FinalBoneMatrices[MAX_BONES];
 
 int GetJointIndex(int nodeIndex, AnimatedSceneObject& obj);
 glm::mat4 GetNodeTransform(int nodeIndex, float currentTime, AnimatedSceneObject& obj);
 void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj, float currentTime);
+*/
 
 // Abaixo definimos variáveis globais utilizadas em várias funções do código.
 
@@ -204,6 +176,7 @@ GLint g_object_id_uniform;
 GLint g_texture_id_uniform;
 GLint g_bbox_min_uniform;
 GLint g_bbox_max_uniform;
+GLint g_bones_uniform;
 
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
@@ -289,13 +262,18 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); 
     LoadTextureImage("../../data/cobblestone.jpg"); 
     LoadTextureImage("../../data/grass_block.jpg"); // é sobrescrito pelo character
-    LoadTextureImage("../../data/grass_block.jpg"); 
+
     #define RED_BRICK 0
     #define ROCKY_TERRAIN 1
     #define COBBLESTONE 2
     #define GRASS_BLOCK 3
     #define CHARACTER_TEXTURE 4 // por enquanto está hardcoded como o terceiro
-    
+ 
+    #define SPHERE 0
+    #define BUNNY  1
+    #define PLANE  2
+    #define CHARACTER 3
+    #define CUBE 4
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../data/sphere.obj");
@@ -322,11 +300,7 @@ int main(int argc, char* argv[])
 
     LoadAnimatedGLTFModel("../../data/personagem.glb", "the_character");
 
-    for(int i = 0; i < MAX_BONES; i++) {
-        g_FinalBoneMatrices[i] = Matrix_Identity();
-    }
-
-    GLint g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
+    g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
 
     // Inicializamos o código para renderização de texto.
     TextRendering_Init();
@@ -339,6 +313,16 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    // INSTANCIAÇÃO (Orientação a Objetos)
+    StaticObject ground("the_plane", PLANE, ROCKY_TERRAIN);
+    ground.position = glm::vec3(0.0f, -1.1f, 0.0f);
+
+    AnimatedObject player("the_character", CHARACTER, CHARACTER_TEXTURE);
+    player.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    player.SetAnimation(0);
+
+
+    float last_time = (float)glfwGetTime();
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -403,14 +387,8 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        // Instanciação de objetos
 
-        #define SPHERE 0
-        #define BUNNY  1
-        #define PLANE  2
-        #define CHARACTER 3
-        #define CUBE 4
-              
+        // Instanciação de objetos
 
 
         // Desenhamos o modelo da esfera
@@ -432,11 +410,12 @@ int main(int argc, char* argv[])
         DrawVirtualObject("the_bunny");
 
         // Desenhamos o plano do chão
-        model = Matrix_Translate(0.0f,-1.1f,0.0f);
+        /*model = Matrix_Translate(0.0f,-1.1f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         glUniform1i(g_texture_id_uniform, ROCKY_TERRAIN);
-        DrawVirtualObject("the_plane");
+        DrawVirtualObject("the_plane");*/
+        ground.Draw();
         
         model = Matrix_Translate(-1.3f, 0.0f, 0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
@@ -452,45 +431,20 @@ int main(int argc, char* argv[])
         
 
         // Desenho do personagem animado
-        model = Matrix_Translate(0.0f, 0.0f, 0.0f);
+        /*model = Matrix_Translate(0.0f, 0.0f, 0.0f);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, CHARACTER);
-        glUniform1i(g_texture_id_uniform, CHARACTER_TEXTURE);
+        glUniform1i(g_texture_id_uniform, CHARACTER_TEXTURE);*/
 
-        AnimatedSceneObject& character = g_AnimatedScene["the_character"];
-        float tempoAtual = (float)glfwGetTime();
+        
+        float current_time = (float)glfwGetTime();
+        float dt = current_time - last_time;
+        last_time = current_time;
 
-        // Pegamos o tempo contínuo do jogo
-        float tempoAtualAnimacao = (float)glfwGetTime();
+        // Personagem animado
+        player.Update(dt); // Atualiza os ossos
+        player.Draw();     // Renderiza
 
-        if (!character.gltf_data.scenes.empty()) {
-            int sceneIndex = character.gltf_data.defaultScene > -1 ? character.gltf_data.defaultScene : 0;
-            for (int rootNode : character.gltf_data.scenes[sceneIndex].nodes) {
-                ProcessSkeletonNode(rootNode, Matrix_Identity(), character, tempoAtual);
-            }
-        }
-
-        // Enviamos o array de 100 matrizes dos ossos para o Shader
-        glUniformMatrix4fv(g_bones_uniform, MAX_BONES, GL_FALSE, glm::value_ptr(g_FinalBoneMatrices[0]));
-
-        // 4. Ativa a textura do monstro
-        GLint has_texture_uniform = glGetUniformLocation(g_GpuProgramID, "has_texture");
-        if (character.diffuse_texture_id != 0) 
-        {
-            // Ativa exatamente a Gaveta 4 (definida em CHARACTER_TEXTURE)
-            glActiveTexture(GL_TEXTURE0 + CHARACTER_TEXTURE); 
-            glBindTexture(GL_TEXTURE_2D, character.diffuse_texture_id);
-            glUniform1i(has_texture_uniform, 1); 
-        } 
-        else 
-        {
-            glUniform1i(has_texture_uniform, 0); 
-        }
-
-        // 5. Desenha o monstro
-        glBindVertexArray(character.vertex_array_object_id);
-        glDrawElements(character.rendering_mode, character.num_indices, GL_UNSIGNED_INT, (void*)0);
-        glBindVertexArray(0);
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
@@ -1460,82 +1414,5 @@ obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
     g_AnimatedScene[object_name] = obj;
     printf("Modelo GLTF '%s' carregado com sucesso! (Vértices: %lu, Índices: %lu)\n", 
            object_name, global_vertices.size(), global_indices.size());
-}
-
-//Gemini
-int GetJointIndex(int nodeIndex, AnimatedSceneObject& obj) {
-    if (obj.gltf_data.skins.empty()) return -1;
-    const auto& joints = obj.gltf_data.skins[0].joints;
-    for (size_t i = 0; i < joints.size(); ++i) {
-        if (joints[i] == nodeIndex) return i;
-    }
-    return -1;
-}
-
-glm::mat4 GetNodeTransform(int nodeIndex, float currentTime, AnimatedSceneObject& obj) {
-    tinygltf::Node& node = obj.gltf_data.nodes[nodeIndex];
-    glm::vec3 T(0.0f); if(node.translation.size() == 3) T = glm::vec3(node.translation[0], node.translation[1], node.translation[2]);
-    glm::quat R = glm::quat(1.0f, 0.0f, 0.0f, 0.0f); if(node.rotation.size() == 4) R = glm::quat(node.rotation[3], node.rotation[0], node.rotation[1], node.rotation[2]);
-    glm::vec3 S(1.0f); if(node.scale.size() == 3) S = glm::vec3(node.scale[0], node.scale[1], node.scale[2]);
-    
-    if (obj.gltf_data.animations.empty()) {
-        if(node.matrix.size() == 16) return glm::make_mat4(node.matrix.data());
-        return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
-    }
-
-    if (obj.current_animation_index >= obj.gltf_data.animations.size()) obj.current_animation_index = 0;
-    const tinygltf::Animation& anim = obj.gltf_data.animations[obj.current_animation_index]; 
-    bool isNodeAnimated = false;
-
-    for (const auto& channel : anim.channels) {
-        if (channel.target_node != nodeIndex) continue;
-        const tinygltf::AnimationSampler& sampler = anim.samplers[channel.sampler];
-        const tinygltf::Accessor& inputAcc = obj.gltf_data.accessors[sampler.input];
-        const tinygltf::Accessor& outputAcc = obj.gltf_data.accessors[sampler.output];
-
-        const tinygltf::BufferView& inputView = obj.gltf_data.bufferViews[inputAcc.bufferView];
-        const float* times = reinterpret_cast<const float*>(&obj.gltf_data.buffers[inputView.buffer].data[inputView.byteOffset + inputAcc.byteOffset]);
-
-        float maxTime = times[inputAcc.count - 1];
-        float animTime = fmod(currentTime, maxTime);
-
-        int p0 = 0, p1 = 0;
-        for (size_t i = 0; i < inputAcc.count - 1; ++i) {
-            if (animTime < times[i + 1]) { p0 = i; p1 = i + 1; break; }
-        }
-        
-        float factor = (animTime - times[p0]) / (times[p1] - times[p0]);
-        const tinygltf::BufferView& outputView = obj.gltf_data.bufferViews[outputAcc.bufferView];
-        const float* values = reinterpret_cast<const float*>(&obj.gltf_data.buffers[outputView.buffer].data[outputView.byteOffset + outputAcc.byteOffset]);
-
-        isNodeAnimated = true;
-        if (channel.target_path == "translation") {
-            T = glm::mix(glm::vec3(values[p0*3], values[p0*3+1], values[p0*3+2]), glm::vec3(values[p1*3], values[p1*3+1], values[p1*3+2]), factor);
-        } else if (channel.target_path == "rotation") {
-            glm::quat start(values[p0*4+3], values[p0*4], values[p0*4+1], values[p0*4+2]);
-            glm::quat end(values[p1*4+3], values[p1*4], values[p1*4+1], values[p1*4+2]);
-            R = glm::normalize(glm::slerp(start, end, factor));
-        } else if (channel.target_path == "scale") {
-            S = glm::mix(glm::vec3(values[p0*3], values[p0*3+1], values[p0*3+2]), glm::vec3(values[p1*3], values[p1*3+1], values[p1*3+2]), factor);
-        }
-    }
-
-    if (!isNodeAnimated && node.matrix.size() == 16) return glm::make_mat4(node.matrix.data());
-    return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
-}
-
-void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj, float currentTime) {
-    tinygltf::Node& node = obj.gltf_data.nodes[nodeIndex];
-    glm::mat4 localTransform = GetNodeTransform(nodeIndex, currentTime, obj);
-    glm::mat4 globalTransform = parentTransform * localTransform;
-
-    int jointIndex = GetJointIndex(nodeIndex, obj);
-    if (jointIndex != -1 && jointIndex < MAX_BONES && (size_t)jointIndex < obj.inverseBindMatrices.size()) {
-        g_FinalBoneMatrices[jointIndex] = globalTransform * obj.inverseBindMatrices[jointIndex];
-    }
-
-    for (int childIndex : node.children) {
-        ProcessSkeletonNode(childIndex, globalTransform, obj, currentTime);
-    }
 }
 

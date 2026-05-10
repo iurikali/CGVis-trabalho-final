@@ -13,6 +13,7 @@ set(SOURCES
   src/stb_image.cpp
   src/glad.c
   src/tiny_gltf_loader.cpp
+  src/game_object.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
