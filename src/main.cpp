@@ -182,25 +182,26 @@ GLint g_bones_uniform;
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
 
+// Número de texturas existentes ! atualizar no shader_fragment também
+#define NUM_TEXTURAS 5
+
+#define RED_BRICK 0
+#define ROCKY_TERRAIN 1
+#define COBBLESTONE 2
+#define GRASS_BLOCK 3
+#define CHARACTER_TEXTURE 4
+
+#define SPHERE 0
+#define BUNNY  1
+#define PLANE  2
+#define CHARACTER 3
+#define CUBE 4
+
+Player player("the_character", CHARACTER, CHARACTER_TEXTURE, 2.0f);
 
 //Funcao que carrega as texturas e modelos de todos os objetos do jogo
 void AssetsLoader(int argc, char* argv[])
 {
-    // Número de texturas existentes ! atualizar no shader_fragment também
-    #define NUM_TEXTURAS 5
-
-    #define RED_BRICK 0
-    #define ROCKY_TERRAIN 1
-    #define COBBLESTONE 2
-    #define GRASS_BLOCK 3
-    #define CHARACTER_TEXTURE 4
-
-    #define SPHERE 0
-    #define BUNNY  1
-    #define PLANE  2
-    #define CHARACTER 3
-    #define CUBE 4
-
 
     // Carregamos duas imagens para serem utilizadas como textura
     LoadTextureImage("../../data/red_brick_diff_1k.jpg");      
@@ -347,7 +348,8 @@ int main(int argc, char* argv[])
     /*AnimatedObject player("the_character", CHARACTER, CHARACTER_TEXTURE);
     player.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.SetAnimation(0);*/
-    Player player("the_character", CHARACTER, CHARACTER_TEXTURE);
+    
+    
     player.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.SetAnimation(0);
 
@@ -1017,6 +1019,44 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         LoadShadersFromFiles();
         fprintf(stdout,"Shaders recarregados!\n");
         fflush(stdout);
+    }
+
+    //Teclas de movimentacao do player
+    if ((key == GLFW_KEY_W || key == GLFW_KEY_UP) && action == GLFW_PRESS)
+    {
+        player.set_w_pressed(true);
+    }
+
+    if ((key == GLFW_KEY_W || key == GLFW_KEY_UP) && action == GLFW_RELEASE)
+    {
+        player.set_w_pressed(false);
+    }
+
+    if ((key == GLFW_KEY_S || key == GLFW_KEY_DOWN) && action == GLFW_PRESS)
+    {
+        player.set_s_pressed(true);
+    }
+    if ((key == GLFW_KEY_S || key == GLFW_KEY_DOWN) && action == GLFW_RELEASE)
+    {
+        player.set_s_pressed(false);
+    }
+
+    if ((key == GLFW_KEY_A || key == GLFW_KEY_LEFT) && action == GLFW_PRESS)
+    {
+        player.set_a_pressed(true);
+    }
+    if ((key == GLFW_KEY_A || key == GLFW_KEY_LEFT) && action == GLFW_RELEASE)
+    {
+        player.set_a_pressed(false);
+    }
+
+    if ((key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) && action == GLFW_PRESS)
+    {
+        player.set_d_pressed(true);
+    }
+    if ((key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) && action == GLFW_RELEASE)
+    {
+        player.set_d_pressed(false);
     }
 }
 
