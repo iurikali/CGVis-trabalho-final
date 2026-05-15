@@ -21,8 +21,8 @@ void Player::Update(float delta_time)
     vel_x = (float) (is_d_pressed - is_a_pressed) * speed;
     vel_z = (float) (is_s_pressed - is_w_pressed) * speed;
 
-    std::cout << "vel_x: " << vel_x << std::endl;
-    std::cout << "vel_z: " << vel_z << std::endl;
+    // std::cout << "vel_x: " << vel_x << std::endl;
+    // std::cout << "vel_z: " << vel_z << std::endl;
 
     if (vel_z > 0) rotation.y = 0.0f;
     if (vel_z < 0) rotation.y = M_PI;

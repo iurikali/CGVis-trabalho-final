@@ -197,7 +197,7 @@ GLuint g_NumLoadedTextures = 0;
 #define CHARACTER 3
 #define CUBE 4
 
-Player player("the_character", CHARACTER, CHARACTER_TEXTURE, 2.0f);
+auto player = std::make_shared<Player>("the_character", CHARACTER, CHARACTER_TEXTURE, 2.0f);
 
 //Funcao que carrega as texturas e modelos de todos os objetos do jogo
 void AssetsLoader(int argc, char* argv[])
@@ -241,10 +241,7 @@ void AssetsLoader(int argc, char* argv[])
     g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
 }
 
-
-
-int main(int argc, char* argv[])
-{
+GLFWwindow* InitializeWindow(){
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
     // sistema operacional, onde poderemos renderizar com OpenGL.
     int success = glfwInit();
@@ -310,22 +307,23 @@ int main(int argc, char* argv[])
     const GLubyte *glslversion = glGetString(GL_SHADING_LANGUAGE_VERSION);
     
     printf("GPU: %s, %s, OpenGL %s, GLSL %s\n", vendor, renderer, glversion, glslversion);
+    return window;
+}
+
+int main(int argc, char* argv[])
+{
+    GLFWwindow* window = InitializeWindow();
     
     // Carregamos os shaders de vértices e de fragmentos que serão utilizados
     // para renderização. Veja slides 180-200 do documento Aula_03_Rendering_Pipeline_Grafico.pdf.
     //
     LoadShadersFromFiles();
-    
 
     AssetsLoader(argc, argv);
-
-
     // Inicializamos o código para renderização de texto.
     TextRendering_Init();
-
     // Habilitamos o Z-buffer. Veja slides 104-116 do documento Aula_09_Projecoes.pdf.
     glEnable(GL_DEPTH_TEST);
-
     // Habilitamos o Backface Culling. Veja slides 8-13 do documento Aula_02_Fundamentos_Matematicos.pdf, slides 23-34 do documento Aula_13_Clipping_and_Culling.pdf e slides 112-123 do documento Aula_14_Laboratorio_3_Revisao.pdf.
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -333,25 +331,28 @@ int main(int argc, char* argv[])
 
 
     // INSTANCIAÇÃO (Orientação a Objetos)
-    StaticObject ground("the_plane", PLANE, ROCKY_TERRAIN);
-    ground.position = glm::vec3(0.0f, -1.1f, 0.0f);
+    // Vetor com referência a todos objetos a serem desenhados
+    std::vector<std::shared_ptr<GameObject>> gameObjects; 
 
-    StaticObject bunny("the_bunny", BUNNY, RED_BRICK);
-    bunny.position = glm::vec3(1.0f,0.0f,0.0f);
-
-    StaticObject cobblestone("the_cube", CUBE, COBBLESTONE);
-    cobblestone.position = glm::vec3(-1.3f, 0.0f, 0.0f);
-
-    StaticObject grass("the_cube", CUBE, GRASS_BLOCK);
-    grass.position = glm::vec3(-1.3f, 1.0f, 0.0f);
-
-    /*AnimatedObject player("the_character", CHARACTER, CHARACTER_TEXTURE);
-    player.position = glm::vec3(0.0f, 0.0f, 0.0f);
-    player.SetAnimation(0);*/
+    // Instanciação+inserção no vetor e alteração de algum atributo
+    gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN));
+    gameObjects.back()->position = glm::vec3(0.0f, -1.1f, 0.0f);
     
+    // Instanciação + inserção, com referência ao objeto fora do vetor
+    auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK);
+    gameObjects.push_back(bunny);
+    bunny->position = glm::vec3(1.0f,0.0f,0.0f);
     
-    player.position = glm::vec3(0.0f, 0.0f, 0.0f);
-    player.SetAnimation(0);
+    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE));
+    gameObjects.back()->position = glm::vec3(-1.3f, 0.0f, 0.0f);
+    
+    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK));
+    gameObjects.back()->position = glm::vec3(-1.3f, 1.0f, 0.0f);
+    
+
+    gameObjects.push_back(player);
+    player->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    player->SetAnimation(0);
 
 
     float last_time = (float)glfwGetTime();
@@ -419,22 +420,26 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
+        
 
-        // Instanciação de objetos
-        bunny.rotation = glm::vec3(g_AngleX + (float)glfwGetTime() * 0.1f, 0.0f, 0.0f);
-        bunny.Draw();
-        ground.Draw();
-        cobblestone.Draw();
-        grass.Draw();
-
+        // Atualização de objetos
+        bunny->rotation = glm::vec3(g_AngleX + (float)glfwGetTime() * 0.1f, 0.0f, 0.0f);
         
         float current_time = (float)glfwGetTime();
         float dt = current_time - last_time;
         last_time = current_time;
 
         // Personagem animado
-        player.Update(dt); // Atualiza os ossos
-        player.Draw();     // Renderiza
+        player->Update(dt); // Atualiza os ossos
+        
+
+        // Desenho dos objetos
+        for (auto& gameObject : gameObjects){
+            gameObject->Draw();
+        }
+        
+
+        
 
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
@@ -1024,39 +1029,39 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     //Teclas de movimentacao do player
     if ((key == GLFW_KEY_W || key == GLFW_KEY_UP) && action == GLFW_PRESS)
     {
-        player.set_w_pressed(true);
+        player->set_w_pressed(true);
     }
 
     if ((key == GLFW_KEY_W || key == GLFW_KEY_UP) && action == GLFW_RELEASE)
     {
-        player.set_w_pressed(false);
+        player->set_w_pressed(false);
     }
 
     if ((key == GLFW_KEY_S || key == GLFW_KEY_DOWN) && action == GLFW_PRESS)
     {
-        player.set_s_pressed(true);
+        player->set_s_pressed(true);
     }
     if ((key == GLFW_KEY_S || key == GLFW_KEY_DOWN) && action == GLFW_RELEASE)
     {
-        player.set_s_pressed(false);
+        player->set_s_pressed(false);
     }
 
     if ((key == GLFW_KEY_A || key == GLFW_KEY_LEFT) && action == GLFW_PRESS)
     {
-        player.set_a_pressed(true);
+        player->set_a_pressed(true);
     }
     if ((key == GLFW_KEY_A || key == GLFW_KEY_LEFT) && action == GLFW_RELEASE)
     {
-        player.set_a_pressed(false);
+        player->set_a_pressed(false);
     }
 
     if ((key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) && action == GLFW_PRESS)
     {
-        player.set_d_pressed(true);
+        player->set_d_pressed(true);
     }
     if ((key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) && action == GLFW_RELEASE)
     {
-        player.set_d_pressed(false);
+        player->set_d_pressed(false);
     }
 }
 
