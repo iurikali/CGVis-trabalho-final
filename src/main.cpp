@@ -306,6 +306,19 @@ GLFWwindow* InitializeWindow(){
     return window;
 }
 
+struct AABB{
+    glm::vec3    bbox_min; // Axis-Aligned Bounding Box do objeto
+    glm::vec3    bbox_max;
+};
+
+bool check_collision(AABB& a, AABB& b){
+    return
+    a.bbox_min.x < b.bbox_max.x && a.bbox_max.x > b.bbox_min.x &&
+    a.bbox_min.y < b.bbox_max.y && a.bbox_max.y > b.bbox_min.y &&
+    a.bbox_min.z < b.bbox_max.z && a.bbox_max.z > b.bbox_min.z;
+}
+
+
 int main(int argc, char* argv[])
 {
     GLFWwindow* window = InitializeWindow();
@@ -335,22 +348,70 @@ int main(int argc, char* argv[])
     gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN));
     gameObjects.back()->position = glm::vec3(0.0f, 0.0f, 0.0f);
     gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
+    glm::vec3 bbox_min = g_VirtualScene["the_plane"].bbox_min;
+    glm::vec3 bbox_max = g_VirtualScene["the_plane"].bbox_max;
+    bbox_min *= 5;
+    bbox_max *= 5;
+    bbox_min += gameObjects.back()->position;
+    bbox_max += gameObjects.back()->position;
+    AABB groundaabb = {bbox_min, bbox_max};
+
     
     // Instanciação + inserção, com referência ao objeto fora do vetor
     auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK);
     gameObjects.push_back(bunny);
     bunny->position = glm::vec3(1.0f,0.0f,0.0f);
     
+    bbox_min = g_VirtualScene["the_bunny"].bbox_min;
+    bbox_max = g_VirtualScene["the_bunny"].bbox_max;
+    bbox_min += gameObjects.back()->position;
+    bbox_max += gameObjects.back()->position;
+    AABB bunnyaabb = {bbox_min, bbox_max};
+
     gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE));
     gameObjects.back()->position = glm::vec3(-1.3f, 0.0f, 0.0f);
-    
+    bbox_min = g_VirtualScene["the_cube"].bbox_min;
+    bbox_max = g_VirtualScene["the_cube"].bbox_max;
+    bbox_min += gameObjects.back()->position;
+    bbox_max += gameObjects.back()->position;
+    AABB cube1aabb = {bbox_min, bbox_max};
+
     gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK));
     gameObjects.back()->position = glm::vec3(-1.3f, 1.0f, 0.0f);
+    bbox_min = g_VirtualScene["the_cube"].bbox_min;
+    bbox_max = g_VirtualScene["the_cube"].bbox_max;
+    bbox_min += gameObjects.back()->position;
+    bbox_max += gameObjects.back()->position;
+    AABB cube2aabb = {bbox_min, bbox_max};
     
 
     gameObjects.push_back(player);
     player->position = glm::vec3(0.0f, 0.0f, 0.0f);
     player->SetAnimation(0);
+    bbox_min = g_AnimatedScene["the_character"].bbox_min;
+    bbox_max = g_AnimatedScene["the_character"].bbox_max;
+    bbox_min += player->position;
+    bbox_max += player->position;
+    AABB playeraabb = {bbox_min, bbox_max};
+
+    for (auto& aabb : {groundaabb, bunnyaabb, cube1aabb, cube2aabb}){
+        gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK));
+        gameObjects.back()->scale = glm::vec3(0.2, 0.2f, 0.2f);
+        gameObjects.back()->position = aabb.bbox_min;
+        gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK));
+        gameObjects.back()->scale = glm::vec3(0.2, 0.2f, 0.2f);
+        gameObjects.back()->position = aabb.bbox_max;
+
+    }
+
+    auto playercube1 = std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK);
+    gameObjects.push_back(playercube1);
+    gameObjects.back()->scale = glm::vec3(0.2, 0.2f, 0.2f);
+    gameObjects.back()->position = playeraabb.bbox_min;
+    auto playercube2 = std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK);
+    gameObjects.push_back(playercube2);
+    gameObjects.back()->scale = glm::vec3(0.2, 0.2f, 0.2f);
+    gameObjects.back()->position = playeraabb.bbox_max;
 
 
     float last_time = (float)glfwGetTime();
@@ -424,6 +485,14 @@ int main(int argc, char* argv[])
         // Personagem animado
         player->Update(dt); // Atualiza os ossos
 
+        bbox_min = g_AnimatedScene["the_character"].bbox_min;
+        bbox_max = g_AnimatedScene["the_character"].bbox_max;
+        bbox_min += player->position;
+        bbox_max += player->position;
+        playeraabb = {bbox_min, bbox_max};
+        playercube1->position = playeraabb.bbox_min;
+        playercube2->position = playeraabb.bbox_max; 
+
         camera.set_look_at(player->position + glm::vec3(0.0f, 1.0f, 0.0f));
         
 
@@ -432,6 +501,10 @@ int main(int argc, char* argv[])
             gameObject->Draw();
         }
         
+        if (check_collision(playeraabb, groundaabb)) std::cout <<  "Colisão groundaabb" << std::endl;
+        if (check_collision(playeraabb, bunnyaabb)) std::cout <<  "Colisão bunnyaabb" << std::endl;
+        if (check_collision(playeraabb, cube1aabb)) std::cout <<  "Colisão cube1aabb" << std::endl;
+        if (check_collision(playeraabb, cube2aabb)) std::cout <<  "Colisão cube2aabb" << std::endl;
 
         
 

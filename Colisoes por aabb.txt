@@ -1,0 +1,13 @@
+SceneObject tem bbox_min e max, 
+que são definidos pro modelo quando chama BuildTrianglesAndAddToVirtualScene()
+
+Jeito feio: na main, comparar a aabb de todo objeto com o do player
+A aabb dali é do modelo, não do objeto. Dá pra aplicar as transformações de translação e escala do objeto a eles.
+Um problema é que alguns modelos são fixados em (0,0,0) e outros no seu centro, então não é uma solução geral.
+
+Seria bom poder visualizar as aabbs. Um jeito simples seria criar uns objetos nos cantos, só pra poder ver
+
+Eventualmente: ter vetores ordenados das aabbs ou fazer aquela árvore bvh
+
+
+Ok, o POC funcionou.
