@@ -7,7 +7,8 @@ const double M_PI = std::acos(-1.0); // Ou 2 * acos(0.0)
 Camera::Camera(): 
     theta(0.0f),
     phi(0.0f),
-    distance(3.5f)
+    distance(3.5f),
+    look_at(0.0f, 0.0f, 0.0f)
 {
     update_position();
 }
@@ -56,8 +57,7 @@ void Camera::update_position()
 
     // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
     // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-    position  = glm::vec3(x, y, z); // Ponto "c", centro da câmera
-    glm::vec3 look_at = glm::vec3(0.0f, 0.0f, 0.0f);
+    position  = glm::vec3(x, y, z) + look_at; // Ponto "c", centro da câmera
     view = look_at - position; // Vetor "view", sentido para onde a câmera está virada
     up = glm::vec3(0.0f, 1.0f, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 }
@@ -65,4 +65,10 @@ void Camera::update_position()
 float Camera::get_distance()
 {
     return distance;
+}
+
+void Camera::set_look_at(glm::vec3 look_at)
+{
+    this->look_at = look_at;
+    update_position();
 }

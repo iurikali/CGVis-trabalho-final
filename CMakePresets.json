@@ -3,7 +3,13 @@
   "configurePresets": [
     {
       "name": "default-config",
-      "binaryDir": "${sourceDir}/build"
+      "binaryDir": "${sourceDir}/build",
+      "generator": "MinGW Makefiles",
+      "cacheVariables": {
+        "CMAKE_MAKE_PROGRAM": "C:/MinGW/bin/make.exe",
+        "CMAKE_C_COMPILER": "C:/Program Files/msys64/mingw64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/Program Files/msys64/mingw64/bin/g++.exe"
+      }
     }
   ],
   "buildPresets": [

@@ -9,8 +9,10 @@ private:
     bool is_s_pressed;
     bool is_a_pressed;
     bool is_d_pressed;
+    bool is_space_pressed;
 
     float vel_x;
+    float vel_y;
     float vel_z;
     float speed;
 public:
@@ -22,4 +24,5 @@ public:
     void set_s_pressed(bool b);
     void set_a_pressed(bool b);
     void set_d_pressed(bool b);
+    void set_space_pressed(bool b);
 };

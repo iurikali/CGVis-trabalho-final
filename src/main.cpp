@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <memory>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -324,14 +325,16 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-
+    
     // INSTANCIAÇÃO (Orientação a Objetos)
+    camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
     // Vetor com referência a todos objetos a serem desenhados
     std::vector<std::shared_ptr<GameObject>> gameObjects; 
 
     // Instanciação+inserção no vetor e alteração de algum atributo
     gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN));
-    gameObjects.back()->position = glm::vec3(0.0f, -1.1f, 0.0f);
+    gameObjects.back()->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
     // Instanciação + inserção, com referência ao objeto fora do vetor
     auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK);
@@ -378,7 +381,7 @@ int main(int argc, char* argv[])
         // Note que, no sistema de coordenadas da câmera, os planos near e far
         // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
         float nearplane = -0.1f;  // Posição do "near plane"
-        float farplane  = -10.0f; // Posição do "far plane"
+        float farplane  = -100.0f; // Posição do "far plane"
 
         if (g_UsePerspectiveProjection)
         {
@@ -420,6 +423,8 @@ int main(int argc, char* argv[])
 
         // Personagem animado
         player->Update(dt); // Atualiza os ossos
+
+        camera.set_look_at(player->position + glm::vec3(0.0f, 1.0f, 0.0f));
         
 
         // Desenho dos objetos
@@ -1030,6 +1035,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if ((key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) && action == GLFW_RELEASE)
     {
         player->set_d_pressed(false);
+    }
+    
+    if ((key == GLFW_KEY_SPACE) && action == GLFW_PRESS)
+    {
+        player->set_space_pressed(true);
+    }
+    if ((key == GLFW_KEY_SPACE) && action == GLFW_RELEASE)
+    {
+        player->set_space_pressed(false);
     }
 }
 

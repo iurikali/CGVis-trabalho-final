@@ -13,6 +13,7 @@ public:
     glm::vec3 position;
     glm::vec3 view;
     glm::vec3 up;
+    glm::vec3 look_at;
     Camera();
 
     void Rotate(float dx, float dy);
@@ -22,5 +23,7 @@ public:
     void update_position();
 
     float get_distance();
+
+    void set_look_at(glm::vec3 look_at);
 
 };
