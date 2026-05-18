@@ -15,6 +15,9 @@ private:
     float vel_y;
     float vel_z;
     float speed;
+
+    float index_angle;
+    float angle_looking;
 public:
     Player(std::string name, int obj_id, int tex_id, float vel);
 

@@ -2,7 +2,7 @@
 #include "game_object.hpp"
 #include <iostream>
 #include <cmath>
-const double M_PI = std::acos(-1.0); // Ou 2 * acos(0.0)
+//const double M_PI = std::acos(-1.0); // Ou 2 * acos(0.0)
 
 Camera::Camera(): 
     theta(0.0f),

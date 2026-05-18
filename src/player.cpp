@@ -1,7 +1,28 @@
 #include "player.hpp"
 #include "game_object.hpp"
 #include <iostream>
+#include <cmath>
+
 #define M_PI 3.14159265358979323846
+
+float lerp (float a, float b, float t)
+{
+    return a + t * (b - a);
+}
+
+float lerp_angle(float from, float to, float weight) 
+{
+    // Diferença entre os dois ângulos
+    float difference = to - from;
+    
+    // Normaliza a diferença para o intervalo [-PI, PI]
+    while (difference < -M_PI) difference += 2.0f * M_PI;
+    while (difference >  M_PI) difference -= 2.0f * M_PI;
+    
+    // Faz o lerp padrão usando a diferença corrigida
+    return from + difference * weight;
+}
+
 
 Player::Player(std::string n, int o_id, int t_id, float speed): 
     AnimatedObject(n, o_id, t_id),
@@ -12,7 +33,10 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
     vel_x(0.0f),
     vel_y(0.0f),
     vel_z(0.0f),
-    speed(speed)
+    speed(speed),
+    index_angle(0.0f),
+    angle_looking(0.0f)
+
 {
     std::cout << "PLAYER CRIADO" << std::endl;
 }
@@ -26,11 +50,15 @@ void Player::Update(float delta_time)
 
     if (vel_y > speed) vel_y = speed;
 
-    if (vel_z > 0) rotation.y = 0.0f;
-    if (vel_z < 0) rotation.y = M_PI;
+    
+    //Calculando a rotação
+    if(vel_x != 0.0 || vel_z != 0.0)
+        angle_looking = std::atan2(vel_x, vel_z);
 
-    if (vel_x > 0) rotation.y = M_PI / 2;
-    if (vel_x < 0) rotation.y = -M_PI / 2;
+    
+    index_angle = lerp_angle(index_angle, angle_looking, 16.0 * delta_time);
+    rotation.y = index_angle;
+    
 
 
     position.x += vel_x * delta_time;
