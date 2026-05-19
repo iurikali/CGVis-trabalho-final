@@ -1054,6 +1054,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     {
         player->set_space_pressed(false);
     }*/
+
+    if ((key == GLFW_KEY_J || key == GLFW_KEY_LEFT_CONTROL) && action == GLFW_PRESS)
+    {
+        if (!player->get_spin())
+        {
+            player->set_spin(true);
+        }
+    }
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal

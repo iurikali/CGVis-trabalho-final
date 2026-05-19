@@ -28,6 +28,11 @@ private:
     int state;
     bool on_air;
     float jump_height;
+
+    bool spin;
+    float time_spin;
+    float time_spin_index;
+    float spin_speed;
 public:
     Player(std::string name, int obj_id, int tex_id, float vel);
 
@@ -45,4 +50,7 @@ public:
     bool get_on_air();
 
     float get_jump_height();
+
+    bool get_spin();
+    void set_spin(bool b);
 };

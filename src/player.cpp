@@ -39,7 +39,10 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
     angle_looking(0.0f),
     state(IDLE),
     on_air(false),
-    jump_height(7.5)
+    jump_height(7.5),
+    time_spin(0.2),
+    time_spin_index(0.0),
+    spin_speed(100.0)
 
 {
     std::cout << "PLAYER CRIADO" << std::endl;
@@ -54,10 +57,13 @@ void Player::Update(float delta_time)
 
     
     //Calculando a rotação
-    if(vel_x != 0.0 || vel_z != 0.0)
-        angle_looking = std::atan2(vel_x, vel_z);
-    index_angle = lerp_angle(index_angle, angle_looking, 16.0 * delta_time);
-    rotation.y = index_angle;
+    if (!spin)
+    {
+        if(vel_x != 0.0 || vel_z != 0.0)
+            angle_looking = std::atan2(vel_x, vel_z);
+        index_angle = lerp_angle(index_angle, angle_looking, 16.0 * delta_time);
+        rotation.y = index_angle;
+    }
     
 
     state_machine(delta_time);
@@ -128,7 +134,11 @@ void Player::state_machine(float delta_time)
         }
 
         //Saindo do estado
-        if (on_air)
+        if (spin)
+        {
+            state = ATTACKING;
+        }
+        else if (on_air)
         {
             state = AIR;
         }
@@ -146,7 +156,11 @@ void Player::state_machine(float delta_time)
         }
 
         //Saindo do estado
-        if (on_air)
+        if (spin)
+        {
+            state = ATTACKING;
+        }
+        else if (on_air)
         {
             state = AIR;
         }
@@ -167,7 +181,11 @@ void Player::state_machine(float delta_time)
         rotation.y = index_angle + M_PI / 4;
 
         //Saindo do estado
-        if (!on_air)
+        if (spin)
+        {
+            state = ATTACKING;
+        }
+        else if (!on_air)
         {
             if (vel_x == 0.0 && vel_z == 0.0)
             {
@@ -180,6 +198,48 @@ void Player::state_machine(float delta_time)
         }
 
         break;
+
+    case ATTACKING:
+    if (Player::current_animation != ATTACKING)
+    {
+        Player::SetAnimation(ATTACKING);
+        time_spin_index = time_spin;
+    }
+
+    //Corrigindo a rotacao da animacao
+    rotation.y += spin_speed * delta_time;
+
+    //Rodando o contador
+    if (time_spin_index > 0)
+    {
+        time_spin_index -= delta_time;
+        std::cout << time_spin_index << std::endl;
+    }
+    //Acabou o tempo, vamos sair do estado
+    else
+    {
+        time_spin_index = 0;
+        spin = false;
+
+        if (!on_air)
+        {
+            if (vel_x == 0.0 && vel_z == 0.0)
+            {
+                state = IDLE;
+            }
+            else
+            {
+                state = WALKING;
+            }
+        }
+        else
+        {
+            state = AIR;
+        }
+    }
+
+    //Saindo do estado
+
 
     default:
         break;
@@ -195,4 +255,14 @@ void Player::jump(float height)
 float Player::get_jump_height()
 {
     return jump_height;
+}
+
+bool Player::get_spin()
+{
+    return spin;
+}
+
+void Player::set_spin(bool b)
+{
+    spin = b;
 }
