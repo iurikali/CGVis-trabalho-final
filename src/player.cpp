@@ -72,7 +72,7 @@ void Player::Update(float delta_time)
         position.y = 0;
         vel_y = 0;
     }
-    
+
 
     AnimatedObject::Update(delta_time);
 }

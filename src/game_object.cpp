@@ -94,7 +94,7 @@ void AnimatedObject::Draw()
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, object_id);
     
-    // Avisa o shader qual número do array usar (Gaveta 4)
+    // Avisa o shader qual número do array usar (Gaveta/Texture Unit)
     glUniform1i(g_texture_id_uniform, texture_id);
     
     glUniformMatrix4fv(g_bones_uniform, 100, GL_FALSE, glm::value_ptr(final_bone_matrices[0]));
@@ -102,20 +102,33 @@ void AnimatedObject::Draw()
     AnimatedSceneObject& obj_data = g_AnimatedScene[name];
     
     GLint has_texture_uniform = glGetUniformLocation(g_GpuProgramID, "has_texture");
-    if (obj_data.diffuse_texture_id != 0) 
-    {
-        // BLINDAGEM: Forçamos a textura oficial do modelo a entrar na gaveta certa!
-        glActiveTexture(GL_TEXTURE0 + texture_id); 
-        glBindTexture(GL_TEXTURE_2D, obj_data.diffuse_texture_id);
-        
-        glUniform1i(has_texture_uniform, 1); 
-    } else 
-    {
-        glUniform1i(has_texture_uniform, 0); 
-    }
-
+    
     glBindVertexArray(obj_data.vertex_array_object_id);
-    glDrawElements(obj_data.rendering_mode, obj_data.num_indices, GL_UNSIGNED_INT, (void*)0);
+
+    // Agora iteramos sobre cada parte (primitiva) do modelo!
+    for (const auto& prim : obj_data.primitives) 
+    {
+        if (prim.texture_id != 0) 
+        {
+            glActiveTexture(GL_TEXTURE0 + texture_id); 
+            glBindTexture(GL_TEXTURE_2D, prim.texture_id);
+            glUniform1i(has_texture_uniform, 1); 
+        } 
+        else 
+        {
+            glUniform1i(has_texture_uniform, 0); 
+        }
+
+        // Desenha APENAS os índices relativos a esta primitiva específica.
+        // Multiplicamos o first_index por sizeof(GLuint) porque o OpenGL espera um deslocamento em bytes.
+        glDrawElements(
+            obj_data.rendering_mode, 
+            prim.num_indices, 
+            GL_UNSIGNED_INT, 
+            (void*)(prim.first_index * sizeof(GLuint))
+        );
+    }
+    
     glBindVertexArray(0);
 }
 
@@ -140,8 +153,8 @@ glm::mat4 AnimatedObject::GetNodeTransform(int nodeIndex, AnimatedSceneObject& o
         return Matrix_Translate(T.x, T.y, T.z) * glm::mat4_cast(R) * Matrix_Scale(S.x, S.y, S.z);
     }
 
-    if (obj.current_animation_index >= obj.gltf_data.animations.size()) obj.current_animation_index = 0;
-    const tinygltf::Animation& anim = obj.gltf_data.animations[obj.current_animation_index]; 
+    if (obj.current_animation_index >= obj.gltf_data.animations.size()) this->current_animation = 0;
+    const tinygltf::Animation& anim = obj.gltf_data.animations[this->current_animation]; 
     bool isNodeAnimated = false;
 
     for (const auto& channel : anim.channels) {

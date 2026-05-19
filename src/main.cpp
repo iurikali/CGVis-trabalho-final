@@ -232,7 +232,7 @@ void AssetsLoader(int argc, char* argv[])
 
 
     // --------------------------- .GLTF -------------------------------
-    LoadAnimatedGLTFModel("../../data/personagem.glb", "the_character");
+    LoadAnimatedGLTFModel("../../data/crash.glb", "the_character");
 
     g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
 }
@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
 
     gameObjects.push_back(player);
     player->position = glm::vec3(0.0f, 0.0f, 0.0f);
-    player->SetAnimation(0);
+    player->SetAnimation(1);
 
 
     float last_time = (float)glfwGetTime();
@@ -1193,7 +1193,6 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
     tinygltf::TinyGLTF loader;
     std::string err, warn;
 
-    // Tenta carregar como binário (.glb). Se falhar, tenta ASCII (.gltf)
     bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, filename);
     if (!ret) ret = loader.LoadASCIIFromFile(&model, &err, &warn, filename);
 
@@ -1210,23 +1209,25 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
     glm::vec3 bbox_min = glm::vec3(std::numeric_limits<float>::max());
     glm::vec3 bbox_max = glm::vec3(std::numeric_limits<float>::lowest());
 
-    // Loop por TODOS os meshes e TODAS as primitivas
+    AnimatedSceneObject obj; // Movemos a criação do objeto para cá cima
+    obj.name = object_name;
+
+    // Cache para não carregar a mesma textura duas vezes se duas primitivas usarem o mesmo material
+    std::map<int, GLuint> loaded_materials; 
+
     for (const auto& mesh : model.meshes) {
         for (const auto& primitive : mesh.primitives) {
             
-            // O offset é crucial! Garante que os índices das próximas primitivas 
-            // apontem para os vértices corretos que foram adicionados no final do array.
-            size_t vertexOffset = global_vertices.size();
+            GLTFPrimitive my_primitive;
+            my_primitive.first_index = global_indices.size(); // Salva de onde essa parte começa
 
-            // 1. Descobre o número de vértices desta primitiva
+            size_t vertexOffset = global_vertices.size();
             int posAccessorIndex = primitive.attributes.at("POSITION");
             size_t vertexCount = model.accessors[posAccessorIndex].count;
 
-            // Aloca espaço no vetor global
             size_t oldSize = global_vertices.size();
             global_vertices.resize(oldSize + vertexCount);
 
-            // Inicializa os novos vértices com segurança
             for (size_t i = oldSize; i < global_vertices.size(); ++i) {
                 global_vertices[i].position = glm::vec3(0.0f);
                 global_vertices[i].normal = glm::vec3(0.0f);
@@ -1235,23 +1236,18 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
                 global_vertices[i].weights = glm::vec4(0.0f);
             }
 
-            // Função Helper adaptada para o loop
             auto extractData = [&](const std::string& attributeName, const std::function<void(size_t, const unsigned char*, int)>& processItem) {
                 if (primitive.attributes.find(attributeName) == primitive.attributes.end()) return;
-                
                 const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at(attributeName)];
                 const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
                 const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-                
                 const unsigned char* dataPtr = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
                 int stride = bufferView.byteStride == 0 ? tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type) : bufferView.byteStride;
-
                 for (size_t i = 0; i < accessor.count; ++i) {
                     processItem(oldSize + i, dataPtr + (i * stride), accessor.componentType);
                 }
             };
 
-            // Lendo POSITION
             extractData("POSITION", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].position = glm::vec3(fPtr[0], fPtr[1], fPtr[2]);
@@ -1259,41 +1255,34 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
                 bbox_max = glm::max(bbox_max, global_vertices[globalIdx].position);
             });
 
-            // Lendo NORMAL
             extractData("NORMAL", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].normal = glm::vec3(fPtr[0], fPtr[1], fPtr[2]);
             });
 
-            // Lendo TEXCOORD_0
             extractData("TEXCOORD_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].texcoords = glm::vec2(fPtr[0], fPtr[1]);
             });
 
-            // Lendo JOINTS_0
             extractData("JOINTS_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 if (type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
                     const unsigned short* sPtr = reinterpret_cast<const unsigned short*>(ptr);
                     global_vertices[globalIdx].boneIDs = glm::ivec4(sPtr[0], sPtr[1], sPtr[2], sPtr[3]);
                 } else if (type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-                    const unsigned char* bPtr = ptr;
-                    global_vertices[globalIdx].boneIDs = glm::ivec4(bPtr[0], bPtr[1], bPtr[2], bPtr[3]);
+                    global_vertices[globalIdx].boneIDs = glm::ivec4(ptr[0], ptr[1], ptr[2], ptr[3]);
                 }
             });
 
-            // Lendo WEIGHTS_0
             extractData("WEIGHTS_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].weights = glm::vec4(fPtr[0], fPtr[1], fPtr[2], fPtr[3]);
             });
 
-            // Lendo INDICES (com o offset aplicado!)
             if (primitive.indices >= 0) {
                 const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
                 const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccessor.bufferView];
                 const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
-                
                 const void* indexDataPtr = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
                 
                 for (size_t i = 0; i < indexAccessor.count; ++i) {
@@ -1308,10 +1297,56 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
                     global_indices.push_back(indexVal + vertexOffset);
                 }
             }
+
+            my_primitive.num_indices = global_indices.size() - my_primitive.first_index; // Salva quantos índices tem
+            my_primitive.texture_id = 0;
+
+            // --- CARREGAMENTO DE TEXTURA ESPECÍFICO DESTA PRIMITIVA ---
+            int materialIndex = primitive.material;
+            if (materialIndex >= 0 && materialIndex < model.materials.size()) {
+                
+                // Se já carregamos a textura para esse material antes, reaproveitamos o ID do OpenGL
+                if (loaded_materials.find(materialIndex) != loaded_materials.end()) {
+                    my_primitive.texture_id = loaded_materials[materialIndex];
+                } 
+                else {
+                    const tinygltf::Material& material = model.materials[materialIndex];
+                    int baseColorTextureIndex = material.pbrMetallicRoughness.baseColorTexture.index;
+                    
+                    if (baseColorTextureIndex >= 0 && baseColorTextureIndex < model.textures.size()) {
+                        int imageIndex = model.textures[baseColorTextureIndex].source;
+                        
+                        if (imageIndex >= 0 && imageIndex < model.images.size()) {
+                            tinygltf::Image& image = model.images[imageIndex];
+
+                            glActiveTexture(GL_TEXTURE0 + g_NumLoadedTextures);
+                            GLuint tex_id;
+                            glGenTextures(1, &tex_id);
+                            glBindTexture(GL_TEXTURE_2D, tex_id);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                            GLenum format = (image.component == 3) ? GL_RGB : GL_RGBA;
+                            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+                            glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.image.data());
+                            glGenerateMipmap(GL_TEXTURE_2D);
+                            glBindTexture(GL_TEXTURE_2D, 0);
+
+                            my_primitive.texture_id = tex_id;
+                            loaded_materials[materialIndex] = tex_id; // Salva no cache
+                            printf("Textura extraída! Mat_ID: %d (%dx%d)\n", materialIndex, image.width, image.height);
+                        }
+                    }
+                }
+            }
+            // Adiciona a primitiva montada no vetor do nosso objeto
+            obj.primitives.push_back(my_primitive);
         }
     }
 
-    // Criação do VAO e VBOs na GPU
+    // Criação do VAO e VBOs na GPU (Mantido igual ao seu original)
     GLuint vertex_array_object_id;
     glGenVertexArrays(1, &vertex_array_object_id);
     glBindVertexArray(vertex_array_object_id);
@@ -1321,20 +1356,11 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, global_vertices.size() * sizeof(AnimatedVertex), global_vertices.data(), GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, position));
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, normal));
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, texcoords));
-
-    glEnableVertexAttribArray(3);
-    glVertexAttribIPointer(3, 4, GL_INT, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, boneIDs));
-
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, weights));
+    glEnableVertexAttribArray(0); glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, position));
+    glEnableVertexAttribArray(1); glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, normal));
+    glEnableVertexAttribArray(2); glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, texcoords));
+    glEnableVertexAttribArray(3); glVertexAttribIPointer(3, 4, GL_INT, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, boneIDs));
+    glEnableVertexAttribArray(4); glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(AnimatedVertex), (void*)offsetof(AnimatedVertex, weights));
 
     GLuint EBO;
     glGenBuffers(1, &EBO);
@@ -1343,92 +1369,27 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
 
     glBindVertexArray(0);
 
-    // Salva na Cena Virtual
-    AnimatedSceneObject obj;
-    obj.name = object_name;
-    obj.first_index = 0;
-    obj.num_indices = global_indices.size();
     obj.rendering_mode = GL_TRIANGLES;
     obj.vertex_array_object_id = vertex_array_object_id;
     obj.bbox_min = bbox_min;
     obj.bbox_max = bbox_max;
 
-    //Parte nova que calcula a inversa
-    // O esqueleto inteiro (skin) guarda as matrizes que revertem o osso para a T-Pose
     if (!model.skins.empty()) {
-        const tinygltf::Skin& skin = model.skins[0]; // Pega o primeiro esqueleto
+        const tinygltf::Skin& skin = model.skins[0]; 
         int ibmAccessorIndex = skin.inverseBindMatrices;
-        
         if (ibmAccessorIndex >= 0) {
             const tinygltf::Accessor& accessor = model.accessors[ibmAccessorIndex];
             const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
             const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-            
-            // O ponteiro cru para os floats na memória
             const float* ptr = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
-            
-            // Lemos de 16 em 16 floats (uma matriz 4x4)
             for (size_t i = 0; i < accessor.count; ++i) {
-                glm::mat4 inverseBind = glm::make_mat4(ptr + (i * 16));
-                obj.inverseBindMatrices.push_back(inverseBind);
+                obj.inverseBindMatrices.push_back(glm::make_mat4(ptr + (i * 16)));
             }
         }
     }
 
     obj.gltf_data = model;
-
-
-obj.diffuse_texture_id = 0; // Valor padrão caso não tenha textura
-
-    // --- CÓDIGO NOVO: Carregamento da Textura do GLTF ---
-    // Pega a primeira malha e a primeira primitiva para extrair o material
-    if (!model.meshes.empty() && !model.meshes[0].primitives.empty()) {
-        int materialIndex = model.meshes[0].primitives[0].material;
-        
-        // Verifica se existe um material aplicado
-        if (materialIndex >= 0 && materialIndex < model.materials.size()) {
-            const tinygltf::Material& material = model.materials[materialIndex];
-            
-            // Pega o índice da textura de cor base (Diffuse Map)
-            int baseColorTextureIndex = material.pbrMetallicRoughness.baseColorTexture.index;
-            
-            if (baseColorTextureIndex >= 0 && baseColorTextureIndex < model.textures.size()) {
-                int imageIndex = model.textures[baseColorTextureIndex].source;
-                
-                if (imageIndex >= 0 && imageIndex < model.images.size()) {
-                    tinygltf::Image& image = model.images[imageIndex];
-
-                    glActiveTexture(GL_TEXTURE0 + g_NumLoadedTextures);
-
-                    // Gera a textura no OpenGL
-                    glGenTextures(1, &obj.diffuse_texture_id);
-                    glBindTexture(GL_TEXTURE_2D, obj.diffuse_texture_id);
-
-                    // Configura os parâmetros de repetição e filtro
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-                    // Descobre se a imagem tem 3 canais (RGB) ou 4 canais (RGBA)
-                    GLenum format = GL_RGBA;
-                    if (image.component == 3) format = GL_RGB;
-
-                    // Envia os bytes crus (image.image) para a GPU!
-                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-                    glTexImage2D(GL_TEXTURE_2D, 0, format, image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.image.data());
-                    glGenerateMipmap(GL_TEXTURE_2D);
-
-                    glBindTexture(GL_TEXTURE_2D, 0);
-                    printf("Textura extraida do GLTF com sucesso! (%dx%d, %d canais)\n", image.width, image.height, image.component);
-                }
-            }
-        }
-    }
-    // ----------------------------------------------------
-
     g_AnimatedScene[object_name] = obj;
-    printf("Modelo GLTF '%s' carregado com sucesso! (Vértices: %lu, Índices: %lu)\n", 
-           object_name, global_vertices.size(), global_indices.size());
+    printf("Modelo GLTF '%s' carregado com sucesso! (Vértices: %lu, Índices: %lu, Partes: %lu)\n", 
+           object_name, global_vertices.size(), global_indices.size(), obj.primitives.size());
 }
-

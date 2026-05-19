@@ -32,6 +32,12 @@ struct AnimatedVertex {
     glm::vec4 weights;  
 };
 
+struct GLTFPrimitive {
+    size_t first_index;
+    size_t num_indices;
+    GLuint texture_id;
+};
+
 // Estrutura atualizada para guardar os dados do objeto animado
 struct AnimatedSceneObject {
     std::string name;
@@ -47,6 +53,7 @@ struct AnimatedSceneObject {
 
     tinygltf::Model gltf_data;
     int current_animation_index = 0;
+    std::vector<GLTFPrimitive> primitives;
 };
 extern std::map<std::string, SceneObject> g_VirtualScene;
 extern std::map<std::string, AnimatedSceneObject> g_AnimatedScene;
