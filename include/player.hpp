@@ -6,7 +6,7 @@
 #define AIR 2
 #define ATTACKING 0
 
-#define GRAVITY 10.0
+
 
 class Player : public AnimatedObject
 {
@@ -27,6 +27,7 @@ private:
 
     int state;
     bool on_air;
+    float jump_height;
 public:
     Player(std::string name, int obj_id, int tex_id, float vel);
 
@@ -42,4 +43,6 @@ public:
     void jump(float height);
 
     bool get_on_air();
+
+    float get_jump_height();
 };

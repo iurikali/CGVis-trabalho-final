@@ -4,6 +4,7 @@
 #include <cmath>
 
 #define M_PI 3.14159265358979323846
+#define GRAVITY 12.0
 
 float lerp (float a, float b, float t)
 {
@@ -37,7 +38,8 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
     index_angle(0.0f),
     angle_looking(0.0f),
     state(IDLE),
-    on_air(false)
+    on_air(false),
+    jump_height(7.5)
 
 {
     std::cout << "PLAYER CRIADO" << std::endl;
@@ -47,32 +49,38 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
 void Player::Update(float delta_time)
 {
     vel_x = (float) (is_d_pressed - is_a_pressed) * speed;
-    vel_y += (float) (is_space_pressed) * speed * delta_time * 30;
     vel_z = (float) (is_s_pressed - is_w_pressed) * speed;
 
-    if (vel_y > speed) vel_y = speed;
 
     
     //Calculando a rotação
     if(vel_x != 0.0 || vel_z != 0.0)
         angle_looking = std::atan2(vel_x, vel_z);
-
-    
     index_angle = lerp_angle(index_angle, angle_looking, 16.0 * delta_time);
     rotation.y = index_angle;
     
+
     state_machine(delta_time);
+
+
+
+    //Gravidade
+    if (position.y > 0) // Não está no chão
+    {
+        vel_y -= GRAVITY * speed * delta_time;
+        on_air = true;
+    }
+    if (vel_y <= -speed * 4)
+    {
+        vel_y = -speed * 4;
+    }
+
 
     position.x += vel_x * delta_time;
     position.y += vel_y * delta_time;
     position.z += vel_z * delta_time;
 
-    
-    if (position.y > 0) // Não está no chão
-    {
-        vel_y -= 3 * speed * delta_time;
-        on_air = true;
-    }
+    //"Colisao" com o plano
     if (position.y <= 0){ // está no chão (ou abaixo)
         position.y = 0;
         vel_y = 0;
@@ -180,6 +188,11 @@ void Player::state_machine(float delta_time)
 
 void Player::jump(float height)
 {
-    //vel_y = height;
+    vel_y = height;
     on_air = true;
+}
+
+float Player::get_jump_height()
+{
+    return jump_height;
 }

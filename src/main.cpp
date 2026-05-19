@@ -352,6 +352,9 @@ int main(int argc, char* argv[])
     player->position = glm::vec3(0.0f, 0.0f, 0.0f);
     player->SetAnimation(1);
 
+    glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
+
+    camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
 
     float last_time = (float)glfwGetTime();
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
@@ -424,7 +427,9 @@ int main(int argc, char* argv[])
         // Personagem animado
         player->Update(dt); // Atualiza os ossos
 
-        camera.set_look_at(player->position + glm::vec3(0.0f, 1.0f, 0.0f));
+        cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
+
+        camera.set_look_at(cam_position);
         
 
         // Desenho dos objetos
@@ -1041,13 +1046,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     {
         if (!player->get_on_air())
         {
-            player->set_space_pressed(true);
+            //7.5
+            player->jump(player->get_jump_height());
         }
     }
-    if ((key == GLFW_KEY_SPACE) && action == GLFW_RELEASE)
+    /*if ((key == GLFW_KEY_SPACE) && action == GLFW_RELEASE)
     {
         player->set_space_pressed(false);
-    }
+    }*/
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal
