@@ -35,7 +35,9 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
     vel_z(0.0f),
     speed(speed),
     index_angle(0.0f),
-    angle_looking(0.0f)
+    angle_looking(0.0f),
+    state(IDLE),
+    on_air(false)
 
 {
     std::cout << "PLAYER CRIADO" << std::endl;
@@ -59,7 +61,7 @@ void Player::Update(float delta_time)
     index_angle = lerp_angle(index_angle, angle_looking, 16.0 * delta_time);
     rotation.y = index_angle;
     
-
+    state_machine(delta_time);
 
     position.x += vel_x * delta_time;
     position.y += vel_y * delta_time;
@@ -67,10 +69,14 @@ void Player::Update(float delta_time)
 
     
     if (position.y > 0) // Não está no chão
+    {
         vel_y -= 3 * speed * delta_time;
+        on_air = true;
+    }
     if (position.y <= 0){ // está no chão (ou abaixo)
         position.y = 0;
         vel_y = 0;
+        on_air = false;
     }
 
 
@@ -96,4 +102,84 @@ void Player::set_d_pressed(bool b)
 void Player::set_space_pressed(bool b)
 {
     is_space_pressed = b;
+}
+
+bool Player::get_on_air()
+{
+    return on_air;
+}
+
+void Player::state_machine(float delta_time)
+{
+    switch (state)
+    {
+    case IDLE:
+        if (Player::current_animation != IDLE)
+        {
+            Player::SetAnimation(IDLE);
+        }
+
+        //Saindo do estado
+        if (on_air)
+        {
+            state = AIR;
+        }
+        else if (vel_x != 0.0 || vel_z != 0.0)
+        {
+            state = WALKING;
+        }
+        break;
+    
+
+    case WALKING:
+        if (Player::current_animation != WALKING)
+        {
+            Player::SetAnimation(WALKING);
+        }
+
+        //Saindo do estado
+        if (on_air)
+        {
+            state = AIR;
+        }
+        else if (vel_x == 0.0 && vel_z == 0.0)
+        {
+            state = IDLE;
+        }
+        break;
+    
+    case AIR:
+        if (Player::current_animation != AIR)
+        {
+            
+            Player::SetAnimation(AIR);
+        }
+
+        //Corrigindo a rotacao da animacao
+        rotation.y = index_angle + M_PI / 4;
+
+        //Saindo do estado
+        if (!on_air)
+        {
+            if (vel_x == 0.0 && vel_z == 0.0)
+            {
+                state = IDLE;
+            }
+            else
+            {
+                state = WALKING;
+            }
+        }
+
+        break;
+
+    default:
+        break;
+    }
+}
+
+void Player::jump(float height)
+{
+    //vel_y = height;
+    on_air = true;
 }

@@ -1039,7 +1039,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     
     if ((key == GLFW_KEY_SPACE) && action == GLFW_PRESS)
     {
-        player->set_space_pressed(true);
+        if (!player->get_on_air())
+        {
+            player->set_space_pressed(true);
+        }
     }
     if ((key == GLFW_KEY_SPACE) && action == GLFW_RELEASE)
     {
