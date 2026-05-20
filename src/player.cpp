@@ -44,13 +44,14 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
     time_spin_index(0.0),
     spin_speed(100.0),
 
-    hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
+    hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5)),
 
 
     teste_colisao(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
 {
     std::cout << "PLAYER CRIADO" << std::endl;
 
+    teste_colisao.Update(glm::vec3(2.0, 0.0, 2.0));
 
 }
 
@@ -87,12 +88,25 @@ void Player::Update(float delta_time)
         vel_y = -speed * 4;
     }
 
+    //Testando a colisao
+    /*if (hit_box.Intersects(teste_colisao))
+    {
+        std::cout << "COLIDI CARALHO" << std::endl;
+    }*/
 
+    vel_x = hit_box.GetClipX(teste_colisao, vel_x * delta_time);
+
+    vel_z = hit_box.GetClipZ(teste_colisao, vel_z * delta_time);
     
 
-    position.x += vel_x * delta_time;
+
+    
+    //std::cout << vel_y << std::endl;
+
+
+    position.x += vel_x;
     position.y += vel_y * delta_time;
-    position.z += vel_z * delta_time;
+    position.z += vel_z;
 
     //"Colisao" com o plano
     if (position.y <= 0){ // está no chão (ou abaixo)

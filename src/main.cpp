@@ -483,6 +483,8 @@ int main(int argc, char* argv[])
 
         player->hit_box.DrawDebug();
 
+        player->teste_colisao.DrawDebug();
+
         cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
 
         camera.set_look_at(cam_position);
