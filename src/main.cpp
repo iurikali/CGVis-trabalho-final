@@ -476,15 +476,6 @@ int main(int argc, char* argv[])
         // Personagem animado
         player->Update(dt); // Atualiza os ossos
 
-        glm::vec3 min_global = player->position - glm::vec3(0.5, 0.0, 0.5);
-        glm::vec3 max_global = player->position + glm::vec3(0.5, 1.1, 0.5);
-
-        player->hit_box.Update(player->position);
-
-        player->hit_box.DrawDebug();
-
-        player->teste_colisao.DrawDebug();
-
         cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
 
         camera.set_look_at(cam_position);

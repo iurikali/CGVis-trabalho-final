@@ -94,37 +94,13 @@ void Player::Update(float delta_time)
         std::cout << "COLIDI CARALHO" << std::endl;
     }*/
 
-    float vel_x_temp = vel_x * delta_time;
-    float vel_y_temp = vel_y * delta_time;
-    float vel_z_temp = vel_z * delta_time;
 
-    vel_x_temp = hit_box.GetClipX(teste_colisao, vel_x_temp);
+    CollisionPhysics(delta_time);
+    
 
-    vel_z_temp = hit_box.GetClipZ(teste_colisao, vel_z_temp);
+    hit_box.DrawDebug();
 
-    vel_y_temp = hit_box.GetClipY(teste_colisao, vel_y_temp);
-    //verficando se colidimos em Y
-    //Vai dar problema se bater de cabeça 
-    if (vel_y_temp != vel_y * delta_time)
-    {
-        on_air = false;
-        vel_y = 0.0;
-    }
-
-
-    std::cout << vel_y << std::endl;
-
-
-    position.x += vel_x_temp;
-    position.y += vel_y_temp;
-    position.z += vel_z_temp;
-
-    //"Colisao" com o plano
-    if (position.y <= 0){ // está no chão (ou abaixo)
-        position.y = 0;
-        vel_y = 0;
-        on_air = false;
-    }
+    teste_colisao.DrawDebug();
 
 
     AnimatedObject::Update(delta_time);
@@ -297,4 +273,54 @@ bool Player::get_spin()
 void Player::set_spin(bool b)
 {
     spin = b;
+}
+
+//Funcao que cuida da colisao fisica AABB
+//para resolver o problema das diagonais
+//Existe esse avanço na box
+void Player::CollisionPhysics(float delta_time)
+{
+
+    //Colisao AABB modificada
+    float vel_x_temp = vel_x * delta_time;
+    float vel_y_temp = vel_y * delta_time;
+    float vel_z_temp = vel_z * delta_time;
+
+    
+    hit_box.Update(position);
+
+    //Eixo X
+    vel_x_temp = hit_box.GetClipX(teste_colisao, vel_x_temp);
+    hit_box.box_min.x += vel_x_temp;
+    hit_box.box_max.x += vel_x_temp;
+
+    //Eixo Z
+    vel_z_temp = hit_box.GetClipZ(teste_colisao, vel_z_temp);
+    hit_box.box_min.z += vel_z_temp;
+    hit_box.box_max.z += vel_z_temp;
+
+    //Colisao na vertical
+    float old_vel_y = vel_y_temp;
+    vel_y_temp = hit_box.GetClipY(teste_colisao, vel_y_temp);
+    
+    // Verificando se colidimos em Y (chão ou teto)
+    if (vel_y_temp != old_vel_y)
+    {
+        vel_y = 0.0f; // Zera a gravidade real para parar de cair
+        on_air = false;
+    }
+
+    
+    position.x += vel_x_temp;
+    position.y += vel_y_temp;
+    position.z += vel_z_temp;
+
+    hit_box.Update(position);
+
+    //"Colisao" com o plano
+    if (position.y <= 0){ // está no chão (ou abaixo)
+        position.y = 0;
+        vel_y = 0;
+        on_air = false;
+    }
 }

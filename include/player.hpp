@@ -34,6 +34,8 @@ private:
     float time_spin_index;
     float spin_speed;
 
+    void CollisionPhysics(float delta_time);
+
 public:
     Player(std::string name, int obj_id, int tex_id, float vel);
 
