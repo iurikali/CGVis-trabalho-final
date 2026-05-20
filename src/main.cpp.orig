@@ -387,7 +387,10 @@ int main(int argc, char* argv[])
 
     gameObjects.push_back(player);
     player->position = glm::vec3(0.0f, 0.0f, 0.0f);
+<<<<<<< HEAD
     player->SetAnimation(1);
+=======
+    player->SetAnimation(0);
     bbox_min = g_AnimatedScene["the_character"].bbox_min;
     bbox_max = g_AnimatedScene["the_character"].bbox_max;
     bbox_min += player->position;
@@ -401,11 +404,8 @@ int main(int argc, char* argv[])
         gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK));
         gameObjects.back()->scale = glm::vec3(0.2, 0.2f, 0.2f);
         gameObjects.back()->position = aabb.bbox_max;
+
     }
-
-    glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
-
-    camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
 
     auto playercube1 = std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK);
     gameObjects.push_back(playercube1);
@@ -415,7 +415,11 @@ int main(int argc, char* argv[])
     gameObjects.push_back(playercube2);
     gameObjects.back()->scale = glm::vec3(0.2, 0.2f, 0.2f);
     gameObjects.back()->position = playeraabb.bbox_max;
+>>>>>>> origin/colisoes-aabb
 
+    glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
+
+    camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
 
     float last_time = (float)glfwGetTime();
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
@@ -488,6 +492,11 @@ int main(int argc, char* argv[])
         // Personagem animado
         player->Update(dt); // Atualiza os ossos
 
+<<<<<<< HEAD
+        cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
+
+        camera.set_look_at(cam_position);
+=======
         bbox_min = g_AnimatedScene["the_character"].bbox_min;
         bbox_max = g_AnimatedScene["the_character"].bbox_max;
         bbox_min += player->position;
@@ -495,9 +504,9 @@ int main(int argc, char* argv[])
         playeraabb = {bbox_min, bbox_max};
         playercube1->position = playeraabb.bbox_min;
         playercube2->position = playeraabb.bbox_max; 
-        cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
 
-        camera.set_look_at(cam_position);
+        camera.set_look_at(player->position + glm::vec3(0.0f, 1.0f, 0.0f));
+>>>>>>> origin/colisoes-aabb
         
 
         // Desenho dos objetos
@@ -1311,16 +1320,12 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
             my_primitive.first_index = global_indices.size(); // Salva de onde essa parte começa
 
             size_t vertexOffset = global_vertices.size();
-
-            // 1. Descobre o número de vértices desta primitiva
             int posAccessorIndex = primitive.attributes.at("POSITION");
             size_t vertexCount = model.accessors[posAccessorIndex].count;
 
-            // Aloca espaço no vetor global
             size_t oldSize = global_vertices.size();
             global_vertices.resize(oldSize + vertexCount);
 
-            // Inicializa os novos vértices com segurança
             for (size_t i = oldSize; i < global_vertices.size(); ++i) {
                 global_vertices[i].position = glm::vec3(0.0f);
                 global_vertices[i].normal = glm::vec3(0.0f);
@@ -1329,23 +1334,18 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
                 global_vertices[i].weights = glm::vec4(0.0f);
             }
 
-            // Função Helper adaptada para o loop
             auto extractData = [&](const std::string& attributeName, const std::function<void(size_t, const unsigned char*, int)>& processItem) {
                 if (primitive.attributes.find(attributeName) == primitive.attributes.end()) return;
-                
                 const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at(attributeName)];
                 const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
                 const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-                
                 const unsigned char* dataPtr = &buffer.data[bufferView.byteOffset + accessor.byteOffset];
                 int stride = bufferView.byteStride == 0 ? tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type) : bufferView.byteStride;
-
                 for (size_t i = 0; i < accessor.count; ++i) {
                     processItem(oldSize + i, dataPtr + (i * stride), accessor.componentType);
                 }
             };
 
-            // Lendo POSITION
             extractData("POSITION", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].position = glm::vec3(fPtr[0], fPtr[1], fPtr[2]);
@@ -1353,19 +1353,16 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
                 bbox_max = glm::max(bbox_max, global_vertices[globalIdx].position);
             });
 
-            // Lendo NORMAL
             extractData("NORMAL", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].normal = glm::vec3(fPtr[0], fPtr[1], fPtr[2]);
             });
 
-            // Lendo TEXCOORD_0
             extractData("TEXCOORD_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].texcoords = glm::vec2(fPtr[0], fPtr[1]);
             });
 
-            // Lendo JOINTS_0
             extractData("JOINTS_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 if (type == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
                     const unsigned short* sPtr = reinterpret_cast<const unsigned short*>(ptr);
@@ -1375,18 +1372,15 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
                 }
             });
 
-            // Lendo WEIGHTS_0
             extractData("WEIGHTS_0", [&](size_t globalIdx, const unsigned char* ptr, int type) {
                 const float* fPtr = reinterpret_cast<const float*>(ptr);
                 global_vertices[globalIdx].weights = glm::vec4(fPtr[0], fPtr[1], fPtr[2], fPtr[3]);
             });
 
-            // Lendo INDICES (com o offset aplicado!)
             if (primitive.indices >= 0) {
                 const tinygltf::Accessor& indexAccessor = model.accessors[primitive.indices];
                 const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccessor.bufferView];
                 const tinygltf::Buffer& indexBuffer = model.buffers[indexBufferView.buffer];
-                
                 const void* indexDataPtr = &indexBuffer.data[indexBufferView.byteOffset + indexAccessor.byteOffset];
                 
                 for (size_t i = 0; i < indexAccessor.count; ++i) {
@@ -1481,16 +1475,11 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
     if (!model.skins.empty()) {
         const tinygltf::Skin& skin = model.skins[0]; 
         int ibmAccessorIndex = skin.inverseBindMatrices;
-        
         if (ibmAccessorIndex >= 0) {
             const tinygltf::Accessor& accessor = model.accessors[ibmAccessorIndex];
             const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
             const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-            
-            // O ponteiro cru para os floats na memória
             const float* ptr = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
-            
-            // Lemos de 16 em 16 floats (uma matriz 4x4)
             for (size_t i = 0; i < accessor.count; ++i) {
                 obj.inverseBindMatrices.push_back(glm::make_mat4(ptr + (i * 16)));
             }
@@ -1502,4 +1491,3 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
     printf("Modelo GLTF '%s' carregado com sucesso! (Vértices: %lu, Índices: %lu, Partes: %lu)\n", 
            object_name, global_vertices.size(), global_indices.size(), obj.primitives.size());
 }
-
