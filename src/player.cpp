@@ -42,10 +42,16 @@ Player::Player(std::string n, int o_id, int t_id, float speed):
     jump_height(7.5),
     time_spin(0.2),
     time_spin_index(0.0),
-    spin_speed(100.0)
+    spin_speed(100.0),
 
+    hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
+
+
+    teste_colisao(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
 {
     std::cout << "PLAYER CRIADO" << std::endl;
+
+
 }
 
 
@@ -81,6 +87,8 @@ void Player::Update(float delta_time)
         vel_y = -speed * 4;
     }
 
+
+    
 
     position.x += vel_x * delta_time;
     position.y += vel_y * delta_time;

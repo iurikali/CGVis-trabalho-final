@@ -14,6 +14,9 @@ extern GLint g_bones_uniform;
 extern GLint g_bbox_min_uniform;
 extern GLint g_bbox_max_uniform;
 
+
+extern GLuint g_AABB_VAO;
+
 GameObject::GameObject(std::string n, int o_id, int t_id) : name(n), object_id(o_id), texture_id(t_id){}
 
 //Matriz final do objeto
@@ -210,12 +213,12 @@ void AnimatedObject::ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransfor
     }
 }
 
-AABB::AABB(glm::vec3 min, glm::vec3 max) : box_min(min), box_max(max){}
+AABB::AABB(glm::vec3 min, glm::vec3 max) : box_min(min), box_max(max), box_min_original(min), box_max_original(max){}
 
-void AABB::Update(glm::vec3 min, glm::vec3 max)
+void AABB::Update(glm::vec3 position)
 {
-    box_min = min;
-    box_max = max;
+    box_min = position + box_min_original;
+    box_max = position + box_max_original;
 }
 
 bool AABB::IntersectsX(AABB against)
@@ -303,4 +306,33 @@ float AABB::GetClipZ(AABB against, float deltaZ)
         return deltaZ;
     }
     return deltaZ;
+}
+
+//Funcao do gemini para visualizar as AABB
+void AABB::DrawDebug() 
+{
+    // 1. Descobre o centro e o tamanho matemático da caixa
+    glm::vec3 center = (box_max + box_min) / 2.0f;
+    glm::vec3 size   = box_max - box_min;
+
+    // 2. Cria a matriz Model que estica e move o cubo pro lugar exato
+    glm::mat4 model = Matrix_Translate(center.x, center.y, center.z) * Matrix_Scale(size.x, size.y, size.z);
+
+    // 3. Puxa as variáveis da GPU
+    extern GLint g_model_uniform;
+    extern GLint g_texture_id_uniform;
+    
+    glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+    
+    // O Truque do Magenta: Textura 99 não existe, então o shader vai pintar as linhas de rosa choque!
+    glUniform1i(g_texture_id_uniform, 99);
+
+    // Como é uma linha, ela não tem vetor "Normal". 
+    // Essa função força o shader a achar que a Normal aponta pra cima, para a luz não deixar a linha preta.
+    glVertexAttrib4f(1, 0.0f, 1.0f, 0.0f, 0.0f);
+
+    // 4. Manda desenhar as linhas!
+    glBindVertexArray(g_AABB_VAO);
+    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }

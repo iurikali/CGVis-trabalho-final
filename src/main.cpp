@@ -197,6 +197,48 @@ Camera camera = Camera();
 
 //Funcao para visualizar a nossa AABB
 //Foi o gemini que fez
+// Variável global para guardar o VAO da caixa de debug
+GLuint g_AABB_VAO = 0;
+
+void InitDebugAABB() 
+{
+    // Vértices de um cubo unitário centrado na origem (de -0.5 a +0.5)
+    float vertices[] = {
+        -0.5f, -0.5f, -0.5f, 1.0f, // 0
+         0.5f, -0.5f, -0.5f, 1.0f, // 1
+         0.5f,  0.5f, -0.5f, 1.0f, // 2
+        -0.5f,  0.5f, -0.5f, 1.0f, // 3
+        -0.5f, -0.5f,  0.5f, 1.0f, // 4
+         0.5f, -0.5f,  0.5f, 1.0f, // 5
+         0.5f,  0.5f,  0.5f, 1.0f, // 6
+        -0.5f,  0.5f,  0.5f, 1.0f  // 7
+    };
+
+    // Quais vértices ligar para formar as 12 linhas do cubo
+    GLuint indices[] = {
+        0,1, 1,2, 2,3, 3,0, // Linhas do fundo
+        4,5, 5,6, 6,7, 7,4, // Linhas da frente
+        0,4, 1,5, 2,6, 3,7  // Linhas conectando frente e fundo
+    };
+
+    glGenVertexArrays(1, &g_AABB_VAO);
+    glBindVertexArray(g_AABB_VAO);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    
+    glEnableVertexAttribArray(0); // Atributo 0 é a posição em shader_vertex.glsl
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+}
 
 
 //Funcao que carrega as texturas e modelos de todos os objetos do jogo
@@ -239,6 +281,9 @@ void AssetsLoader(int argc, char* argv[])
     LoadAnimatedGLTFModel("../../data/crash.glb", "the_character");
 
     g_bones_uniform = glGetUniformLocation(g_GpuProgramID, "finalBonesMatrices");
+
+    //VBO do AABB
+    InitDebugAABB();
 }
 
 GLFWwindow* InitializeWindow(){
@@ -430,6 +475,13 @@ int main(int argc, char* argv[])
 
         // Personagem animado
         player->Update(dt); // Atualiza os ossos
+
+        glm::vec3 min_global = player->position - glm::vec3(0.5, 0.0, 0.5);
+        glm::vec3 max_global = player->position + glm::vec3(0.5, 1.1, 0.5);
+
+        player->hit_box.Update(player->position);
+
+        player->hit_box.DrawDebug();
 
         cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
 

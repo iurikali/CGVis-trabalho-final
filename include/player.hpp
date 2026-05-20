@@ -33,6 +33,7 @@ private:
     float time_spin;
     float time_spin_index;
     float spin_speed;
+
 public:
     Player(std::string name, int obj_id, int tex_id, float vel);
 
@@ -53,4 +54,8 @@ public:
 
     bool get_spin();
     void set_spin(bool b);
+    
+    AABB hit_box;
+
+    AABB teste_colisao;
 };

@@ -117,12 +117,15 @@ private:
 class AABB
 {
     public:
+    glm::vec3 box_min_original;
+    glm::vec3 box_max_original;
+    
     glm::vec3    box_min; // Axis-Aligned Bounding Box do objeto
     glm::vec3    box_max;
 
     AABB(glm::vec3 min, glm::vec3 max);
 
-    void Update(glm::vec3 min, glm::vec3 max);
+    void Update(glm::vec3 position);
 
     bool IntersectsX(AABB against);
 
@@ -137,4 +140,6 @@ class AABB
     float GetClipY(AABB against, float deltaY);
 
     float GetClipZ(AABB against, float deltaZ);
+
+    void DrawDebug();
 };
