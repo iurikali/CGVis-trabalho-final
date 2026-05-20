@@ -94,19 +94,30 @@ void Player::Update(float delta_time)
         std::cout << "COLIDI CARALHO" << std::endl;
     }*/
 
-    vel_x = hit_box.GetClipX(teste_colisao, vel_x * delta_time);
+    float vel_x_temp = vel_x * delta_time;
+    float vel_y_temp = vel_y * delta_time;
+    float vel_z_temp = vel_z * delta_time;
 
-    vel_z = hit_box.GetClipZ(teste_colisao, vel_z * delta_time);
-    
+    vel_x_temp = hit_box.GetClipX(teste_colisao, vel_x_temp);
+
+    vel_z_temp = hit_box.GetClipZ(teste_colisao, vel_z_temp);
+
+    vel_y_temp = hit_box.GetClipY(teste_colisao, vel_y_temp);
+    //verficando se colidimos em Y
+    //Vai dar problema se bater de cabeça 
+    if (vel_y_temp != vel_y * delta_time)
+    {
+        on_air = false;
+        vel_y = 0.0;
+    }
 
 
-    
-    //std::cout << vel_y << std::endl;
+    std::cout << vel_y << std::endl;
 
 
-    position.x += vel_x;
-    position.y += vel_y * delta_time;
-    position.z += vel_z;
+    position.x += vel_x_temp;
+    position.y += vel_y_temp;
+    position.z += vel_z_temp;
 
     //"Colisao" com o plano
     if (position.y <= 0){ // está no chão (ou abaixo)
