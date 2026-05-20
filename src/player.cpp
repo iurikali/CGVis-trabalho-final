@@ -213,7 +213,6 @@ void Player::state_machine(float delta_time)
     if (time_spin_index > 0)
     {
         time_spin_index -= delta_time;
-        std::cout << time_spin_index << std::endl;
     }
     //Acabou o tempo, vamos sair do estado
     else
