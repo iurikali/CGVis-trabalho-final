@@ -195,6 +195,10 @@ GLuint g_NumLoadedTextures = 0;
 auto player = std::make_shared<Player>("the_character", CHARACTER, CHARACTER_TEXTURE, 2.0f);
 Camera camera = Camera();
 
+//Funcao para visualizar a nossa AABB
+//Foi o gemini que fez
+
+
 //Funcao que carrega as texturas e modelos de todos os objetos do jogo
 void AssetsLoader(int argc, char* argv[])
 {
