@@ -192,7 +192,7 @@ GLuint g_NumLoadedTextures = 0;
 #define CHARACTER 3
 #define CUBE 4
 
-auto player = std::make_shared<Player>("the_character", CHARACTER, CHARACTER_TEXTURE, 2.0f);
+auto player = std::make_shared<Player>("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
 Camera camera = Camera();
 
 //Funcao para visualizar a nossa AABB
@@ -381,24 +381,19 @@ int main(int argc, char* argv[])
     std::vector<std::shared_ptr<GameObject>> gameObjects; 
 
     // Instanciação+inserção no vetor e alteração de algum atributo
-    gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN));
-    gameObjects.back()->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN, glm::vec3(0.0f, 0.0f, 0.0f)));
     gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
     // Instanciação + inserção, com referência ao objeto fora do vetor
-    auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK);
+    auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,0.0f,0.0f));
     gameObjects.push_back(bunny);
-    bunny->position = glm::vec3(1.0f,0.0f,0.0f);
     
-    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE));
-    gameObjects.back()->position = glm::vec3(-1.3f, 0.0f, 0.0f);
+    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, glm::vec3(-1.3f, 0.0f, 0.0f)));
     
-    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK));
-    gameObjects.back()->position = glm::vec3(-1.3f, 1.0f, 0.0f);
+    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, glm::vec3(-1.3f, 1.0f, 0.0f)));
     
 
     gameObjects.push_back(player);
-    player->position = glm::vec3(0.0f, 0.0f, 0.0f);
     player->SetAnimation(1);
 
     glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);

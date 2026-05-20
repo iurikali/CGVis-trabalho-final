@@ -6,6 +6,9 @@
 #include <glm/vec3.hpp>
 #include <glad/glad.h>
 #include <tiny_gltf.h>
+#include <unordered_map>
+
+
 
 struct SceneObject
 {
@@ -58,60 +61,6 @@ struct AnimatedSceneObject {
 extern std::map<std::string, SceneObject> g_VirtualScene;
 extern std::map<std::string, AnimatedSceneObject> g_AnimatedScene;
 
-//GameObject vai ser classe pai dos objetos estáticos e dos animados
-class GameObject
-{
-public:
-    std::string name;
-    int object_id;
-    int texture_id;
-
-    glm::vec3 position{0.0f, 0.0f, 0.0f};
-    glm::vec3 rotation{0.0f, 0.0f, 0.0f};
-    glm::vec3 scale{1.0f, 1.0f, 1.0f};
-
-    GameObject(std::string name, int obj_id, int tex_id);
-    virtual ~GameObject() = default;
-
-    glm::mat4 GetModelMatrix();
-
-
-    virtual void Update(float delta_time){}
-    virtual void Draw() = 0;
-};
-
-//Objetos estaticos (.obj)
-class StaticObject : public GameObject
-{
-public:
-    StaticObject(std::string name, int obj_id, int tex_id);
-    
-    void Draw() override;
-};
-
-//Objetos animados (.gltf)
-class AnimatedObject : public GameObject
-{
-public:
-    
-    int current_animation;
-    float animation_speed;
-    float current_time;
-
-    glm::mat4 final_bone_matrices[100];
-
-    AnimatedObject(std::string name, int obj_id, int tex_id);
-
-    void SetAnimation(int anim_index);
-    void Update(float delta_time) override;
-    void Draw() override;
-
-private:
-    void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj_data);
-    glm::mat4 GetNodeTransform(int nodeIndex, AnimatedSceneObject& obj_data);
-    int GetJointIndex(int nodeIndex, AnimatedSceneObject& obj_data);
-};
-
 //Classe feita com base no site 
 //https://medium.com/@andrebluntindie/3d-aabb-collision-detection-and-resolution-for-voxel-games-5fcbfdb8cdb4
 class AABB
@@ -119,7 +68,7 @@ class AABB
     public:
     glm::vec3 box_min_original;
     glm::vec3 box_max_original;
-    
+
     glm::vec3    box_min; // Axis-Aligned Bounding Box do objeto
     glm::vec3    box_max;
 
@@ -143,3 +92,85 @@ class AABB
 
     void DrawDebug();
 };
+
+enum CollisionLayer 
+{
+    LAYER_FISICO,
+    LAYER_TRIGGER
+};
+
+
+//GameObject vai ser classe pai dos objetos estáticos e dos animados
+class GameObject
+{
+public:
+    std::string name;
+    int object_id;
+    int texture_id;
+
+    glm::vec3 position{0.0f, 0.0f, 0.0f};
+    glm::vec3 rotation{0.0f, 0.0f, 0.0f};
+    glm::vec3 scale{1.0f, 1.0f, 1.0f};
+
+    GameObject(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+
+    glm::mat4 GetModelMatrix();
+
+    //Componente de colisão (opcional)
+    AABB *hitbox = nullptr;
+
+
+    virtual void Update(float delta_time){}
+    virtual void Draw() = 0;
+
+    //Apagando o componente de hitbox ao apagar o objeto
+    virtual ~GameObject() 
+    {
+        if (hitbox != nullptr) {
+            delete hitbox;
+        }
+    }
+};
+
+//Listas de listas para os objetos com colisao fisica e para os objetos triggers
+//usando map pq ele não ocupa espaço se tiver um setor vazio
+extern std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
+extern std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
+#define SECTOR_LEN 20.0
+
+
+//Objetos estaticos (.obj)
+class StaticObject : public GameObject
+{
+public:
+    StaticObject(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+    
+    void Draw() override;
+};
+
+//Objetos animados (.gltf)
+class AnimatedObject : public GameObject
+{
+public:
+    
+    int current_animation;
+    float animation_speed;
+    float current_time;
+
+    glm::mat4 final_bone_matrices[100];
+
+    AnimatedObject(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+
+    void SetAnimation(int anim_index);
+    void Update(float delta_time) override;
+    void Draw() override;
+
+private:
+    void ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransform, AnimatedSceneObject& obj_data);
+    glm::mat4 GetNodeTransform(int nodeIndex, AnimatedSceneObject& obj_data);
+    int GetJointIndex(int nodeIndex, AnimatedSceneObject& obj_data);
+};
+
+
+
+

@@ -17,7 +17,9 @@ extern GLint g_bbox_max_uniform;
 
 extern GLuint g_AABB_VAO;
 
-GameObject::GameObject(std::string n, int o_id, int t_id) : name(n), object_id(o_id), texture_id(t_id){}
+GameObject::GameObject(std::string n, int o_id, int t_id, glm::vec3 pos) : 
+    name(n), object_id(o_id), texture_id(t_id), position(pos)
+    {}
 
 //Matriz final do objeto
 glm::mat4 GameObject::GetModelMatrix()
@@ -30,7 +32,7 @@ glm::mat4 GameObject::GetModelMatrix()
 }
 
 //Os .obj
-StaticObject::StaticObject(std::string n, int o_id, int t_id) : GameObject(n, o_id, t_id){}
+StaticObject::StaticObject(std::string n, int o_id, int t_id, glm::vec3 pos) : GameObject(n, o_id, t_id, pos){}
 
 void StaticObject::Draw()
 {
@@ -51,8 +53,8 @@ void StaticObject::Draw()
 }
 
 //Os .gltf
-AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id): 
-    GameObject(n, o_id, t_id),
+AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id, glm::vec3 pos): 
+    GameObject(n, o_id, t_id, pos),
     current_animation(0),
     animation_speed(1.0f),
     current_time(0.0f)

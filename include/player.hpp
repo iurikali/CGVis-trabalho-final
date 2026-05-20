@@ -37,7 +37,7 @@ private:
     void CollisionPhysics(float delta_time);
 
 public:
-    Player(std::string name, int obj_id, int tex_id, float vel);
+    Player(std::string name, int obj_id, int tex_id, glm::vec3 pos, float vel);
 
     void Update(float delta_time) override;
 

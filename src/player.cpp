@@ -25,8 +25,8 @@ float lerp_angle(float from, float to, float weight)
 }
 
 
-Player::Player(std::string n, int o_id, int t_id, float speed): 
-    AnimatedObject(n, o_id, t_id),
+Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed): 
+    AnimatedObject(n, o_id, t_id, pos),
     is_w_pressed(false),
     is_a_pressed(false),
     is_s_pressed(false),
