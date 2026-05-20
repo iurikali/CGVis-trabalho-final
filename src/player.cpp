@@ -204,6 +204,7 @@ void Player::state_machine(float delta_time)
     {
         Player::SetAnimation(ATTACKING);
         time_spin_index = time_spin;
+        //oi
     }
 
     //Corrigindo a rotacao da animacao
