@@ -6,6 +6,8 @@
 #define M_PI 3.14159265358979323846
 #define GRAVITY 12.0
 
+
+
 float lerp (float a, float b, float t)
 {
     return a + t * (b - a);
@@ -26,7 +28,7 @@ float lerp_angle(float from, float to, float weight)
 
 
 Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed): 
-    AnimatedObject(n, o_id, t_id, pos),
+    AnimatedObject(n, o_id, t_id, LAYER_NONE, pos),
     is_w_pressed(false),
     is_a_pressed(false),
     is_s_pressed(false),

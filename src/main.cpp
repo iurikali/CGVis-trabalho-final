@@ -200,6 +200,11 @@ Camera camera = Camera();
 // Variável global para guardar o VAO da caixa de debug
 GLuint g_AABB_VAO = 0;
 
+//Layers de colisao
+std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
+std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
+
+
 void InitDebugAABB() 
 {
     // Vértices de um cubo unitário centrado na origem (de -0.5 a +0.5)
@@ -381,16 +386,21 @@ int main(int argc, char* argv[])
     std::vector<std::shared_ptr<GameObject>> gameObjects; 
 
     // Instanciação+inserção no vetor e alteração de algum atributo
-    gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN, glm::vec3(0.0f, 0.0f, 0.0f)));
+    gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN, LAYER_NONE, glm::vec3(0.0f, 0.0f, 0.0f)));
     gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
     // Instanciação + inserção, com referência ao objeto fora do vetor
-    auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,0.0f,0.0f));
+    auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK, LAYER_TRIGGER, glm::vec3(1.0f,0.0f,0.0f));
     gameObjects.push_back(bunny);
+    gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 0.5, 0.5));
+    gameObjects.back()->hitbox->Update(gameObjects.back()->position);
     
-    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, glm::vec3(-1.3f, 0.0f, 0.0f)));
+    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
+        glm::vec3(-1.3f, 0.0f, 0.0f)));
+    gameObjects.back()->hitbox = new AABB(glm::vec3(-1.5, 0.0, -1.5), glm::vec3(1.5, 1.0, 1.5));
+    gameObjects.back()->hitbox->Update(gameObjects.back()->position);
     
-    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, glm::vec3(-1.3f, 1.0f, 0.0f)));
+    //gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, LAYER_FISICO, glm::vec3(-1.3f, 1.0f, 0.0f)));
     
 
     gameObjects.push_back(player);

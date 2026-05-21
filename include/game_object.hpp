@@ -95,6 +95,7 @@ class AABB
 
 enum CollisionLayer 
 {
+    LAYER_NONE,
     LAYER_FISICO,
     LAYER_TRIGGER
 };
@@ -112,7 +113,7 @@ public:
     glm::vec3 rotation{0.0f, 0.0f, 0.0f};
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
 
-    GameObject(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+    GameObject(std::string name, int obj_id, int tex_id, CollisionLayer layer, glm::vec3 pos);
 
     glm::mat4 GetModelMatrix();
 
@@ -143,7 +144,7 @@ extern std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
 class StaticObject : public GameObject
 {
 public:
-    StaticObject(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+    StaticObject(std::string name, int obj_id, int tex_id, CollisionLayer layer, glm::vec3 pos);
     
     void Draw() override;
 };
@@ -159,7 +160,7 @@ public:
 
     glm::mat4 final_bone_matrices[100];
 
-    AnimatedObject(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+    AnimatedObject(std::string name, int obj_id, int tex_id, CollisionLayer layer, glm::vec3 pos);
 
     void SetAnimation(int anim_index);
     void Update(float delta_time) override;

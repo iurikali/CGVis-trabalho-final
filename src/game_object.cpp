@@ -17,9 +17,23 @@ extern GLint g_bbox_max_uniform;
 
 extern GLuint g_AABB_VAO;
 
-GameObject::GameObject(std::string n, int o_id, int t_id, glm::vec3 pos) : 
+GameObject::GameObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos) : 
     name(n), object_id(o_id), texture_id(t_id), position(pos)
-    {}
+    {
+        //Adicionando a lista certa
+        if (layer == LAYER_FISICO)
+        {
+            //Calculando o setor
+            int sector = (int) position.z / SECTOR_LEN;
+            g_collision_physics[sector].push_back(this);
+        }
+        else if (layer == LAYER_TRIGGER)
+        {
+            //Calculando o setor
+            int sector = (int) position.z / SECTOR_LEN;
+            g_collision_triggers[sector].push_back(this);
+        }
+    }
 
 //Matriz final do objeto
 glm::mat4 GameObject::GetModelMatrix()
@@ -32,7 +46,8 @@ glm::mat4 GameObject::GetModelMatrix()
 }
 
 //Os .obj
-StaticObject::StaticObject(std::string n, int o_id, int t_id, glm::vec3 pos) : GameObject(n, o_id, t_id, pos){}
+StaticObject::StaticObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos) : 
+    GameObject(n, o_id, t_id, layer, pos){}
 
 void StaticObject::Draw()
 {
@@ -50,11 +65,16 @@ void StaticObject::Draw()
     glBindVertexArray(obj_data.vertex_array_object_id);
     glDrawElements(obj_data.rendering_mode, obj_data.num_indices, GL_UNSIGNED_INT, (void*)(obj_data.first_index * sizeof(GLuint)));
     glBindVertexArray(0);
+
+    if (GameObject::hitbox != nullptr)
+    {
+        hitbox->DrawDebug();
+    }
 }
 
 //Os .gltf
-AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id, glm::vec3 pos): 
-    GameObject(n, o_id, t_id, pos),
+AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos): 
+    GameObject(n, o_id, t_id, layer, pos),
     current_animation(0),
     animation_speed(1.0f),
     current_time(0.0f)
@@ -135,6 +155,11 @@ void AnimatedObject::Draw()
     }
     
     glBindVertexArray(0);
+
+    if (GameObject::hitbox != nullptr)
+    {
+        hitbox->DrawDebug();
+    }
 }
 
 //Gemini que fez essas 3 funcoes
