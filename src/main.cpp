@@ -397,9 +397,16 @@ int main(int argc, char* argv[])
     
     gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
         glm::vec3(-1.3f, 0.0f, 0.0f)));
-    gameObjects.back()->hitbox = new AABB(glm::vec3(-1.5, 0.0, -1.5), glm::vec3(1.5, 1.0, 1.5));
-    gameObjects.back()->hitbox->Update(gameObjects.back()->position);
+    gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    gameObjects.back()->hitbox->Update(gameObjects.back()->position + glm::vec3(0.5, 0.0, 0.5));
     
+
+    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
+        glm::vec3(2.3f, 0.0f, 0.0f)));
+    gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    gameObjects.back()->hitbox->Update(gameObjects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    
+
     //gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, LAYER_FISICO, glm::vec3(-1.3f, 1.0f, 0.0f)));
     
 

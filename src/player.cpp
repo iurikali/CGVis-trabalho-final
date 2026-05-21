@@ -46,14 +46,9 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     time_spin_index(0.0),
     spin_speed(100.0),
 
-    hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5)),
-
-
-    teste_colisao(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
+    hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
 {
     std::cout << "PLAYER CRIADO" << std::endl;
-
-    teste_colisao.Update(glm::vec3(2.0, 0.0, 2.0));
 
 }
 
@@ -101,8 +96,6 @@ void Player::Update(float delta_time)
     
 
     hit_box.DrawDebug();
-
-    teste_colisao.DrawDebug();
 
 
     AnimatedObject::Update(delta_time);
@@ -291,26 +284,54 @@ void Player::CollisionPhysics(float delta_time)
     
     hit_box.Update(position);
 
-    //Eixo X
-    vel_x_temp = hit_box.GetClipX(teste_colisao, vel_x_temp);
-    hit_box.box_min.x += vel_x_temp;
-    hit_box.box_max.x += vel_x_temp;
+    int sector = (int) position.z / SECTOR_LEN;
 
-    //Eixo Z
-    vel_z_temp = hit_box.GetClipZ(teste_colisao, vel_z_temp);
-    hit_box.box_min.z += vel_z_temp;
-    hit_box.box_max.z += vel_z_temp;
+    //Garantindo que o setor existe
+    auto it = g_collision_physics.find(sector);
 
-    //Colisao na vertical
-    float old_vel_y = vel_y_temp;
-    vel_y_temp = hit_box.GetClipY(teste_colisao, vel_y_temp);
-    
-    // Verificando se colidimos em Y (chão ou teto)
-    if (vel_y_temp != old_vel_y)
+    if (it != g_collision_physics.end())
     {
-        vel_y = 0.0f; // Zera a gravidade real para parar de cair
-        on_air = false;
+        //Vamos verificar a colisao fisica com geral do nosso quadrante
+        for (GameObject* obj : it->second)
+        {
+            if (obj->hitbox != nullptr)
+            {
+                //Eixo X
+                vel_x_temp = hit_box.GetClipX(*(obj->hitbox), vel_x_temp);
+            }
+        }
+        hit_box.box_min.x += vel_x_temp;
+        hit_box.box_max.x += vel_x_temp;
+
+        for (GameObject* obj : it->second)
+        {
+            if (obj->hitbox != nullptr)
+            {
+                //Eixo Z
+                vel_z_temp = hit_box.GetClipZ(*(obj->hitbox), vel_z_temp);
+            }
+        }
+        hit_box.box_min.z += vel_z_temp;
+        hit_box.box_max.z += vel_z_temp;
+        
+        float old_vel_y = vel_y_temp;
+        for (GameObject* obj : it->second)
+        {
+            if (obj->hitbox != nullptr)
+            {
+                //Colisao na vertical
+                vel_y_temp = hit_box.GetClipY(*(obj->hitbox), vel_y_temp);
+            }
+        }
+                
+        // Verificando se colidimos em Y (chão ou teto)
+        if (vel_y_temp != old_vel_y)
+        {
+            vel_y = 0.0f; // Zera a gravidade real para parar de cair
+            on_air = false;
+        }
     }
+
 
     
     position.x += vel_x_temp;
@@ -325,4 +346,6 @@ void Player::CollisionPhysics(float delta_time)
         vel_y = 0;
         on_air = false;
     }
+
+    std::cout << position.z << std::endl;
 }

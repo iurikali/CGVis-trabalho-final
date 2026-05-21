@@ -58,6 +58,4 @@ public:
     void set_spin(bool b);
     
     AABB hit_box;
-
-    AABB teste_colisao;
 };
