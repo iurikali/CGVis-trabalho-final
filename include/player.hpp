@@ -35,6 +35,7 @@ private:
     float spin_speed;
 
     void CollisionPhysics(float delta_time);
+    glm::vec3 CheckCollisionPhysics(int sector, float vel_x_temp, float vel_y_temp, float vel_z_temp);
 
 public:
     Player(std::string name, int obj_id, int tex_id, glm::vec3 pos, float vel);

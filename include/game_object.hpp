@@ -137,7 +137,7 @@ public:
 //usando map pq ele não ocupa espaço se tiver um setor vazio
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
-#define SECTOR_LEN 20.0
+#define SECTOR_LEN 4.0
 
 
 //Objetos estaticos (.obj)

@@ -284,8 +284,46 @@ void Player::CollisionPhysics(float delta_time)
     
     hit_box.Update(position);
 
-    int sector = (int) position.z / SECTOR_LEN;
 
+    //Aqui é o código que verifica a colisao com o setor atual e o próximo setor mais perto
+    int sector = (int) position.z / SECTOR_LEN;
+    float sector_f = (float) (position.z / SECTOR_LEN) - sector;
+    int next_sector = sector + 1;
+
+    if (position.z < 0.0) 
+    {
+        if (sector_f < -.5) next_sector = sector - 1; 
+    }
+    else if (sector_f < .5) next_sector = sector - 1; 
+
+    //Verificando o nosso setor
+    glm::vec3 vel_temp = CheckCollisionPhysics(sector, vel_x_temp, vel_y_temp, vel_z_temp);
+
+    //Verificando o proximo
+    vel_temp = CheckCollisionPhysics(next_sector, vel_temp.x, vel_temp.y, vel_temp.z);
+    
+    position.x += vel_temp.x;
+    position.y += vel_temp.y;
+    position.z += vel_temp.z;
+
+    hit_box.Update(position);
+
+    //"Colisao" com o plano
+    if (position.y <= 0){ // está no chão (ou abaixo)
+        position.y = 0;
+        vel_y = 0;
+        on_air = false;
+    }
+
+    std::cout << "Z: " << position.z << std::endl;
+    std::cout << "Sector: " << sector << std::endl;
+    std::cout << "Pos/len: " << (position.z / SECTOR_LEN) << std::endl;
+    std::cout << "Sector F: " << sector_f << std::endl;
+    std::cout << "Next Sector: " << next_sector << std::endl;
+}
+
+glm::vec3 Player::CheckCollisionPhysics(int sector, float vel_x_temp, float vel_y_temp, float vel_z_temp)
+{
     //Garantindo que o setor existe
     auto it = g_collision_physics.find(sector);
 
@@ -332,20 +370,5 @@ void Player::CollisionPhysics(float delta_time)
         }
     }
 
-
-    
-    position.x += vel_x_temp;
-    position.y += vel_y_temp;
-    position.z += vel_z_temp;
-
-    hit_box.Update(position);
-
-    //"Colisao" com o plano
-    if (position.y <= 0){ // está no chão (ou abaixo)
-        position.y = 0;
-        vel_y = 0;
-        on_air = false;
-    }
-
-    std::cout << position.z << std::endl;
+    return glm::vec3(vel_x_temp, vel_y_temp, vel_z_temp);
 }
