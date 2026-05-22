@@ -45,6 +45,8 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     time_spin(0.2),
     time_spin_index(0.0),
     spin_speed(100.0),
+    sector(0),
+    next_sector(-1),
 
     hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
 {
@@ -85,15 +87,27 @@ void Player::Update(float delta_time)
         vel_y = -speed * 4;
     }
 
-    //Testando a colisao
-    /*if (hit_box.Intersects(teste_colisao))
-    {
-        std::cout << "COLIDI CARALHO" << std::endl;
-    }*/
-
 
     CollisionPhysics(delta_time);
     
+    //Fazendo a verificação da nossa hitbox com os triggers
+    //Garantindo que o setor existe
+    auto it = g_collision_triggers.find(sector);
+
+    if (it != g_collision_triggers.end())
+    {
+        //Vamos verificar a colisao fisica com geral do nosso quadrante
+        for (GameObject* obj : it->second)
+        {
+            if (obj->hitbox != nullptr)
+            {
+                if (hit_box.Intersects(*(obj->hitbox)))
+                {
+                    obj->on_trigger_player(delta_time);
+                }
+            }
+        }
+    }
 
     hit_box.DrawDebug();
 
@@ -286,9 +300,9 @@ void Player::CollisionPhysics(float delta_time)
 
 
     //Aqui é o código que verifica a colisao com o setor atual e o próximo setor mais perto
-    int sector = (int) position.z / SECTOR_LEN;
+    sector = (int) position.z / SECTOR_LEN;
     float sector_f = (float) (position.z / SECTOR_LEN) - sector;
-    int next_sector = sector + 1;
+    next_sector = sector + 1;
 
     if (position.z < 0.0) 
     {

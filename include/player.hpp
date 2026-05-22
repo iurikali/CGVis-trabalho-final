@@ -34,6 +34,9 @@ private:
     float time_spin_index;
     float spin_speed;
 
+    int sector;
+    int next_sector;
+
     void CollisionPhysics(float delta_time);
     glm::vec3 CheckCollisionPhysics(int sector, float vel_x_temp, float vel_y_temp, float vel_z_temp);
 

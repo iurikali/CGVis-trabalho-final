@@ -119,10 +119,13 @@ public:
 
     //Componente de colisão (opcional)
     AABB *hitbox = nullptr;
-
+    bool is_destroyed;
 
     virtual void Update(float delta_time){}
     virtual void Draw() = 0;
+
+    virtual void on_trigger_player(float delta_time){}
+    virtual void on_trigger_spin(float delta_time){}
 
     //Apagando o componente de hitbox ao apagar o objeto
     virtual ~GameObject() 

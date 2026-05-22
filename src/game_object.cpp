@@ -18,7 +18,7 @@ extern GLint g_bbox_max_uniform;
 extern GLuint g_AABB_VAO;
 
 GameObject::GameObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos) : 
-    name(n), object_id(o_id), texture_id(t_id), position(pos)
+    name(n), object_id(o_id), texture_id(t_id), position(pos), is_destroyed(false)
     {
         //Adicionando a lista certa
         if (layer == LAYER_FISICO)

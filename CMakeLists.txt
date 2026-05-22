@@ -16,6 +16,7 @@ set(SOURCES
   src/game_object.cpp
   src/player.cpp
   src/camera.cpp
+  src/fruit.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)

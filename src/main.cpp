@@ -61,6 +61,7 @@
 #include "game_object.hpp"
 #include "player.hpp"
 #include "camera.hpp"
+#include "fruit.hpp"
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -95,6 +96,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 void LoadAnimatedGLTFModel(const char* filename, const char* object_name);
 
+void CleanUpDestroyedObjects();
 
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
@@ -390,10 +392,12 @@ int main(int argc, char* argv[])
     gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
     // Instanciação + inserção, com referência ao objeto fora do vetor
-    auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK, LAYER_TRIGGER, glm::vec3(1.0f,0.0f,0.0f));
+    /*auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK, LAYER_TRIGGER, glm::vec3(1.0f,0.0f,0.0f));
     gameObjects.push_back(bunny);
     gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 0.5, 0.5));
-    gameObjects.back()->hitbox->Update(gameObjects.back()->position);
+    gameObjects.back()->hitbox->Update(gameObjects.back()->position);*/
+    auto bunny = std::make_shared<Fruit>("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
+    gameObjects.push_back(bunny);
     
     gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
         glm::vec3(-1.3f, 0.0f, 0.0f)));
@@ -526,6 +530,8 @@ int main(int argc, char* argv[])
         // definidas anteriormente usando glfwSet*Callback() serão chamadas
         // pela biblioteca GLFW.
         glfwPollEvents();
+
+        //CleanUpDestroyedObjects();
     }
 
     // Finalizamos o uso dos recursos do sistema operacional
@@ -1470,4 +1476,33 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
     g_AnimatedScene[object_name] = obj;
     printf("Modelo GLTF '%s' carregado com sucesso! (Vértices: %lu, Índices: %lu, Partes: %lu)\n", 
            object_name, global_vertices.size(), global_indices.size(), obj.primitives.size());
+}
+
+void CleanUpDestroyedObjects()
+{
+    // Varrendo os Triggers (você pode fazer o mesmo para as outras listas depois)
+    for (auto& pair : g_collision_triggers) 
+    {
+        std::vector<GameObject*>& lista = pair.second;
+        
+        for (int i = 0; i < lista.size(); ) 
+        {
+            if (lista[i]->is_destroyed) 
+            {
+                // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
+                delete lista[i]; 
+                
+                // 2. Swap and Pop (Substitui pelo último e apaga o final)
+                lista[i] = lista.back();
+                lista.pop_back();
+                
+                // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
+                // novo que acabou de ser movido para a posição 'i'
+            }
+            else 
+            {
+                i++; // Só avança se o objeto atual estiver vivo
+            }
+        }
+    }
 }
