@@ -113,7 +113,8 @@ public:
     glm::vec3 rotation{0.0f, 0.0f, 0.0f};
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
 
-    GameObject(std::string name, int obj_id, int tex_id, CollisionLayer layer, glm::vec3 pos);
+    GameObject(std::string name, int obj_id, int tex_id, bool is_physics, 
+    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos);
 
     glm::mat4 GetModelMatrix();
 
@@ -140,6 +141,11 @@ public:
 //usando map pq ele não ocupa espaço se tiver um setor vazio
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
+extern std::unordered_map<int, std::vector<GameObject*>> g_collision_spin;
+
+extern std::vector<GameObject*> g_non_destructible_objects;
+extern std::vector<GameObject*> g_destructible_objects;
+
 #define SECTOR_LEN 4.0
 
 
@@ -147,7 +153,8 @@ extern std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
 class StaticObject : public GameObject
 {
 public:
-    StaticObject(std::string name, int obj_id, int tex_id, CollisionLayer layer, glm::vec3 pos);
+    StaticObject(std::string name, int obj_id, int tex_id, bool is_physics, 
+    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos);
     
     void Draw() override;
 };
@@ -163,7 +170,8 @@ public:
 
     glm::mat4 final_bone_matrices[100];
 
-    AnimatedObject(std::string name, int obj_id, int tex_id, CollisionLayer layer, glm::vec3 pos);
+    AnimatedObject(std::string name, int obj_id, int tex_id, bool is_physics, 
+    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos);
 
     void SetAnimation(int anim_index);
     void Update(float delta_time) override;

@@ -96,7 +96,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 void LoadAnimatedGLTFModel(const char* filename, const char* object_name);
 
-void CleanUpDestroyedObjects(std::vector<GameObject*> &lista_main);
+void CleanUpDestroyedObjects();
 
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
@@ -194,9 +194,6 @@ GLuint g_NumLoadedTextures = 0;
 #define CHARACTER 3
 #define CUBE 4
 
-Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
-Camera camera = Camera();
-
 //Funcao para visualizar a nossa AABB
 //Foi o gemini que fez
 // Variável global para guardar o VAO da caixa de debug
@@ -205,7 +202,20 @@ GLuint g_AABB_VAO = 0;
 //Layers de colisao
 std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
 std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
+std::unordered_map<int, std::vector<GameObject*>> g_collision_spin;
 
+
+// Vetor com referência a todos objetos a serem desenhados
+//Temos duas listas pq no final do loop a g_destructible_objects é verificada
+//para saber se algum objeto foi removido
+//Mas como existem objetos que sao permanentes (arvores, blocos etc), seria desnecessário 
+//verificar toda vez, então por isso existe essa separação
+std::vector<GameObject*> g_non_destructible_objects;
+std::vector<GameObject*> g_destructible_objects;
+
+
+Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
+Camera camera = Camera();
 
 
 void InitDebugAABB() 
@@ -385,34 +395,29 @@ int main(int argc, char* argv[])
     
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
-    // Vetor com referência a todos objetos a serem desenhados
-    //std::vector<std::shared_ptr<GameObject>> gameObjects;
-    std::vector<GameObject*> gameObjects;
-
-    // Instanciação+inserção no vetor e alteração de algum atributo
-    gameObjects.push_back(new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, LAYER_NONE, glm::vec3(0.0f, 0.0f, 0.0f)));
-    gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
 
 
+    // Criando os objetos
+    // Isso nao gera problema pq no construtor do método a gente tá 
+    // adicionando o endereço nas listas
+    // esses dados são removidos da memória na função void CleanUpDestroyedObjects();
+    new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, false, false, false, false, glm::vec3(0.0f, 0.0f, 0.0f));
+    g_non_destructible_objects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
-    // Instanciação + inserção, com referência ao objeto fora do vetor
-    Fruit *bunny = new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
-    gameObjects.push_back(bunny);
+    new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
     
-    gameObjects.push_back(new StaticObject ("the_cube", CUBE, COBBLESTONE, LAYER_FISICO, glm::vec3(-1.3f, 0.0f, 0.0f)));
-    gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    gameObjects.back()->hitbox->Update(gameObjects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, glm::vec3(-1.3f, 0.0f, 0.0f));
+    g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
     
-
-    gameObjects.push_back(new StaticObject ("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
-        glm::vec3(2.3f, 0.0f, 5.0f)));
-    gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    gameObjects.back()->hitbox->Update(gameObjects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false,
+        glm::vec3(2.3f, 0.0f, 5.0f));
+    g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
 
     //gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, LAYER_FISICO, glm::vec3(-1.3f, 1.0f, 0.0f)));
     
 
-    gameObjects.push_back(player);
     player->SetAnimation(1);
 
     glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
@@ -481,25 +486,32 @@ int main(int argc, char* argv[])
         
 
         // Atualização de objetos
-        bunny->rotation = glm::vec3(g_AngleX + (float)glfwGetTime() * 0.1f, 0.0f, 0.0f);
         
         float current_time = (float)glfwGetTime();
         float dt = current_time - last_time;
         last_time = current_time;
 
         // Personagem animado
-        player->Update(dt); // Atualiza os ossos
 
         cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
 
         camera.set_look_at(cam_position);
         
 
-        // Desenho dos objetos
-        for (auto& gameObject : gameObjects){
+        // Desenho dos objetos persistentes
+        for (auto& gameObject : g_non_destructible_objects)
+        {
+            gameObject->Update(dt);
             gameObject->Draw();
         }
         
+        // Desenho dos objetos que podem morrer
+        for (auto& gameObject : g_destructible_objects)
+        {
+            std::cout << "Desenhando: " << gameObject->name << std::endl;
+            gameObject->Update(dt);
+            gameObject->Draw();
+        }
 
         
 
@@ -529,7 +541,7 @@ int main(int argc, char* argv[])
         // pela biblioteca GLFW.
         glfwPollEvents();
 
-        CleanUpDestroyedObjects(gameObjects);
+        CleanUpDestroyedObjects();
     }
 
     // Finalizamos o uso dos recursos do sistema operacional
@@ -1476,9 +1488,9 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
            object_name, global_vertices.size(), global_indices.size(), obj.primitives.size());
 }
 
-void CleanUpDestroyedObjects(std::vector<GameObject*> &lista_main)
+void CleanUpDestroyedObjects()
 {
-    // Varrendo os Triggers (você pode fazer o mesmo para as outras listas depois)
+    // Varrendo os Triggers 
     for (auto& pair : g_collision_triggers) 
     {
         std::vector<GameObject*>& lista = pair.second;
@@ -1504,7 +1516,7 @@ void CleanUpDestroyedObjects(std::vector<GameObject*> &lista_main)
         }
     }
 
-    // Varrendo os Triggers (você pode fazer o mesmo para as outras listas depois)
+    // Varrendo os fisicos
     for (auto& pair : g_collision_physics) 
     {
         std::vector<GameObject*>& lista = pair.second;
@@ -1530,17 +1542,43 @@ void CleanUpDestroyedObjects(std::vector<GameObject*> &lista_main)
         }
     }
 
-    //Removendo da lista da main
-    for (int i = 0; i < lista_main.size(); )
+    // Varrendo a lista de colisao com o spin 
+    for (auto& pair : g_collision_spin) 
     {
-        if (lista_main[i]->is_destroyed) 
+        std::vector<GameObject*>& lista = pair.second;
+        
+        for (int i = 0; i < lista.size(); ) 
+        {
+            if (lista[i]->is_destroyed) 
+            {
+                // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
+                //delete lista[i]; 
+                
+                // 2. Swap and Pop (Substitui pelo último e apaga o final)
+                lista[i] = lista.back();
+                lista.pop_back();
+                
+                // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
+                // novo que acabou de ser movido para a posição 'i'
+            }
+            else 
+            {
+                i++; // Só avança se o objeto atual estiver vivo
+            }
+        }
+    }
+
+    //Removendo da lista da main
+    for (int i = 0; i < g_destructible_objects.size(); )
+    {
+        if (g_destructible_objects[i]->is_destroyed) 
         {
             // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
-            delete lista_main[i]; 
+            delete g_destructible_objects[i]; 
             
             // 2. Swap and Pop (Substitui pelo último e apaga o final)
-            lista_main[i] = lista_main.back();
-            lista_main.pop_back();
+            g_destructible_objects[i] = g_destructible_objects.back();
+            g_destructible_objects.pop_back();
             
             // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
             // novo que acabou de ser movido para a posição 'i'

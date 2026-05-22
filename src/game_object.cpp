@@ -17,21 +17,37 @@ extern GLint g_bbox_max_uniform;
 
 extern GLuint g_AABB_VAO;
 
-GameObject::GameObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos) : 
+GameObject::GameObject(std::string n, int o_id, int t_id, bool is_physics, 
+    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos) : 
     name(n), object_id(o_id), texture_id(t_id), position(pos), is_destroyed(false)
     {
         //Adicionando a lista certa
-        if (layer == LAYER_FISICO)
+        if (is_physics)
         {
             //Calculando o setor
             int sector = (int) position.z / SECTOR_LEN;
             g_collision_physics[sector].push_back(this);
         }
-        else if (layer == LAYER_TRIGGER)
+        if (is_trigger)
         {
             //Calculando o setor
             int sector = (int) position.z / SECTOR_LEN;
             g_collision_triggers[sector].push_back(this);
+        }
+        if (is_spin)
+        {
+            //Calculando o setor
+            int sector = (int) position.z / SECTOR_LEN;
+            g_collision_spin[sector].push_back(this);
+        }
+
+        if (is_destructible)
+        {
+            g_destructible_objects.push_back(this);
+        }
+        else
+        {
+            g_non_destructible_objects.push_back(this);
         }
     }
 
@@ -46,8 +62,9 @@ glm::mat4 GameObject::GetModelMatrix()
 }
 
 //Os .obj
-StaticObject::StaticObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos) : 
-    GameObject(n, o_id, t_id, layer, pos){}
+StaticObject::StaticObject(std::string n, int o_id, int t_id, bool is_physics, 
+    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos) : 
+    GameObject(n, o_id, t_id, is_physics, is_trigger, is_spin, is_destructible, pos){}
 
 void StaticObject::Draw()
 {
@@ -73,8 +90,10 @@ void StaticObject::Draw()
 }
 
 //Os .gltf
-AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id, CollisionLayer layer, glm::vec3 pos): 
-    GameObject(n, o_id, t_id, layer, pos),
+AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id, bool is_physics, 
+    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos): 
+
+    GameObject(n, o_id, t_id, is_physics, is_trigger, is_spin, is_destructible, pos),
     current_animation(0),
     animation_speed(1.0f),
     current_time(0.0f)
