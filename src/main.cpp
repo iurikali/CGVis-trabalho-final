@@ -96,7 +96,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 void LoadAnimatedGLTFModel(const char* filename, const char* object_name);
 
-void CleanUpDestroyedObjects();
+void CleanUpDestroyedObjects(std::vector<GameObject*> &lista_main);
 
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
@@ -194,7 +194,7 @@ GLuint g_NumLoadedTextures = 0;
 #define CHARACTER 3
 #define CUBE 4
 
-auto player = std::make_shared<Player>("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
+Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
 Camera camera = Camera();
 
 //Funcao para visualizar a nossa AABB
@@ -205,6 +205,7 @@ GLuint g_AABB_VAO = 0;
 //Layers de colisao
 std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
 std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
+
 
 
 void InitDebugAABB() 
@@ -385,31 +386,28 @@ int main(int argc, char* argv[])
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
     // Vetor com referência a todos objetos a serem desenhados
-    std::vector<std::shared_ptr<GameObject>> gameObjects; 
+    //std::vector<std::shared_ptr<GameObject>> gameObjects;
+    std::vector<GameObject*> gameObjects;
 
     // Instanciação+inserção no vetor e alteração de algum atributo
-    gameObjects.push_back(std::make_shared<StaticObject>("the_plane", PLANE, ROCKY_TERRAIN, LAYER_NONE, glm::vec3(0.0f, 0.0f, 0.0f)));
+    gameObjects.push_back(new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, LAYER_NONE, glm::vec3(0.0f, 0.0f, 0.0f)));
     gameObjects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
+
+
     
     // Instanciação + inserção, com referência ao objeto fora do vetor
-    /*auto bunny = std::make_shared<StaticObject>("the_bunny", BUNNY, RED_BRICK, LAYER_TRIGGER, glm::vec3(1.0f,0.0f,0.0f));
-    gameObjects.push_back(bunny);
-    gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 0.5, 0.5));
-    gameObjects.back()->hitbox->Update(gameObjects.back()->position);*/
-    auto bunny = std::make_shared<Fruit>("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
+    Fruit *bunny = new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
     gameObjects.push_back(bunny);
     
-    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
-        glm::vec3(-1.3f, 0.0f, 0.0f)));
+    gameObjects.push_back(new StaticObject ("the_cube", CUBE, COBBLESTONE, LAYER_FISICO, glm::vec3(-1.3f, 0.0f, 0.0f)));
     gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
     gameObjects.back()->hitbox->Update(gameObjects.back()->position + glm::vec3(0.5, 0.0, 0.5));
     
 
-    gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
+    gameObjects.push_back(new StaticObject ("the_cube", CUBE, COBBLESTONE, LAYER_FISICO,
         glm::vec3(2.3f, 0.0f, 5.0f)));
     gameObjects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
     gameObjects.back()->hitbox->Update(gameObjects.back()->position + glm::vec3(0.5, 0.0, 0.5));
-    
 
     //gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, LAYER_FISICO, glm::vec3(-1.3f, 1.0f, 0.0f)));
     
@@ -531,7 +529,7 @@ int main(int argc, char* argv[])
         // pela biblioteca GLFW.
         glfwPollEvents();
 
-        //CleanUpDestroyedObjects();
+        CleanUpDestroyedObjects(gameObjects);
     }
 
     // Finalizamos o uso dos recursos do sistema operacional
@@ -1478,7 +1476,7 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
            object_name, global_vertices.size(), global_indices.size(), obj.primitives.size());
 }
 
-void CleanUpDestroyedObjects()
+void CleanUpDestroyedObjects(std::vector<GameObject*> &lista_main)
 {
     // Varrendo os Triggers (você pode fazer o mesmo para as outras listas depois)
     for (auto& pair : g_collision_triggers) 
@@ -1490,7 +1488,7 @@ void CleanUpDestroyedObjects()
             if (lista[i]->is_destroyed) 
             {
                 // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
-                delete lista[i]; 
+                //delete lista[i]; 
                 
                 // 2. Swap and Pop (Substitui pelo último e apaga o final)
                 lista[i] = lista.back();
@@ -1505,4 +1503,52 @@ void CleanUpDestroyedObjects()
             }
         }
     }
-}
+
+    // Varrendo os Triggers (você pode fazer o mesmo para as outras listas depois)
+    for (auto& pair : g_collision_physics) 
+    {
+        std::vector<GameObject*>& lista = pair.second;
+        
+        for (int i = 0; i < lista.size(); ) 
+        {
+            if (lista[i]->is_destroyed) 
+            {
+                // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
+                //delete lista[i]; 
+                
+                // 2. Swap and Pop (Substitui pelo último e apaga o final)
+                lista[i] = lista.back();
+                lista.pop_back();
+                
+                // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
+                // novo que acabou de ser movido para a posição 'i'
+            }
+            else 
+            {
+                i++; // Só avança se o objeto atual estiver vivo
+            }
+        }
+    }
+
+    //Removendo da lista da main
+    for (int i = 0; i < lista_main.size(); )
+    {
+        if (lista_main[i]->is_destroyed) 
+        {
+            // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
+            delete lista_main[i]; 
+            
+            // 2. Swap and Pop (Substitui pelo último e apaga o final)
+            lista_main[i] = lista_main.back();
+            lista_main.pop_back();
+            
+            // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
+            // novo que acabou de ser movido para a posição 'i'
+        }
+        else 
+        {
+            i++; // Só avança se o objeto atual estiver vivo
+        }
+    }    
+}  
+
