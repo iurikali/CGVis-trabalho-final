@@ -23,13 +23,13 @@ void Fruit::Update(float delta_time)
 }
 
 
-void Fruit::on_trigger_player(float delta_time)
+void Fruit::on_trigger_player()
 {
     is_destroyed = true;
-    std::cout << "Fruta " << std::endl;
+    
 }
 
-void Fruit::on_trigger_spin(float delta_time)
+void Fruit::on_trigger_spin()
 {
-
+    std::cout << "Fruta " << std::endl;
 }

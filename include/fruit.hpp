@@ -14,6 +14,6 @@ public:
     void Update(float delta_time) override;
 
 
-    void on_trigger_player(float delta_time) override;
-    void on_trigger_spin(float delta_time) override; 
+    void on_trigger_player() override;
+    void on_trigger_spin() override; 
 };

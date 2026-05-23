@@ -38,7 +38,10 @@ private:
     int next_sector;
 
     void CollisionPhysics(float delta_time);
-    glm::vec3 CheckCollisionPhysics(int sector, float vel_x_temp, float vel_y_temp, float vel_z_temp);
+    
+    void CheckCollisionTrigger(int sector_index);
+
+    void CheckCollisionSpin(int sector_index);
 
 public:
     Player(std::string name, int obj_id, int tex_id, glm::vec3 pos, float vel);
@@ -62,4 +65,6 @@ public:
     void set_spin(bool b);
     
     AABB hit_box;
+
+    AABB spin_hitbox;
 };

@@ -93,14 +93,6 @@ class AABB
     void DrawDebug();
 };
 
-enum CollisionLayer 
-{
-    LAYER_NONE,
-    LAYER_FISICO,
-    LAYER_TRIGGER
-};
-
-
 //GameObject vai ser classe pai dos objetos estáticos e dos animados
 class GameObject
 {
@@ -125,8 +117,8 @@ public:
     virtual void Update(float delta_time){}
     virtual void Draw() = 0;
 
-    virtual void on_trigger_player(float delta_time){}
-    virtual void on_trigger_spin(float delta_time){}
+    virtual void on_trigger_player(){}
+    virtual void on_trigger_spin(){}
 
     //Apagando o componente de hitbox ao apagar o objeto
     virtual ~GameObject() 

@@ -48,7 +48,8 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     sector(0),
     next_sector(-1),
 
-    hit_box(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.2, 0.5))
+    hit_box(glm::vec3(-0.2, 0.0, -0.2), glm::vec3(0.2, 1.2, 0.2)),
+    spin_hitbox(glm::vec3(-0.8, 0.0, -0.8), glm::vec3(0.8, 1.2, 0.8))
 {
     std::cout << "PLAYER CRIADO" << std::endl;
 
@@ -90,26 +91,20 @@ void Player::Update(float delta_time)
 
     CollisionPhysics(delta_time);
     
-    //Fazendo a verificação da nossa hitbox com os triggers
-    //Garantindo que o setor existe
-    auto it = g_collision_triggers.find(sector);
-
-    if (it != g_collision_triggers.end())
-    {
-        //Vamos verificar a colisao fisica com geral do nosso quadrante
-        for (GameObject* obj : it->second)
-        {
-            if (obj->hitbox != nullptr)
-            {
-                if (hit_box.Intersects(*(obj->hitbox)))
-                {
-                    obj->on_trigger_player(delta_time);
-                }
-            }
-        }
-    }
+    CheckCollisionTrigger(sector);
+    CheckCollisionTrigger(next_sector);
 
     hit_box.DrawDebug();
+
+    if (state == ATTACKING)
+    {
+        spin_hitbox.Update(position);
+        spin_hitbox.DrawDebug();
+
+        CheckCollisionSpin(sector);
+        CheckCollisionSpin(next_sector);
+
+    }
 
 
     AnimatedObject::Update(delta_time);
@@ -218,45 +213,45 @@ void Player::state_machine(float delta_time)
         break;
 
     case ATTACKING:
-    if (Player::current_animation != ATTACKING)
-    {
-        Player::SetAnimation(ATTACKING);
-        time_spin_index = time_spin;
-    }
-
-    //Corrigindo a rotacao da animacao
-    rotation.y += spin_speed * delta_time;
-
-    //Rodando o contador
-    if (time_spin_index > 0)
-    {
-        time_spin_index -= delta_time;
-    }
-    //Acabou o tempo, vamos sair do estado
-    else
-    {
-        time_spin_index = 0;
-        spin = false;
-
-        if (!on_air)
+        if (Player::current_animation != ATTACKING)
         {
-            if (vel_x == 0.0 && vel_z == 0.0)
+            Player::SetAnimation(ATTACKING);
+            time_spin_index = time_spin;
+        }
+
+        //Corrigindo a rotacao da animacao
+        rotation.y += spin_speed * delta_time;
+
+        //Rodando o contador
+        if (time_spin_index > 0)
+        {
+            time_spin_index -= delta_time;
+        }
+        //Acabou o tempo, vamos sair do estado
+        else
+        {
+            time_spin_index = 0;
+            spin = false;
+
+            if (!on_air)
             {
-                state = IDLE;
+                if (vel_x == 0.0 && vel_z == 0.0)
+                {
+                    state = IDLE;
+                }
+                else
+                {
+                    state = WALKING;
+                }
             }
             else
             {
-                state = WALKING;
+                state = AIR;
             }
         }
-        else
-        {
-            state = AIR;
-        }
-    }
 
-    //Saindo do estado
-
+        //Saindo do estado
+        break;
 
     default:
         break;
@@ -289,100 +284,140 @@ void Player::set_spin(bool b)
 //Existe esse avanço na box
 void Player::CollisionPhysics(float delta_time)
 {
-
-    //Colisao AABB modificada
     float vel_x_temp = vel_x * delta_time;
     float vel_y_temp = vel_y * delta_time;
     float vel_z_temp = vel_z * delta_time;
-
     
+
     hit_box.Update(position);
 
+    //Calculando os setores
+    int sector = (int)(position.z / SECTOR_LEN);
+    float sector_f = (float)(position.z / SECTOR_LEN) - sector;
+    int next_sector = sector + 1;
 
-    //Aqui é o código que verifica a colisao com o setor atual e o próximo setor mais perto
-    sector = (int) position.z / SECTOR_LEN;
-    float sector_f = (float) (position.z / SECTOR_LEN) - sector;
-    next_sector = sector + 1;
-
-    if (position.z < 0.0) 
+    if (position.z < 0.0f) 
     {
-        if (sector_f < -.5) next_sector = sector - 1; 
+        if (sector_f < -0.5f) next_sector = sector - 1; 
+    } else if (sector_f < 0.5f) 
+    {
+        next_sector = sector - 1; 
     }
-    else if (sector_f < .5) next_sector = sector - 1; 
 
-    //Verificando o nosso setor
-    glm::vec3 vel_temp = CheckCollisionPhysics(sector, vel_x_temp, vel_y_temp, vel_z_temp);
+    int sectors_to_check[2] = {sector, next_sector};
 
-    //Verificando o proximo
-    vel_temp = CheckCollisionPhysics(next_sector, vel_temp.x, vel_temp.y, vel_temp.z);
+    //Eixo X
+    for (int s : sectors_to_check)
+    {
+        auto it = g_collision_physics.find(s);
+        if (it != g_collision_physics.end()) 
+        {
+            for (GameObject* obj : it->second) 
+            {
+                if (obj->hitbox != nullptr)
+                    vel_x_temp = hit_box.GetClipX(*(obj->hitbox), vel_x_temp);
+            }
+        }
+    }
+    hit_box.box_min.x += vel_x_temp;
+    hit_box.box_max.x += vel_x_temp;
+
+    //Eixo Z
+    for (int s : sectors_to_check)
+    {
+        auto it = g_collision_physics.find(s);
+        if (it != g_collision_physics.end()) 
+        {
+            for (GameObject* obj : it->second) 
+            {
+                if (obj->hitbox != nullptr)
+                    vel_z_temp = hit_box.GetClipZ(*(obj->hitbox), vel_z_temp);
+            }
+        }
+    }
+    hit_box.box_min.z += vel_z_temp;
+    hit_box.box_max.z += vel_z_temp;
+
+    //Eixo Y
+    float old_vel_y = vel_y_temp;
+    for (int s : sectors_to_check)
+    {
+        auto it = g_collision_physics.find(s);
+        if (it != g_collision_physics.end()) 
+        {
+            for (GameObject* obj : it->second) 
+            {
+                if (obj->hitbox != nullptr)
+                    vel_y_temp = hit_box.GetClipY(*(obj->hitbox), vel_y_temp);
+            }
+        }
+    }
     
-    position.x += vel_temp.x;
-    position.y += vel_temp.y;
-    position.z += vel_temp.z;
-
-    hit_box.Update(position);
-
-    //"Colisao" com o plano
-    if (position.y <= 0){ // está no chão (ou abaixo)
-        position.y = 0;
-        vel_y = 0;
+    //Falando que paramos de cair (mudar essa funcao, vai dar problema se der cabeçada num bloco)
+    if (vel_y_temp != old_vel_y) 
+    {
+        vel_y = 0.0f; 
         on_air = false;
     }
 
-    std::cout << "Z: " << position.z << std::endl;
-    std::cout << "Sector: " << sector << std::endl;
-    std::cout << "Pos/len: " << (position.z / SECTOR_LEN) << std::endl;
-    std::cout << "Sector F: " << sector_f << std::endl;
-    std::cout << "Next Sector: " << next_sector << std::endl;
+
+    position.x += vel_x_temp;
+    position.y += vel_y_temp;
+    position.z += vel_z_temp;
+
+    hit_box.Update(position);
+
+
+    // Colisao com o plano
+    if (position.y <= 0.0f)
+    { 
+        position.y = 0.0f;
+        vel_y = 0.0f;
+        on_air = false;
+    }
+    
 }
 
-glm::vec3 Player::CheckCollisionPhysics(int sector, float vel_x_temp, float vel_y_temp, float vel_z_temp)
-{
-    //Garantindo que o setor existe
-    auto it = g_collision_physics.find(sector);
 
-    if (it != g_collision_physics.end())
+void Player::CheckCollisionTrigger(int sector_index)
+{
+    //Fazendo a verificação da nossa hitbox com os triggers
+    //Garantindo que o setor existe
+    auto it = g_collision_triggers.find(sector_index);
+
+    if (it != g_collision_triggers.end())
     {
         //Vamos verificar a colisao fisica com geral do nosso quadrante
         for (GameObject* obj : it->second)
         {
             if (obj->hitbox != nullptr)
             {
-                //Eixo X
-                vel_x_temp = hit_box.GetClipX(*(obj->hitbox), vel_x_temp);
+                if (hit_box.Intersects(*(obj->hitbox)))
+                {
+                    obj->on_trigger_player();
+                }
             }
-        }
-        hit_box.box_min.x += vel_x_temp;
-        hit_box.box_max.x += vel_x_temp;
-
-        for (GameObject* obj : it->second)
-        {
-            if (obj->hitbox != nullptr)
-            {
-                //Eixo Z
-                vel_z_temp = hit_box.GetClipZ(*(obj->hitbox), vel_z_temp);
-            }
-        }
-        hit_box.box_min.z += vel_z_temp;
-        hit_box.box_max.z += vel_z_temp;
-        
-        float old_vel_y = vel_y_temp;
-        for (GameObject* obj : it->second)
-        {
-            if (obj->hitbox != nullptr)
-            {
-                //Colisao na vertical
-                vel_y_temp = hit_box.GetClipY(*(obj->hitbox), vel_y_temp);
-            }
-        }
-                
-        // Verificando se colidimos em Y (chão ou teto)
-        if (vel_y_temp != old_vel_y)
-        {
-            vel_y = 0.0f; // Zera a gravidade real para parar de cair
-            on_air = false;
         }
     }
+}
 
-    return glm::vec3(vel_x_temp, vel_y_temp, vel_z_temp);
+void Player::CheckCollisionSpin(int sector_index)
+{
+    //Fazendo a colisao do spin
+    auto it = g_collision_spin.find(sector_index);
+
+    if (it != g_collision_spin.end())
+    {
+        //Vamos verificar a colisao fisica com geral do nosso quadrante
+        for (GameObject* obj : it->second)
+        {
+            if (obj->hitbox != nullptr)
+            {
+                if (spin_hitbox.Intersects(*(obj->hitbox)))
+                {
+                    obj->on_trigger_spin();
+                }
+            }
+        }
+    }
 }

@@ -411,7 +411,7 @@ int main(int argc, char* argv[])
     g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
     
     new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false,
-        glm::vec3(2.3f, 0.0f, 5.0f));
+        glm::vec3(2.3f, 0.0f, -5.0f));
     g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
     g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
 
@@ -1488,6 +1488,10 @@ void LoadAnimatedGLTFModel(const char* filename, const char* object_name)
            object_name, global_vertices.size(), global_indices.size(), obj.primitives.size());
 }
 
+//Essa funcao passa pelas camadas de fisica, trigger e spin
+//Verifica se algum objeto foi marcado para remover
+//E remove ele de cada lista
+//Depois realmente destruimos o objeto
 void CleanUpDestroyedObjects()
 {
     // Varrendo os Triggers 
@@ -1499,19 +1503,13 @@ void CleanUpDestroyedObjects()
         {
             if (lista[i]->is_destroyed) 
             {
-                // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
-                //delete lista[i]; 
-                
-                // 2. Swap and Pop (Substitui pelo último e apaga o final)
                 lista[i] = lista.back();
                 lista.pop_back();
                 
-                // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
-                // novo que acabou de ser movido para a posição 'i'
             }
             else 
             {
-                i++; // Só avança se o objeto atual estiver vivo
+                i++;
             }
         }
     }
@@ -1525,19 +1523,14 @@ void CleanUpDestroyedObjects()
         {
             if (lista[i]->is_destroyed) 
             {
-                // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
-                //delete lista[i]; 
                 
-                // 2. Swap and Pop (Substitui pelo último e apaga o final)
                 lista[i] = lista.back();
                 lista.pop_back();
                 
-                // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
-                // novo que acabou de ser movido para a posição 'i'
             }
             else 
             {
-                i++; // Só avança se o objeto atual estiver vivo
+                i++;
             }
         }
     }
@@ -1551,19 +1544,14 @@ void CleanUpDestroyedObjects()
         {
             if (lista[i]->is_destroyed) 
             {
-                // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
-                //delete lista[i]; 
-                
-                // 2. Swap and Pop (Substitui pelo último e apaga o final)
+
                 lista[i] = lista.back();
                 lista.pop_back();
-                
-                // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
-                // novo que acabou de ser movido para a posição 'i'
+
             }
             else 
             {
-                i++; // Só avança se o objeto atual estiver vivo
+                i++;
             }
         }
     }
@@ -1573,19 +1561,15 @@ void CleanUpDestroyedObjects()
     {
         if (g_destructible_objects[i]->is_destroyed) 
         {
-            // 1. Libera a memória RAM (aqui o destrutor do GameObject limpa a AABB)
             delete g_destructible_objects[i]; 
             
-            // 2. Swap and Pop (Substitui pelo último e apaga o final)
             g_destructible_objects[i] = g_destructible_objects.back();
             g_destructible_objects.pop_back();
-            
-            // Não incrementamos o 'i' aqui, pois precisamos testar o objeto 
-            // novo que acabou de ser movido para a posição 'i'
+
         }
         else 
         {
-            i++; // Só avança se o objeto atual estiver vivo
+            i++;
         }
     }    
 }  
