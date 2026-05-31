@@ -52,6 +52,8 @@
 
 #include <stb_image.h>
 
+#include <json.hpp>
+
 // Headers locais, definidos na pasta "include/"
 #include "utils.h"
 #include "matrices.h"
@@ -180,13 +182,16 @@ GLint g_bones_uniform;
 GLuint g_NumLoadedTextures = 0;
 
 // Número de texturas existentes ! atualizar no shader_fragment também
-#define NUM_TEXTURAS 5
+#define NUM_TEXTURAS 8
 
 #define RED_BRICK 0
 #define ROCKY_TERRAIN 1
 #define COBBLESTONE 2
 #define GRASS_BLOCK 3
 #define CHARACTER_TEXTURE 4
+#define WUMPA 5
+#define CRATE 6
+#define CRATE_INTERROGACAO 7
 
 #define SPHERE 0
 #define BUNNY  1
@@ -268,6 +273,13 @@ void AssetsLoader(int argc, char* argv[])
     LoadTextureImage("../../data/rocky_terrain_02_diff_1k.jpg"); 
     LoadTextureImage("../../data/cobblestone.jpg"); 
     LoadTextureImage("../../data/grass_block.jpg");
+    g_NumLoadedTextures += 1; 
+    // character é carregado nessa posição 4, mas o número de texturas não era incrementado
+    // sem isso, uma textura era carregada em 4 e a text do personagem era carregada por cima
+    // então nenhuma textura era carregada em 5
+    LoadTextureImage("../../data/wumpa.jpg"); 
+    LoadTextureImage("../../data/crate.jpg"); 
+    LoadTextureImage("../../data/crate_interrogacao.jpg"); 
 
 
     // --------------------------- .OBJ -------------------------------
@@ -287,6 +299,14 @@ void AssetsLoader(int argc, char* argv[])
     ObjModel cubemodel("../../data/cube.obj");
     ComputeNormals(&cubemodel);
     BuildTrianglesAndAddToVirtualScene(&cubemodel);
+
+    ObjModel wumpamodel("../../data/wumpa.obj");
+    ComputeNormals(&wumpamodel);
+    BuildTrianglesAndAddToVirtualScene(&wumpamodel);
+    
+    ObjModel cubetexmodel("../../data/cube-tex.obj");
+    ComputeNormals(&cubetexmodel);
+    BuildTrianglesAndAddToVirtualScene(&cubetexmodel);
 
     if (argc > 1 )
     {
@@ -373,6 +393,68 @@ GLFWwindow* InitializeWindow(){
     return window;
 }
 
+void MapCreator(std::string path){
+    const std::map<std::string, int> MESH_MAP = {
+        {"PLANE",  PLANE},
+        {"CUBE",   CUBE},
+        {"BUNNY",  BUNNY},
+    };
+
+    const std::map<std::string, int> TEXTURE_MAP = {
+        {"COBBLESTONE",       COBBLESTONE},
+        {"CRATE_INTERROGACAO", CRATE_INTERROGACAO},
+        {"WUMPA",             WUMPA},
+    };
+    std::ifstream f(path);
+    if (!f.is_open()) {
+        throw std::runtime_error("Não foi possível abrir o arquivo: " + path);
+    }
+    auto data = nlohmann::json::parse(f);
+
+    for (auto& obj : data["objects"])
+    {
+        // merge do prefab com a instância
+        std::string prefab = obj["prefab"];
+        nlohmann::json attrs = data["prefabs"][prefab];
+        attrs.merge_patch(obj);
+
+        std::string type    = attrs["type"];
+        std::string model   = attrs["model"];
+        int mapping = MESH_MAP.at(attrs["mapping"]);
+        int texture = TEXTURE_MAP.at(attrs["texture"]);
+        glm::vec3 position  = { attrs["position"][0], attrs["position"][1], attrs["position"][2] };
+
+        bool is_physics     = attrs.value("is_physics",     false);
+        bool is_trigger     = attrs.value("is_trigger",     false);
+        bool is_spin        = attrs.value("is_spin",        false);
+        bool is_destructible= attrs.value("is_destructible",false);
+
+        if (type == "Fruit")
+        {
+            new Fruit(model, mapping, texture, position);
+            is_destructible = true; // Frutas são destrutíveis
+        }
+        else if (type == "StaticObject")
+        {
+            new StaticObject (model, mapping, texture, is_physics, is_trigger, is_spin, is_destructible, position);            
+        }
+
+        std::vector<GameObject*> object_vector;
+        if (is_destructible) object_vector = g_destructible_objects;
+        else object_vector = g_non_destructible_objects;
+        
+        if (attrs.contains("scale"))
+            object_vector.back()->scale = glm::vec3(0.05f, 0.05f, 0.05f);
+        if (attrs.contains("hitbox")) {
+            glm::vec3 hitboxMin(attrs["hitbox"][0][0], attrs["hitbox"][0][1], attrs["hitbox"][0][2]);
+            glm::vec3 hitboxMax(attrs["hitbox"][1][0], attrs["hitbox"][1][1], attrs["hitbox"][1][2]);
+            object_vector.back()->hitbox = new AABB(hitboxMin, hitboxMax);
+            object_vector.back()->hitbox->Update(object_vector.back()->position + glm::vec3(0.5, 0.0, 0.5)); // esse valor ainda tá fixo para caixas
+        }
+    }
+}
+
+
 int main(int argc, char* argv[])
 {
     GLFWwindow* window = InitializeWindow();
@@ -404,19 +486,29 @@ int main(int argc, char* argv[])
     new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, false, false, false, false, glm::vec3(0.0f, 0.0f, 0.0f));
     g_non_destructible_objects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
-    new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
+    // new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
     
-    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, glm::vec3(-1.3f, 0.0f, 0.0f));
-    g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    // new Fruit("the_wumpa", PLANE, WUMPA, glm::vec3(2.0f,2.0f,1.0f));
+    // g_destructible_objects.back()->scale = glm::vec3(0.05f, 0.05f, 0.05f);
     
-    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false,
-        glm::vec3(2.3f, 0.0f, -5.0f));
-    g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    // new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, glm::vec3(-1.3f, 0.0f, 0.0f));
+    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    
+    // new StaticObject ("the_cube", CUBE, CRATE, true, false, false, false, glm::vec3(1.3f, 0.0f, 0.0f));
+    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+    
+    // new StaticObject ("the_cube_tex", CUBE, CRATE_INTERROGACAO, true, false, false, false, glm::vec3(1.3f, 0.0f, 2.0f));
+    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
 
-    //gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, LAYER_FISICO, glm::vec3(-1.3f, 1.0f, 0.0f)));
-    
+    // new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false,
+    //     glm::vec3(2.3f, 0.0f, -5.0f));
+    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
+    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
+
+    MapCreator("../../src/objetos.json");   
 
     player->SetAnimation(1);
 
@@ -508,7 +600,7 @@ int main(int argc, char* argv[])
         // Desenho dos objetos que podem morrer
         for (auto& gameObject : g_destructible_objects)
         {
-            std::cout << "Desenhando: " << gameObject->name << std::endl;
+            // std::cout << "Desenhando: " << gameObject->name << std::endl;
             gameObject->Update(dt);
             gameObject->Draw();
         }

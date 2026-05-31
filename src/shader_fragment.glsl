@@ -31,7 +31,7 @@ uniform vec4 bbox_min;
 uniform vec4 bbox_max;
 
 // Variáveis para acesso das imagens de textura
-#define NUM_TEXTURAS 5
+#define NUM_TEXTURAS 8
 uniform int texture_id;
 uniform sampler2D TextureImages[NUM_TEXTURAS];
 
@@ -49,6 +49,9 @@ vec3 get_texture_color(int id, vec2 uv) {
     else if (id == 2) return texture(TextureImages[2], uv).rgb;
     else if (id == 3) return texture(TextureImages[3], uv).rgb;
     else if (id == 4) return texture(TextureImages[4], uv).rgb;
+    else if (id == 5) return texture(TextureImages[5], uv).rgb;
+    else if (id == 6) return texture(TextureImages[6], uv).rgb;
+    else if (id == 7) return texture(TextureImages[7], uv).rgb;
     
     return vec3(1.0, 0.0, 1.0); // Retorna magenta se o id for inválido (ajuda no debug)
 }
