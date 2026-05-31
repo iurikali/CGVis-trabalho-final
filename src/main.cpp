@@ -406,6 +406,8 @@ void MapCreator(std::string path){
         {"COBBLESTONE",       COBBLESTONE},
         {"CRATE_INTERROGACAO", CRATE_INTERROGACAO},
         {"WUMPA",             WUMPA},
+        {"RED_BRICK", RED_BRICK},
+        {"ROCKY_TERRAIN", ROCKY_TERRAIN}
     };
     std::ifstream f(path);
     if (!f.is_open()) {
@@ -425,12 +427,13 @@ void MapCreator(std::string path){
         int mapping = MESH_MAP.at(attrs["mapping"]);
         int texture = TEXTURE_MAP.at(attrs["texture"]);
         glm::vec3 position  = { attrs["position"][0], attrs["position"][1], attrs["position"][2] };
-
+        
         bool is_physics     = attrs.value("is_physics",     false);
         bool is_trigger     = attrs.value("is_trigger",     false);
         bool is_spin        = attrs.value("is_spin",        false);
+        bool is_jump        = attrs.value("is_jump",        false);
         bool is_destructible= attrs.value("is_destructible",false);
-
+        
         if (type == "Fruit")
         {
             new Fruit(model, mapping, texture, position);
@@ -438,15 +441,21 @@ void MapCreator(std::string path){
         }
         else if (type == "StaticObject")
         {
-            new StaticObject (model, mapping, texture, is_physics, is_trigger, is_spin, is_destructible, position);            
+            new StaticObject (model, mapping, texture, is_physics, is_trigger, is_spin, is_jump, is_destructible, position);            
         }
-
+        else if (type == "Box")
+        {
+            new Box(model, mapping, texture, position);
+        }
+        
         std::vector<GameObject*> object_vector;
         if (is_destructible) object_vector = g_destructible_objects;
         else object_vector = g_non_destructible_objects;
         
-        if (attrs.contains("scale"))
-            object_vector.back()->scale = glm::vec3(0.05f, 0.05f, 0.05f);
+        if (attrs.contains("scale")){
+            glm::vec3 scale  = { attrs["scale"][0], attrs["scale"][1], attrs["scale"][2] };
+            object_vector.back()->scale = scale;
+        }
         if (attrs.contains("hitbox")) {
             glm::vec3 hitboxMin(attrs["hitbox"][0][0], attrs["hitbox"][0][1], attrs["hitbox"][0][2]);
             glm::vec3 hitboxMax(attrs["hitbox"][1][0], attrs["hitbox"][1][1], attrs["hitbox"][1][2]);
@@ -480,38 +489,7 @@ int main(int argc, char* argv[])
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-    // Criando os objetos
-    // Isso nao gera problema pq no construtor do método a gente tá 
-    // adicionando o endereço nas listas
-    // esses dados são removidos da memória na função void CleanUpDestroyedObjects();
-    new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, false, false, false, false, false, glm::vec3(0.0f, 0.0f, 0.0f));
-    g_non_destructible_objects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
-    
-    // new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
-    
-    // new Fruit("the_wumpa", PLANE, WUMPA, glm::vec3(2.0f,2.0f,1.0f));
-    // g_destructible_objects.back()->scale = glm::vec3(0.05f, 0.05f, 0.05f);
-    
-    // new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, false, glm::vec3(-1.3f, 0.0f, 0.0f));
-    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
-    
-    // new StaticObject ("the_cube", CUBE, CRATE, true, false, false, false, false, glm::vec3(1.3f, 0.0f, 0.0f));
-    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
-    
-    // new StaticObject ("the_cube_tex", CUBE, CRATE_INTERROGACAO, true, false, false, false, glm::vec3(1.3f, 0.0f, 2.0f));
-    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
-
-    // new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false,
-    //     glm::vec3(2.3f, 0.0f, -5.0f));
-    // g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
-    // g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
-
     MapCreator("../../src/objetos.json");   
-    new Box("the_cube", CUBE, RED_BRICK, glm::vec3(1.0f, 0.0f, 2.0f));
 
     player->SetAnimation(1);
 

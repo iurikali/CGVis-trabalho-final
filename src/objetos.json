@@ -7,25 +7,43 @@
       "texture": "WUMPA",
       "scale": [0.05, 0.05, 0.05]
     },
-
-    "crate_interrogation": {
+    "cobblestone": {
       "type": "StaticObject",
-      "model": "the_cube_tex",
+      "model": "the_cube",
       "mapping": "CUBE",
-      "texture": "CRATE_INTERROGACAO",
+      "texture": "COBBLESTONE",
       "is_physics": true,
       "is_trigger": false,
       "is_spin": false, 
       "is_destructible": false,
       "hitbox":[[-0.5, 0.0, -0.5], [0.5, 1.0, 0.5]]
+    },
+    "crate_interrogacao": {
+      "type": "Box",
+      "model": "the_cube_tex",
+      "mapping": "CUBE",
+      "texture": "CRATE_INTERROGACAO"
+    },
+    "plane": {
+      "type": "StaticObject",
+      "model": "the_plane",
+      "mapping": "PLANE",
+      "texture": "ROCKY_TERRAIN"
     }
   },
   "objects": [
+    { "prefab": "plane", "position": [0.0, 0.0, 0.0], "scale": [5.0, 1.0, 5.0]},
     { "prefab": "wumpa", "position": [2.0, 3.0, 3.0] },
     { "prefab": "wumpa", "position": [3.0, 3.0, 3.0] },
     { "prefab": "wumpa", "position": [4.0, 3.0, 3.0] },
-    { "prefab": "crate_interrogation", "position": [2.0, 0.0, 1.0]},
-    { "prefab": "crate_interrogation", "position": [2.0, 0.0, 3.0]},
-    { "prefab": "crate_interrogation", "position": [2.0, 0.0, 5.0]}
+    { "prefab": "cobblestone", "position": [2.0, 0.0, 1.0]},
+    { "prefab": "cobblestone", "position": [2.0, 0.0, 3.0]},
+    { "prefab": "cobblestone", "position": [2.0, 0.0, 5.0]},
+    { "prefab": "crate_interrogacao", "position": [2.0, 0.0, -3.0]},
+    { "prefab": "wumpa", "position": [2.5, 0.0, -2.5]},
+    { "prefab": "crate_interrogacao", "position": [0.0, 0.0, -3.0]},
+    { "prefab": "wumpa", "position": [0.5, 0.0, -2.5]},
+    { "prefab": "crate_interrogacao", "position": [-2.0, 0.0, -3.0]},
+    { "prefab": "wumpa", "position": [-1.5, 0.0, -2.5]}
   ]
 }
