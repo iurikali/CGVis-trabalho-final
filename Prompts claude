@@ -1,0 +1,549 @@
+Prompts usadas com Claude AI.
+
+Extraídas da conversa majoritariamente via prompt.
+
+===========
+
+Estou mexendo em um projeto em C/C++. 
+
+Aqui os diretórios da raiz:
+d-----        25/04/2026     20:54                bin                                                                 
+d-----        01/05/2026     19:19                build                                                               
+d-----        25/04/2026     19:02                data                                                                
+d-----        30/04/2026     19:37                include                                                             
+d-----        25/04/2026     18:24                lib-linux                                                           
+d-----        25/04/2026     18:24                lib-mingw-32                                                        
+d-----        25/04/2026     18:24                lib-mingw-64                                                        
+d-----        25/04/2026     18:24                lib-ucrt-64                                                         
+d-----        25/04/2026     18:24                lib-vc2022                                                          
+d-----        01/05/2026     19:19                src      
+
+
+Estou refatorando a src/main.cpp, movendo para alguns arquivos diferentes. Como devo fazer isso?
+
+Gostaria de saber mais sobre como é o padrão em cpp para imports e tal. Por que alguns imports são com <xxx.h> e outros "xxx.h" ? Alguns são de bibliotecas, outros são do diretório include.
+
+===========
+
+Eu sei que existe essa divisão do .hpp para titulos de funções e .cpp para implementações. Esse é o padrão? Eles ficam em diretórios separados, normalmente? Existe isso para structs e classes também?
+
+===========
+
+Eu tenho um arquivo que tem uma struct com construtor e 3 funções. Eu deveria fazer um .hpp para os headers das funções, ou deixar tudo junto?
+
+===========
+
+Por que a implementação (.cpp) faz include do .hpp?
+
+===========
+
+Se não tiver uma classe, ser só header de funções, precisa fazer esse include?
+
+===========
+
+Por exemplo, no topo da minha main tem 
+// Declaração de funções auxiliares para renderizar texto dentro da janela
+// OpenGL. Estas funções estão definidas no arquivo "textrendering.cpp".
+void TextRendering_Init();
+float TextRendering_LineHeight(GLFWwindow* window);
+float TextRendering_CharWidth(GLFWwindow* window);
+void TextRendering_PrintString(GLFWwindow* window, const std::string &str, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrix(GLFWwindow* window, glm::mat4 M, float x, float y, float scale = 1.0f);
+void TextRendering_PrintVector(GLFWwindow* window, glm::vec4 v, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrixVectorProduct(GLFWwindow* window, glm::mat4 M, glm::vec4 v, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrixVectorProductMoreDigits(GLFWwindow* window, glm::mat4 M, glm::vec4 v, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrixVectorProductDivW(GLFWwindow* window, glm::mat4 M, glm::vec4 v, float x, float y, float scale = 1.0f);
+
+Eu tenho esse arquivo .cpp.
+
+Como ficaria o .hpp, para poder dar uma limpada na main?
+
+===========
+
+Na main eu posso deixar #include <glad/glad.h>?
+
+===========
+
+textrendering.cpp
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\glad\glad.h(26,1): error C1189: #error:  OpenGL header already included, remove this include, glad already provides it [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+  (compiling source file '../src/textrendering.cpp')
+  
+Makefile:2: recipe for target 'bin/Linux/main' failed
+make: *** [bin/Linux/main] Error 1
+
+===========
+
+Erro: 
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\src\textrendering.cpp(140,108): error C2572: 'TextRendering_PrintString': redefinition of default argument: parameter 1 [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+      C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\textrendering.hpp(13,6):
+      see declaration of 'TextRendering_PrintString'
+  
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\src\textrendering.cpp(221,97): error C2572: 'TextRendering_PrintMatrix': redefinition of default argument: parameter 1 [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+      C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\textrendering.hpp(14,6):
+      see declaration of 'TextRendering_PrintMatrix'
+  
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\src\textrendering.cpp(236,97): error C2572: 'TextRendering_PrintVector': redefinition of default argument: parameter 1 [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+      C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\textrendering.hpp(15,6):
+      see declaration of 'TextRendering_PrintVector'
+  
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\src\textrendering.cpp(251,123): error C2572: 'TextRendering_PrintMatrixVectorProduct': redefinition of default argument: parameter 1 [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+      C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\textrendering.hpp(16,6):
+      see declaration of 'TextRendering_PrintMatrixVectorProduct'
+  
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\src\textrendering.cpp(267,133): error C2572: 'TextRendering_PrintMatrixVectorProductMoreDigits': redefinition of default argument: parameter 1 [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+      C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\textrendering.hpp(17,6):
+      see declaration of 'TextRendering_PrintMatrixVectorProductMoreDigits'
+  
+C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\src\textrendering.cpp(283,127): error C2572: 'TextRendering_PrintMatrixVectorProductDivW': redefinition of default argument: parameter 1 [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+      C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\include\textrendering.hpp(18,6):
+      see declaration of 'TextRendering_PrintMatrixVectorProductDivW'
+  
+Makefile:2: recipe for target 'bin/Linux/main' failed
+make: *** [bin/Linux/main] Error 1
+
+hpp:
+#pragma once
+#include <string>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
+// Declaração de funções auxiliares para renderizar texto dentro da janela
+// OpenGL. Estas funções estão definidas no arquivo "textrendering.cpp".
+void TextRendering_Init();
+float TextRendering_LineHeight(GLFWwindow* window);
+float TextRendering_CharWidth(GLFWwindow* window);
+void TextRendering_PrintString(GLFWwindow* window, const std::string &str, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrix(GLFWwindow* window, glm::mat4 M, float x, float y, float scale = 1.0f);
+void TextRendering_PrintVector(GLFWwindow* window, glm::vec4 v, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrixVectorProduct(GLFWwindow* window, glm::mat4 M, glm::vec4 v, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrixVectorProductMoreDigits(GLFWwindow* window, glm::mat4 M, glm::vec4 v, float x, float y, float scale = 1.0f);
+void TextRendering_PrintMatrixVectorProductDivW(GLFWwindow* window, glm::mat4 M, glm::vec4 v, float x, float y, float scale = 1.0f);
+
+===========
+
+Quando os headers estavam na main, não havia conflito. Nesse caso, qual era a definição que toma preferencia?
+
+===========
+
+Tenho a classe abstrata GameObject e classes concretas derivadas dela. Gostaria de fazer um vetor que contém todos para poder fazer Draw() de todos eles. Me ensine: como posso fazer um vetor de classes em cpp? O que muda se for uma classe abstrata?
+
+===========
+
+Já sei sobre ponteiros em C. O que muda em cpp?
+
+===========
+
+Por enquanto eu instancio os objetos e altero os valores deles. Tem como eu adicionar no vetor depois de criados? Ou seja, criar um unique_pointer sem que seja esse make_unique? 
+
+Tem como eu checar de que classe um objeto é, que nem no is_instance do python?
+
+===========
+
+Esse código aqui cria 2 objetos player? Quando eu mudar p, o objeto de dentro do vetor vai ser alterado?
+
+===========
+
+Tem alguns objetos que eu quero mexer depois da criação como
+StaticObject cobblestone("the_cube", CUBE, COBBLESTONE);
+    cobblestone.position = glm::vec3(-1.3f, 0.0f, 0.0f);
+
+ou até durante o while de execução do jogo:
+bunny.rotation = glm::vec3(g_AngleX + (float)glfwGetTime() * 0.1f, 0.0f, 0.0f);
+        bunny.Draw();
+
+Para esses objetos específicos, como poderia referenciar eles?
+
+===========
+
+Se o vetor for alterado, o unique_pointer do bunny não pode acabar sendo movido, então o ponteiro cru ficaria inválido?
+
+===========
+
+Quais são as diferentes alternativas para esse meu problema de ter um vetor de objetos, alguns específicos que vão ser alterados e outros que não serão tão mexidos?
+
+===========
+
+Nesse caso, o vetor precisaria ser de shared_ptr também? 
+E isso está ficando bem verboso. Tem alguma forma de simplificar?
+
+===========
+
+Movi minha câmera para uma classe separada. Me ajude a entender esses logs, por que não está compilando?
+[main] Building folder: C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build main
+[build] Starting build
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" --build C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build --target main --
+[build] Versão do MSBuild 17.14.23+b0019275e para .NET Framework
+[build] 
+[build] camera.obj : error LNK2005: "float g_CameraTheta" (?g_CameraTheta@@3MA) already defined in main.obj [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+[build] camera.obj : error LNK2005: "float g_CameraPhi" (?g_CameraPhi@@3MA) already defined in main.obj [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+[build] camera.obj : error LNK2005: "float g_CameraDistance" (?g_CameraDistance@@3MA) already defined in main.obj [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+[build] LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+[build] C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\bin\Debug\main.exe : fatal error LNK1169: one or more multiply defined symbols found [C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\build\main.vcxproj]
+[proc] The command: "C:\Program Files\CMake\bin\cmake.EXE" --build C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build --target main -- exited with code: 1
+[driver] Build completed: 00:00:00.800
+[build] Build finished with exit code 1
+
+Eu vejo que tem definições tipo g_CameraDistance, mas isso não aparece mais na minha main. O cmake não está atualizando os arquivos? Não sei muito bem como funciona (estou usando a extensão vscode, nem sei como rodar por terminal)
+
+===========
+
+Eu limpei a cache do vscode e agora o cmake/make não está funcionando. Como posso configurar ele corretamente?
+[main] Configuring project: CGVis-trabalho-final 
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build
+[cmake] CMake Deprecation Warning at CMakeLists.txt:21 (cmake_minimum_required):
+[cmake]   Compatibility with CMake < 3.10 will be removed from a future version of
+[cmake]   CMake.
+[cmake] 
+[cmake]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[cmake]   to tell CMake that the project requires at least <min> but has been updated
+[cmake]   to work with policies introduced by <max> or earlier.
+[cmake] 
+[cmake] 
+[cmake] CMake Error at CMakeLists.txt:23 (project):
+[cmake]   Running
+[cmake] 
+[cmake]    'nmake' '-?'
+[cmake] 
+[cmake]   failed with:
+[cmake] 
+[cmake]    no such file or directory
+[cmake] 
+[cmake] 
+[cmake] CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+[cmake] CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+[cmake] -- Configuring incomplete, errors occurred!
+[proc] The command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents\GitHub\CGVis-trabalho-final\build exited with code: 1
+
+===========
+
+Não encontrei Scan for Kits. Como acesso isso no vscode?
+
+===========
+
+Aparece apenas Scan for compilers, que não funciona.
+
+Fazendo ctrl shift p, Cmake configure, aparece isso:
+[cmake] -- Configuring incomplete, errors occurred!
+[proc] The command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build exited with code: 1
+
+===========
+
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> gcc --version
+gcc.exe (Rev3, Built by MSYS2 project) 14.1.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> g++ --version
+g++.exe (Rev3, Built by MSYS2 project) 14.1.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> cl
+cl : O termo 'cl' não é reconhecido como nome de cmdlet, função, arquivo de script ou programa operável. Verifique a 
+grafia do nome ou, se um caminho tiver sido incluído, veja se o caminho está correto e tente novamente.
+No linha:1 caractere:1
++ cl
++ ~~
+    + CategoryInfo          : ObjectNotFound: (cl:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+===========
+
+CMake Error: Error: generator : MinGW Makefiles
+Does not match the generator used previously: NMake Makefiles
+Either remove the CMakeCache.txt file and CMakeFiles directory or choose a different binary directory.
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> 
+
+set(SOURCES
+  src/main.cpp
+  src/correcao.cpp
+  src/textrendering.cpp
+  src/tiny_obj_loader.cpp
+  src/stb_image.cpp
+  src/glad.c
+  src/tiny_gltf_loader.cpp
+  src/game_object.cpp
+  src/player.cpp
+  src/camera.cpp
+)
+cmake_minimum_required(VERSION 3.5.0)
+project(LAB_FCG VERSION 1.0.0)
+set(CMAKE_CXX_STANDARD          11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS        OFF)
+if(WIN32)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${PROJECT_SOURCE_DIR}/bin/Debug")
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${PROJECT_SOURCE_DIR}/bin/Release")
+elseif(UNIX)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/Linux")
+endif()
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+message(STATUS
+  "Build type: ${CMAKE_BUILD_TYPE}
+               Change the build type on the command line with
+                   -DCMAKE_BUILD_TYPE=type
+               for type in {Release, Debug, RelWithDebInfo}.
+")
+set(EXECUTABLE_NAME main)
+# Verifica se todos os arquivos fonte estão presentes no diretório
+# atual. Se não estão, avisa sobre CMakeLists mal configurado.
+foreach(source_file IN LISTS SOURCES)
+  if(NOT EXISTS ${PROJECT_SOURCE_DIR}/${source_file})
+    message(FATAL_ERROR "
+O arquivo ${PROJECT_SOURCE_DIR}/${source_file} não existe.
+Por favor, atualize a lista de arquivos fonte no arquivo CMakeLists.txt.")
+    break()
+  endif()
+endforeach()
+add_executable(${EXECUTABLE_NAME} ${SOURCES})
+target_include_directories(${EXECUTABLE_NAME} BEFORE PRIVATE ${PROJECT_SOURCE_DIR}/include)
+if(WIN32)
+  if(MINGW)
+    execute_process(
+      COMMAND ${CMAKE_CXX_COMPILER} "-v"
+      ERROR_VARIABLE  COMPILER_VERSION_OUTPUT
+      RESULT_VARIABLE COMPILER_VERSION_RESULT
+    )
+    if (COMPILER_VERSION_RESULT EQUAL 0)
+      if (COMPILER_VERSION_OUTPUT MATCHES "ucrt64")
+        set(LIBGLFW ${PROJECT_SOURCE_DIR}/lib-ucrt-64/libglfw3.a)
+      elseif (COMPILER_VERSION_OUTPUT MATCHES "mingw64")
+        set(LIBGLFW ${PROJECT_SOURCE_DIR}/lib-mingw-64/libglfw3.a)
+      else()
+        set(LIBGLFW ${PROJECT_SOURCE_DIR}/lib-mingw-32/libglfw3.a)
+      endif()
+    else()
+      message(FATAL_ERROR "Failed to get MinGW compiler version.")
+    endif()
+  elseif(MSVC)
+    set(LIBGLFW ${PROJECT_SOURCE_DIR}/lib-vc2022/glfw3.lib)
+  else()
+    message(FATAL_ERROR "This CMakeLists.txt file only supports MINGW or MSVC toolchain on Windows.")
+  endif()
+  message(STATUS "LIBGLFW = ${LIBGLFW}")
+  target_link_libraries(${EXECUTABLE_NAME} ${LIBGLFW} gdi32 opengl32)
+elseif(UNIX)
+  target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall -Wno-unused-function)
+  add_custom_target(run
+      COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ./main
+      DEPENDS main
+      USES_TERMINAL
+  )
+  find_package(OpenGL REQUIRED)
+  find_package(X11 REQUIRED)
+  find_library(MATH_LIBRARY m)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(Threads REQUIRED)
+  target_link_libraries(${EXECUTABLE_NAME}
+    ${CMAKE_DL_LIBS}
+    ${MATH_LIBRARY}
+    ${PROJECT_SOURCE_DIR}/lib-linux/libglfw3.a
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${OPENGL_LIBRARIES}
+    ${X11_LIBRARIES}
+    ${X11_Xrandr_LIB}
+    ${X11_Xcursor_LIB}
+    ${X11_Xinerama_LIB}
+  )
+endif()
+
+===========
+
+Deletando todo o projeto e baixando de novo, aparece esse erro (já que o cmake tenta configurar sozinho)
+[bookmarks] Loaded 0 bookmarks
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" --version
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" -E capabilities
+[kit] Successfully loaded 1 kits from C:\Users\ralex\AppData\Local\CMakeTools\cmake-tools-kits.json
+[presetController] Reading and validating the presets file "C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\CMakePresets.json"
+[presetController] Successfully validated C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\CMakePresets.json against presets schema
+[presetController] Expanding presets file C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\CMakePresets.json
+[presetController] Successfully expanded presets file C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final\CMakePresets.json
+[main] Configuring project: CGVis-trabalho-final 
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build
+[cmake] -- Building for: NMake Makefiles
+[cmake] CMake Deprecation Warning at CMakeLists.txt:21 (cmake_minimum_required):
+[cmake]   Compatibility with CMake < 3.10 will be removed from a future version of
+[cmake]   CMake.
+[cmake] 
+[cmake]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[cmake]   to tell CMake that the project requires at least <min> but has been updated
+[cmake]   to work with policies introduced by <max> or earlier.
+[cmake] 
+[cmake] 
+[cmake] CMake Error at CMakeLists.txt:23 (project):
+[cmake]   Running
+[cmake] 
+[cmake]    'nmake' '-?'
+[cmake] 
+[cmake]   failed with:
+[cmake] 
+[cmake]    no such file or directory
+[cmake] 
+[cmake] 
+[cmake] CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+[cmake] CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+[cmake] -- Configuring incomplete, errors occurred!
+[proc] The command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build exited with code: 1
+
+===========
+
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default-config",
+      "binaryDir": "${sourceDir}/build"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default-build",
+      "configurePreset": "default-config"
+    },
+    {
+      "name": "build-run",
+      "configurePreset": "default-config",
+      "targets": ["run"]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "configure-build-run",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "default-config"
+        },
+        {
+          "type": "build",
+          "name": "build-run"
+        }
+      ]
+    }
+  ]
+}
+
+===========
+
+[main] Configuring project: CGVis-trabalho-final 
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build -G "MinGW Makefiles"
+[cmake] CMake Deprecation Warning at CMakeLists.txt:21 (cmake_minimum_required):
+...
+[cmake] CMake Error: CMake was unable to find a build program corresponding to "MinGW Makefiles".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
+[cmake] CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+[cmake] CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+[cmake] -- Configuring incomplete, errors occurred!
+
+===========
+
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> cmake --version
+cmake version 4.3.2
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> where.exe gcc      
+C:\Program Files\msys64\mingw64\bin\gcc.exe
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> where.exe mingw32-make
+INFORMAÇÕES: não foi possível localizar arquivos para o(s) padrão(ões) especificado(s).
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> where mingw32-make    
+(base) PS C:\Users\ralex\Documents\GitHub\CGVis-trabalho-final> where.exe make        
+C:\MinGW\bin\make.exe
+
+===========
+
+[main] Configuring project: CGVis-trabalho-final 
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_MAKE_PROGRAM=C:/MinGW/bin/make.exe "-DCMAKE_C_COMPILER=C:/Program Files/msys64/mingw64/bin/gcc.exe" "-DCMAKE_CXX_COMPILER=C:/Program Files/msys64/mingw64/bin/g++.exe" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build -G "MinGW Makefiles"
+[cmake] CMake Deprecation Warning at CMakeLists.txt:21 (cmake_minimum_required):
+...
+[cmake] -- Build type: Debug
+[cmake] -- LIBGLFW = C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/lib-mingw-64/libglfw3.a
+[cmake] -- Configuring done (4.4s)
+[cmake] -- Generating done (0.0s)
+[cmake] -- Build files have been written to: C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build
+
+===========
+
+(log de build com erros de make_shared e memory não incluído)
+
+===========
+
+[main] Building folder: C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build 
+[main] Configuring project: CGVis-trabalho-final 
+[proc] Executing command: "C:\Program Files\CMake\bin\cmake.EXE" -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -S C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final -B C:/Users/ralex/Documents/GitHub/CGVis-trabalho-final/build
+[cmake] CMake Error at CMakeLists.txt:23 (project):
+[cmake]   Running 'nmake' '-?' failed with: no such file or directory
+[cmake] CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+[cmake] CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+[cmake] -- Configuring incomplete, errors occurred!
+
+===========
+
+Me mande um txt com todos os prompts que eu mandei nessa conversa. Não os resuma, apenas faça uma separação entre cada um, por exemplo com linhas ===========
+
+===========
+
+Gostaria de mudar o jeito que estou instanciando objetos. Gostaria de poder ter um arquivo que define o mapa e os objetos instanciados nele. 
+Como é feito isso em jogos ou engines?
+Minha ideia inicial é um arquivo csv, cada linha sendo um objeto e suas posições.
+
+===========
+
+Como ficaria se eu quisesse instanciar muitos cubos, por exemplo? Teria que especificar todos os atributos para cada um?
+
+===========
+
+Eu precisaria instalar separadamente esse nlohmann/json? Como é o processo para isso em cpp?
+Pretendo rodar o projeto em máquinas diferentes, a partir do mesmo repo do github. Precisaria instalar em cada máquina ou só colocar no repo?
+
+===========
+
+Por exemplo para esse json:
+{
+    "prefabs": {
+        "wumpa": {
+            "type": "Fruit",
+            "model": "the_wumpa",
+            "mapping": "PLANE",
+            "texture": "WUMPA",
+            "scale": [0.05, 0.05, 0.05]
+        },
+        "crate_interrogation": {
+            "type": "StaticObject",
+            "model": "the_cube_tex",
+            "mapping": "CUBE",
+            "texture": "CRATE_INTERROGACAO",
+            "is_physics": true,
+            "is_trigger": false,
+            "is_spin": true, 
+            "is_destructible": true,
+            "hitbox":[[-0.5, 0.0, -0.5], [0.5, 1.0, 0.5]]
+        }
+    },
+    "objects": [
+        { "prefab": "wumpa", "position": [2.0, 3.0, 3.0] },
+        { "prefab": "wumpa", "position": [3.0, 3.0, 3.0] },
+    { "prefab": "wumpa", "position": [4.0, 3.0, 3.0] },
+    { "prefab": "crate_interrogation", "position": [2.0, 0.0, 1.0]},
+    { "prefab": "crate_interrogation", "position": [2.0, 0.0, 3.0]},
+    { "prefab": "crate_interrogation", "position": [2.0, 0.0, 5.0]}
+]
+}
+
+Como eu poderia  ler os atributos que quero?
+
+===========
+
+Como isso funciona?
+O que faz esse merge?
+
+===========
+
+PLANE, CUBE, CRATE_INTERROGACAO são todas constantes que indicam algum int. 
+Tem como fazer constantes/sinonimos assim no json? Ou eu faço um switch case no meu código mesmo
+
+===========
+
+===========
+
+===========
