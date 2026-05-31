@@ -118,7 +118,7 @@ public:
     virtual void Draw() = 0;
 
     virtual void on_trigger_player(){}
-    virtual void on_trigger_spin(){}
+    virtual void on_trigger_spin(float dir){}
 
     //Apagando o componente de hitbox ao apagar o objeto
     virtual ~GameObject() 

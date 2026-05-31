@@ -415,7 +415,7 @@ void Player::CheckCollisionSpin(int sector_index)
             {
                 if (spin_hitbox.Intersects(*(obj->hitbox)))
                 {
-                    obj->on_trigger_spin();
+                    obj->on_trigger_spin(angle_looking);
                 }
             }
         }
