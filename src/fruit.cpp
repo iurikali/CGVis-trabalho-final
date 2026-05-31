@@ -7,7 +7,7 @@
 
 
 Fruit::Fruit(std::string name, int obj_id, int tex_id, glm::vec3 pos):
-    StaticObject(name, obj_id, tex_id, false, true, true, true, pos)
+    StaticObject(name, obj_id, tex_id, false, true, true, false, true, pos)
 {
     //std::cout << "Fruta " << std::endl;
     hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 0.5, 0.5));

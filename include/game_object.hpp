@@ -106,7 +106,7 @@ public:
     glm::vec3 scale{1.0f, 1.0f, 1.0f};
 
     GameObject(std::string name, int obj_id, int tex_id, bool is_physics, 
-    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos);
+    bool is_trigger, bool is_spin, bool is_jump, bool is_destructible, glm::vec3 pos);
 
     glm::mat4 GetModelMatrix();
 
@@ -119,6 +119,7 @@ public:
 
     virtual void on_trigger_player(){}
     virtual void on_trigger_spin(float dir){}
+    virtual void on_trigger_jump(){}
 
     //Apagando o componente de hitbox ao apagar o objeto
     virtual ~GameObject() 
@@ -134,6 +135,7 @@ public:
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
 extern std::unordered_map<int, std::vector<GameObject*>> g_collision_spin;
+extern std::unordered_map<int, std::vector<GameObject*>> g_collision_jump;
 
 extern std::vector<GameObject*> g_non_destructible_objects;
 extern std::vector<GameObject*> g_destructible_objects;
@@ -146,7 +148,7 @@ class StaticObject : public GameObject
 {
 public:
     StaticObject(std::string name, int obj_id, int tex_id, bool is_physics, 
-    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos);
+    bool is_trigger, bool is_spin, bool is_jump, bool is_destructible, glm::vec3 pos);
     
     void Draw() override;
 };
@@ -163,7 +165,7 @@ public:
     glm::mat4 final_bone_matrices[100];
 
     AnimatedObject(std::string name, int obj_id, int tex_id, bool is_physics, 
-    bool is_trigger, bool is_spin, bool is_destructible, glm::vec3 pos);
+    bool is_trigger, bool is_spin, bool is_jump, bool is_destructible, glm::vec3 pos);
 
     void SetAnimation(int anim_index);
     void Update(float delta_time) override;

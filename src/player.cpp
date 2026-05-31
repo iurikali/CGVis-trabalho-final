@@ -28,7 +28,7 @@ float lerp_angle(float from, float to, float weight)
 
 
 Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed): 
-    AnimatedObject(n, o_id, t_id, false, false, false, true, pos),
+    AnimatedObject(n, o_id, t_id, false, false, false, false, true, pos),
     is_w_pressed(false),
     is_a_pressed(false),
     is_s_pressed(false),
@@ -49,7 +49,8 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     next_sector(-1),
 
     hit_box(glm::vec3(-0.2, 0.0, -0.2), glm::vec3(0.2, 1.2, 0.2)),
-    spin_hitbox(glm::vec3(-0.8, 0.0, -0.8), glm::vec3(0.8, 1.2, 0.8))
+    spin_hitbox(glm::vec3(-0.8, 0.0, -0.8), glm::vec3(0.8, 1.2, 0.8)),
+    jump_hitbox(glm::vec3(-0.2, -0.1, -0.2), glm::vec3(0.2, 0.5, 0.2))
 {
     std::cout << "PLAYER CRIADO" << std::endl;
 
@@ -88,11 +89,12 @@ void Player::Update(float delta_time)
         vel_y = -speed * 4;
     }
 
-
     CollisionPhysics(delta_time);
     
     CheckCollisionTrigger(sector);
     CheckCollisionTrigger(next_sector);
+
+
 
     hit_box.DrawDebug();
 
@@ -104,6 +106,14 @@ void Player::Update(float delta_time)
         CheckCollisionSpin(sector);
         CheckCollisionSpin(next_sector);
 
+    }
+
+    if (state == AIR)
+    {
+        jump_hitbox.Update(position);
+        jump_hitbox.DrawDebug();
+        CheckCollisionJump(sector);
+        CheckCollisionJump(next_sector);
     }
 
 
@@ -192,6 +202,8 @@ void Player::state_machine(float delta_time)
 
         //Corrigindo a rotacao da animacao
         rotation.y = index_angle + M_PI / 4;
+
+        //Colisao da hitbox pulo
 
         //Saindo do estado
         if (spin)
@@ -348,7 +360,10 @@ void Player::CollisionPhysics(float delta_time)
             for (GameObject* obj : it->second) 
             {
                 if (obj->hitbox != nullptr)
+                {
                     vel_y_temp = hit_box.GetClipY(*(obj->hitbox), vel_y_temp);
+
+                }
             }
         }
     }
@@ -358,6 +373,7 @@ void Player::CollisionPhysics(float delta_time)
     {
         vel_y = 0.0f; 
         on_air = false;
+        
     }
 
 
@@ -416,6 +432,28 @@ void Player::CheckCollisionSpin(int sector_index)
                 if (spin_hitbox.Intersects(*(obj->hitbox)))
                 {
                     obj->on_trigger_spin(angle_looking);
+                }
+            }
+        }
+    }
+}
+
+void Player::CheckCollisionJump(int sector_index)
+{
+    //Fazendo a colisao do pulo
+    auto it = g_collision_jump.find(sector_index);
+
+    if (it != g_collision_jump.end())
+    {
+        //Vamos verificar a colisao fisica com geral do nosso quadrante
+        for (GameObject* obj : it->second)
+        {
+            if (obj->hitbox != nullptr)
+            {
+                if (jump_hitbox.Intersects(*(obj->hitbox)) && jump_hitbox.box_max.y > obj->hitbox->box_max.y)
+                {
+                    obj->on_trigger_jump();
+                    jump(jump_height);
                 }
             }
         }

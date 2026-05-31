@@ -43,6 +43,8 @@ private:
 
     void CheckCollisionSpin(int sector_index);
 
+    void CheckCollisionJump(int sector_index);
+
 public:
     Player(std::string name, int obj_id, int tex_id, glm::vec3 pos, float vel);
 
@@ -67,4 +69,6 @@ public:
     AABB hit_box;
 
     AABB spin_hitbox;
+
+    AABB jump_hitbox;
 };

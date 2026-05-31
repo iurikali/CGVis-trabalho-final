@@ -62,6 +62,7 @@
 #include "player.hpp"
 #include "camera.hpp"
 #include "fruit.hpp"
+#include "box.hpp"
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -203,6 +204,7 @@ GLuint g_AABB_VAO = 0;
 std::unordered_map<int, std::vector<GameObject*>> g_collision_physics;
 std::unordered_map<int, std::vector<GameObject*>> g_collision_triggers;
 std::unordered_map<int, std::vector<GameObject*>> g_collision_spin;
+std::unordered_map<int, std::vector<GameObject*>> g_collision_jump;
 
 
 // Vetor com referência a todos objetos a serem desenhados
@@ -401,22 +403,23 @@ int main(int argc, char* argv[])
     // Isso nao gera problema pq no construtor do método a gente tá 
     // adicionando o endereço nas listas
     // esses dados são removidos da memória na função void CleanUpDestroyedObjects();
-    new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, false, false, false, false, glm::vec3(0.0f, 0.0f, 0.0f));
+    new StaticObject("the_plane", PLANE, ROCKY_TERRAIN, false, false, false, false, false, glm::vec3(0.0f, 0.0f, 0.0f));
     g_non_destructible_objects.back()->scale = glm::vec3(5.0f, 1.0f, 5.0f);
     
     new Fruit("the_bunny", BUNNY, RED_BRICK, glm::vec3(1.0f,1.0f,0.0f));
     
-    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, glm::vec3(-1.3f, 0.0f, 0.0f));
+    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, false, glm::vec3(-1.3f, 0.0f, 0.0f));
     g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
     g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
     
-    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false,
+    new StaticObject ("the_cube", CUBE, COBBLESTONE, true, false, false, false, false,
         glm::vec3(2.3f, 0.0f, -5.0f));
     g_non_destructible_objects.back()->hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 1.0, 0.5));
     g_non_destructible_objects.back()->hitbox->Update(g_non_destructible_objects.back()->position + glm::vec3(0.5, 0.0, 0.5));
 
     //gameObjects.push_back(std::make_shared<StaticObject>("the_cube", CUBE, GRASS_BLOCK, LAYER_FISICO, glm::vec3(-1.3f, 1.0f, 0.0f)));
     
+    new Box("the_cube", CUBE, RED_BRICK, glm::vec3(1.0f, 0.0f, 2.0f));
 
     player->SetAnimation(1);
 
@@ -1537,6 +1540,28 @@ void CleanUpDestroyedObjects()
 
     // Varrendo a lista de colisao com o spin 
     for (auto& pair : g_collision_spin) 
+    {
+        std::vector<GameObject*>& lista = pair.second;
+        
+        for (int i = 0; i < lista.size(); ) 
+        {
+            if (lista[i]->is_destroyed) 
+            {
+
+                lista[i] = lista.back();
+                lista.pop_back();
+
+            }
+            else 
+            {
+                i++;
+            }
+        }
+    }
+
+
+    // Varrendo a lista de colisao com o pulo
+    for (auto& pair : g_collision_jump) 
     {
         std::vector<GameObject*>& lista = pair.second;
         
