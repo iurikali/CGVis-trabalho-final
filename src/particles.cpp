@@ -14,6 +14,8 @@ Particles::Particles(glm::vec3 color, glm::vec3 pos_inicial, float theta, float 
     this->speed = speed;
     this->theta = theta;
     this->speed_disappear = speed_disappear;
+
+    this->scale = scale;
 }
 
 

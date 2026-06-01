@@ -16,4 +16,6 @@ public:
     void on_trigger_spin(float dir) override; 
 
     void on_trigger_jump() override;
+
+    void Destroy();
 };
