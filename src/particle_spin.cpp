@@ -7,7 +7,7 @@
 
 
 ParticleSpin::ParticleSpin(glm::vec3 color, glm::vec3 pos, float radius, float dir, float speed, Player *player):
-    StaticObject("", 0, 0, false, false, false, false, true, glm::vec3(pos.x, player->position.y + pos.y, pos.z))
+    StaticObject("the_cube", CUBE, COBBLESTONE, false, false, false, false, true, glm::vec3(pos.x, player->position.y + pos.y, pos.z))
 {
     this->dir = dir;
     this->radius = radius;

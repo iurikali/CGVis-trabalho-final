@@ -566,11 +566,11 @@ int main(int argc, char* argv[])
         }
         
         // Desenho dos objetos que podem morrer
-        for (auto& gameObject : g_destructible_objects)
+        for (int i = 0; i < g_destructible_objects.size(); i++)
         {
             // std::cout << "Desenhando: " << gameObject->name << std::endl;
-            gameObject->Update(dt);
-            gameObject->Draw();
+            g_destructible_objects[i]->Update(dt);
+            g_destructible_objects[i]->Draw();
         }
 
         

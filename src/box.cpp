@@ -37,8 +37,8 @@ void Box::on_trigger_spin(float dir)
 {
     if (!is_destroyed)
     {
-        is_destroyed = true;
         Destroy();
+        is_destroyed = true;
     }
 }
 
@@ -46,21 +46,28 @@ void Box::on_trigger_jump()
 {
     if (!is_destroyed)
     {
-        is_destroyed = true;
         Destroy();
+        is_destroyed = true;
     }
 }
 
 
 void Box::Destroy()
 {
+    glm::vec3 center = glm::vec3(
+        position.x + (hitbox->box_max.x - hitbox->box_min.x) * .5,
+        position.y + (hitbox->box_max.y - hitbox->box_min.y) * .5,
+        position.z + (hitbox->box_max.z - hitbox->box_min.z) * .5
+    );
+
     for (int i=0; i < 10; i++)
     {
         float theta = getRandomFloat(0.0, M_PI * 2);
-        
+        float fi = getRandomFloat(-M_PI * .5, M_PI * .5);
+
         //std::cout << theta << std::endl;
 
-        new Particles(glm::vec3(1.0, 1.0, 1.0), position, 0.0, 0.0, 1.0, 1.0, 
-        glm::vec3(.1, .1, .1));
+        new Particles(glm::vec3(0.34, 0.12, 0.05), center, theta, fi, 5.0, 0.5, 
+        glm::vec3(.2, .2, .2));
     }
 }

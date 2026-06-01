@@ -7,7 +7,7 @@
 
 Particles::Particles(glm::vec3 color, glm::vec3 pos_inicial, float theta, float fi, 
     float speed, float speed_disappear, glm::vec3 scale):
-    StaticObject("", 0, 0, false, false, false, false, true, glm::vec3(pos_inicial))
+    StaticObject("the_cube", CUBE, COBBLESTONE, false, false, false, false, true, glm::vec3(pos_inicial))
 {
     this->color = color;
     this->fi = fi;
