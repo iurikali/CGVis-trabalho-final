@@ -51,7 +51,7 @@ void Fruit::Update(float delta_time)
 
 void Fruit::on_trigger_player()
 {
-    if (!go_away)
+    if (!go_away && velv <= 0)
         is_destroyed = true;
     
 }
