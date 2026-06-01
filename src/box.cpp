@@ -61,7 +61,7 @@ void Box::Destroy()
     );
 
     //Instanciando as particulas
-    for (int i=0; i < 10; i++)
+    for (int i=0; i < 20; i++)
     {
         float theta = getRandomFloat(0.0, M_PI * 2);
         float fi = getRandomFloat(-M_PI * .5, M_PI * .5);

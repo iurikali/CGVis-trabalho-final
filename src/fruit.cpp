@@ -58,7 +58,7 @@ void Fruit::on_trigger_player()
 
 void Fruit::on_trigger_spin(float dir)
 {
-    if (!go_away && !is_destroyed)
+    if (!go_away && !is_destroyed && !animation)
     {
         go_away = true;
         this->dir = dir;
