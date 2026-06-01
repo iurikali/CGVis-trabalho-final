@@ -120,8 +120,8 @@ void Player::Update(float delta_time)
 
     AnimatedObject::Update(delta_time);
 
-    player_center_x = position.x - (hit_box.box_max.x - hit_box.box_min.x) / 2;
-    player_center_z = position.z - (hit_box.box_max.z - hit_box.box_min.z) / 2;
+    player_center_x = position.x ;
+    player_center_z = position.z ;
 }
 
 void Player::set_w_pressed(bool b)
@@ -464,7 +464,7 @@ void Player::CheckCollisionJump(int sector_index)
     }
 }
 
-void Player::CreateParticleSpin(int amount, float y, float radius, float speed)
+void Player::CreateParticleSpin(glm::vec3 color, int amount, float y, float radius, float speed)
 {
     for (int i = 0; i < amount; i++)
     {
@@ -473,7 +473,7 @@ void Player::CreateParticleSpin(int amount, float y, float radius, float speed)
         y,
         player_center_z + cosf(dir) * radius);
 
-        new ParticleSpin(pos, radius, dir, speed, this);
+        new ParticleSpin(color, pos, radius, dir, speed, this);
     }
 }
 

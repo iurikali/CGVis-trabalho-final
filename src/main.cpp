@@ -179,6 +179,7 @@ GLint g_texture_id_uniform;
 GLint g_bbox_min_uniform;
 GLint g_bbox_max_uniform;
 GLint g_bones_uniform;
+GLint g_particle_color_uniform;
 
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
@@ -738,6 +739,7 @@ void LoadShadersFromFiles()
     g_texture_id_uniform  = glGetUniformLocation(g_GpuProgramID, "texture_id"); // Variável "texture_id" em shader_fragment.glsl
     g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
     g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
+    g_particle_color_uniform = glGetUniformLocation(g_GpuProgramID, "particle_color");
 
     // Variáveis em "shader_fragment.glsl" para acesso das imagens de textura
     glUseProgram(g_GpuProgramID);
@@ -1196,9 +1198,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         if (!player->get_spin())
         {
             player->set_spin(true);
-            player->CreateParticleSpin(10, 0.0, 0.4, 5.0);
-            player->CreateParticleSpin(10, 0.4, 0.5, 5.0);
-            player->CreateParticleSpin(10, 0.8, 0.8, 5.0);
+            glm::vec3 orange = glm::vec3(0.5, 0.15, 0.0);
+            //glm::vec3 orange = glm::vec3(1.0, 1.0, 1.0);
+            float speed = 5.0;
+            player->CreateParticleSpin(orange, 10, 0.0, 0.3, speed);
+            player->CreateParticleSpin(orange, 10, 0.2, 0.4, speed);
+            player->CreateParticleSpin(orange, 10, 0.4, 0.5, speed);
+            player->CreateParticleSpin(orange, 10, 0.6, 0.6, speed);
+            player->CreateParticleSpin(orange, 10, 0.8, 0.7, speed);
+            player->CreateParticleSpin(orange, 10, 0.8, 0.8, speed);
         }
     }
 }

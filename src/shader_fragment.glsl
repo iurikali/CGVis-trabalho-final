@@ -34,6 +34,7 @@ uniform vec4 bbox_max;
 #define NUM_TEXTURAS 8
 uniform int texture_id;
 uniform sampler2D TextureImages[NUM_TEXTURAS];
+uniform vec3 particle_color;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -53,6 +54,7 @@ vec3 get_texture_color(int id, vec2 uv) {
     else if (id == 6) return texture(TextureImages[6], uv).rgb;
     else if (id == 7) return texture(TextureImages[7], uv).rgb;
     
+
     return vec3(1.0, 0.0, 1.0); // Retorna magenta se o id for inválido (ajuda no debug)
 }
 
@@ -176,6 +178,13 @@ void main()
     float half_lambert = pow(dot(n,l)*0.5 + 0.5, 2);
     lambert += 0.01; // Iluminação base
     color.rgb = Kd0 * (half_lambert);
+
+    //Fazendo a cor solida
+    if (texture_id == 98)
+    {
+        float luz_ambiente = 0.2; 
+        color.rgb = particle_color * (half_lambert + luz_ambiente);
+    }
 
     // NOTE: Se você quiser fazer o rendering de objetos transparentes, é
     // necessário:

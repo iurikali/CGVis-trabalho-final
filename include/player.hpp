@@ -73,7 +73,7 @@ public:
 
     AABB jump_hitbox;
 
-    void CreateParticleSpin(int amount, float y, float radius, float speed);
+    void CreateParticleSpin(glm::vec3 color, int amount, float y, float radius, float speed);
 
     float player_center_x = 0.0;
     float player_center_z = 0.0;
