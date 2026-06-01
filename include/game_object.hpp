@@ -26,6 +26,7 @@
 #define CHARACTER 3
 #define CUBE 4
 
+#define EPSILON 0.005f
 
 struct SceneObject
 {

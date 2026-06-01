@@ -91,8 +91,9 @@ void Player::Update(float delta_time)
 
     CollisionPhysics(delta_time);
     
+    CheckCollisionTrigger(sector - 1);
     CheckCollisionTrigger(sector);
-    CheckCollisionTrigger(next_sector);
+    CheckCollisionTrigger(sector + 1);
 
 
 
@@ -103,8 +104,9 @@ void Player::Update(float delta_time)
         spin_hitbox.Update(position);
         spin_hitbox.DrawDebug();
 
+        CheckCollisionSpin(sector - 1);
         CheckCollisionSpin(sector);
-        CheckCollisionSpin(next_sector);
+        CheckCollisionSpin(sector + 1);
 
     }
 
@@ -112,12 +114,19 @@ void Player::Update(float delta_time)
     {
         jump_hitbox.Update(position);
         jump_hitbox.DrawDebug();
+
+        CheckCollisionJump(sector - 1);
         CheckCollisionJump(sector);
-        CheckCollisionJump(next_sector);
+        CheckCollisionJump(sector + 1);
     }
 
 
     AnimatedObject::Update(delta_time);
+
+    std::cout << "Z:" << position.z << std::endl;
+    std::cout << "Sector:" << sector << std::endl;
+    std::cout << "Sector + 1:" << sector + 1 << std::endl;
+    std::cout << "Sector - 1:" << sector - 1 << std::endl;
 
     player_center_x = position.x ;
     player_center_z = position.z ;
@@ -307,35 +316,9 @@ void Player::CollisionPhysics(float delta_time)
     hit_box.Update(position);
 
     //Calculando os setores
-    int sector = (int)(position.z / SECTOR_LEN);
-    float sector_f = (float)(position.z / SECTOR_LEN) - sector;
-    int next_sector = sector + 1;
+    sector = (int)std::floor(position.z / SECTOR_LEN);
 
-    if (position.z < 0.0f) 
-    {
-        if (sector_f < -0.5f) next_sector = sector - 1; 
-    } else if (sector_f < 0.5f) 
-    {
-        next_sector = sector - 1; 
-    }
-
-    int sectors_to_check[2] = {sector, next_sector};
-
-    //Eixo X
-    for (int s : sectors_to_check)
-    {
-        auto it = g_collision_physics.find(s);
-        if (it != g_collision_physics.end()) 
-        {
-            for (GameObject* obj : it->second) 
-            {
-                if (obj->hitbox != nullptr)
-                    vel_x_temp = hit_box.GetClipX(*(obj->hitbox), vel_x_temp);
-            }
-        }
-    }
-    hit_box.box_min.x += vel_x_temp;
-    hit_box.box_max.x += vel_x_temp;
+    int sectors_to_check[3] = {sector - 1, sector, sector + 1};
 
     //Eixo Z
     for (int s : sectors_to_check)
@@ -352,6 +335,23 @@ void Player::CollisionPhysics(float delta_time)
     }
     hit_box.box_min.z += vel_z_temp;
     hit_box.box_max.z += vel_z_temp;
+
+
+    //Eixo X
+    for (int s : sectors_to_check)
+    {
+        auto it = g_collision_physics.find(s);
+        if (it != g_collision_physics.end()) 
+        {
+            for (GameObject* obj : it->second) 
+            {
+                if (obj->hitbox != nullptr)
+                    vel_x_temp = hit_box.GetClipX(*(obj->hitbox), vel_x_temp);
+            }
+        }
+    }
+    hit_box.box_min.x += vel_x_temp;
+    hit_box.box_max.x += vel_x_temp;
 
     //Eixo Y
     float old_vel_y = vel_y_temp;

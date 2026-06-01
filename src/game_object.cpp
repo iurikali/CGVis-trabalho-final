@@ -21,30 +21,27 @@ GameObject::GameObject(std::string n, int o_id, int t_id, bool is_physics,
     bool is_trigger, bool is_spin, bool is_jump, bool is_destructible, glm::vec3 pos) : 
     name(n), object_id(o_id), texture_id(t_id), position(pos), is_destroyed(false)
     {
+        int sector = (int) std::floor(position.z / SECTOR_LEN);
+
         //Adicionando a lista certa
         if (is_physics)
         {
-            //Calculando o setor
-            int sector = (int) position.z / SECTOR_LEN;
             g_collision_physics[sector].push_back(this);
         }
         if (is_trigger)
         {
             //Calculando o setor
-            int sector = (int) position.z / SECTOR_LEN;
             g_collision_triggers[sector].push_back(this);
         }
         if (is_spin)
         {
             //Calculando o setor
-            int sector = (int) position.z / SECTOR_LEN;
             g_collision_spin[sector].push_back(this);
         }
 
         if (is_jump)
         {
             //Calculando o setor
-            int sector = (int) position.z / SECTOR_LEN;
             g_collision_jump[sector].push_back(this);
         }
 
@@ -299,7 +296,7 @@ float AABB::GetClipX(AABB against, float deltaX)
     {
         //if we are moving right and our right bounds are smaller than
         //or equal to the other left bounds
-        if(deltaX > 0 && box_max.x <= against.box_min.x)
+        if(deltaX > 0 && box_max.x <= against.box_min.x + EPSILON)
         {
             //what is the distance to the other AABB?
             float clip = against.box_min.x - box_max.x;
@@ -310,7 +307,7 @@ float AABB::GetClipX(AABB against, float deltaX)
         }
         //the principle explained in the code above is the same for
         //everything else
-        if (deltaX < 0 && box_min.x >= against.box_max.x)
+        if (deltaX < 0 && box_min.x >= against.box_max.x - EPSILON)
         {
             float clip = against.box_max.x - box_min.x;
             if (deltaX < clip)
@@ -324,13 +321,13 @@ float AABB::GetClipY(AABB against, float deltaY)
 {
     if (IntersectsX(against) && IntersectsZ(against))
     {
-        if (deltaY > 0 && box_max.y <= against.box_min.y)
+        if (deltaY > 0 && box_max.y <= against.box_min.y + EPSILON)
         {
             float clip = against.box_min.y - box_max.y;
             if (deltaY > clip)
                 deltaY = clip;
         }
-        if (deltaY < 0 && box_min.y >= against.box_max.y)
+        if (deltaY < 0 && box_min.y >= against.box_max.y - EPSILON)
         {
             float clip = against.box_max.y - box_min.y;
             if (deltaY < clip)
@@ -342,15 +339,16 @@ float AABB::GetClipY(AABB against, float deltaY)
 }
 float AABB::GetClipZ(AABB against, float deltaZ)
 {
+    
     if (IntersectsX(against) && IntersectsY(against))
     {
-        if (deltaZ > 0 && box_max.z <= against.box_min.z)
+        if (deltaZ > 0 && box_max.z <= against.box_min.z + EPSILON)
         {
             float clip = against.box_min.z - box_max.z;
             if (deltaZ > clip)
                 deltaZ = clip;
         }
-        if (deltaZ < 0 && box_min.z >= against.box_max.z)
+        if (deltaZ < 0 && box_min.z >= against.box_max.z - EPSILON)
         {
             float clip = against.box_max.z - box_min.z;
             if (deltaZ < clip)
