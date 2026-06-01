@@ -5,7 +5,7 @@
 #include "player.hpp"
 #include "particles.hpp"
 #include <random>
-
+#include "fruit.hpp"
 
 #include <cstdlib>
 #include <ctime>
@@ -60,6 +60,7 @@ void Box::Destroy()
         position.z + (hitbox->box_max.z - hitbox->box_min.z) * .5
     );
 
+    //Instanciando as particulas
     for (int i=0; i < 10; i++)
     {
         float theta = getRandomFloat(0.0, M_PI * 2);
@@ -70,4 +71,8 @@ void Box::Destroy()
         new Particles(glm::vec3(0.34, 0.12, 0.05), center, theta, fi, 5.0, 0.5, 
         glm::vec3(.2, .2, .2));
     }
+
+    //Instanciando a fruta
+    Fruit *fruit = new Fruit("the_wumpa", PLANE, WUMPA, center);
+    fruit->Jump(5.0);
 }

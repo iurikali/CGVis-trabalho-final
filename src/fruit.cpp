@@ -2,7 +2,7 @@
 #include "game_object.hpp"
 #include <iostream>
 #include <cmath>
-
+#include "player.hpp"
 
 
 
@@ -13,7 +13,10 @@ Fruit::Fruit(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 0.5, 0.5));
     hitbox->Update(pos);
 
-    scale = glm::vec3(0.5, 0.5, 0.5);
+    velv = 0.0;
+    original_y = pos.y;
+
+    scale = glm::vec3(0.05, 0.05, 0.05);
 }
 
 
@@ -39,6 +42,9 @@ void Fruit::Update(float delta_time)
         }
     }
 
+    if (animation)
+        Animation(delta_time);
+
     hitbox->Update(position);
 }
 
@@ -57,4 +63,25 @@ void Fruit::on_trigger_spin(float dir)
         go_away = true;
         this->dir = dir;
     }
+}
+
+void Fruit::Animation(float delta_time)
+{
+    if (position.y <= original_y && velv <= 0)
+    {
+        position.y = original_y;
+        animation = false;
+    }
+    else
+    {
+        velv -= GRAVITY * delta_time;
+
+        position.y += velv * delta_time;
+    }
+}
+
+void Fruit::Jump(float height)
+{
+    animation = true;
+    velv = height;
 }
