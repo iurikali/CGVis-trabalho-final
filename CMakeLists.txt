@@ -18,6 +18,7 @@ set(SOURCES
   src/camera.cpp
   src/fruit.cpp
   src/box.cpp
+  src/particle_spin.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)

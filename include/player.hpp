@@ -56,6 +56,7 @@ public:
     void set_d_pressed(bool b);
     void set_space_pressed(bool b);
     void state_machine(float delta_time);
+    int get_current_state();
 
     void jump(float height);
 
@@ -71,4 +72,9 @@ public:
     AABB spin_hitbox;
 
     AABB jump_hitbox;
+
+    void CreateParticleSpin(int amount, float y, float radius, float speed);
+
+    float player_center_x = 0.0;
+    float player_center_z = 0.0;
 };

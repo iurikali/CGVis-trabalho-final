@@ -2,6 +2,7 @@
 #include "game_object.hpp"
 #include <iostream>
 #include <cmath>
+#include "particle_spin.hpp"
 
 #define M_PI 3.14159265358979323846
 #define GRAVITY 12.0
@@ -118,6 +119,9 @@ void Player::Update(float delta_time)
 
 
     AnimatedObject::Update(delta_time);
+
+    player_center_x = position.x - (hit_box.box_max.x - hit_box.box_min.x) / 2;
+    player_center_z = position.z - (hit_box.box_max.z - hit_box.box_min.z) / 2;
 }
 
 void Player::set_w_pressed(bool b)
@@ -458,4 +462,22 @@ void Player::CheckCollisionJump(int sector_index)
             }
         }
     }
+}
+
+void Player::CreateParticleSpin(int amount, float y, float radius, float speed)
+{
+    for (int i = 0; i < amount; i++)
+    {
+        float dir = ((2 * M_PI) / amount) * i;
+        glm::vec3 pos = glm::vec3(player_center_x + sinf(dir) * radius, 
+        y,
+        player_center_z + cosf(dir) * radius);
+
+        new ParticleSpin(pos, radius, dir, speed, this);
+    }
+}
+
+int Player::get_current_state()
+{
+    return state;
 }

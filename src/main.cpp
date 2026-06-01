@@ -65,6 +65,7 @@
 #include "camera.hpp"
 #include "fruit.hpp"
 #include "box.hpp"
+#include "particle_spin.hpp"
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -182,23 +183,6 @@ GLint g_bones_uniform;
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
 
-// Número de texturas existentes ! atualizar no shader_fragment também
-#define NUM_TEXTURAS 8
-
-#define RED_BRICK 0
-#define ROCKY_TERRAIN 1
-#define COBBLESTONE 2
-#define GRASS_BLOCK 3
-#define CHARACTER_TEXTURE 4
-#define WUMPA 5
-#define CRATE 6
-#define CRATE_INTERROGACAO 7
-
-#define SPHERE 0
-#define BUNNY  1
-#define PLANE  2
-#define CHARACTER 3
-#define CUBE 4
 
 //Funcao para visualizar a nossa AABB
 //Foi o gemini que fez
@@ -490,6 +474,8 @@ int main(int argc, char* argv[])
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
 
     MapCreator("../../src/objetos.json");   
+
+    //new ParticleSpin(glm::vec3(0.0, 1.0, 0.0));
 
     player->SetAnimation(1);
 
@@ -1210,6 +1196,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         if (!player->get_spin())
         {
             player->set_spin(true);
+            player->CreateParticleSpin(10, 0.0, 0.4, 5.0);
+            player->CreateParticleSpin(10, 0.4, 0.5, 5.0);
+            player->CreateParticleSpin(10, 0.8, 0.8, 5.0);
         }
     }
 }
