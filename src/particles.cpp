@@ -1,59 +1,47 @@
-#include "particle_spin.hpp"
+#include "particles.hpp"
 #include "game_object.hpp"
 #include <iostream>
 #include <cmath>
-#include "player.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
 
-ParticleSpin::ParticleSpin(glm::vec3 color, glm::vec3 pos, float radius, float dir, float speed, Player *player):
-    StaticObject("", 0, 0, false, false, false, false, true, glm::vec3(pos.x, player->position.y + pos.y, pos.z))
+Particles::Particles(glm::vec3 color, glm::vec3 pos_inicial, float theta, float fi, 
+    float speed, float speed_disappear, glm::vec3 scale):
+    StaticObject("", 0, 0, false, false, false, false, true, glm::vec3(pos_inicial))
 {
-    this->dir = dir;
-    this->radius = radius;
-    this->speed = speed;
-    this->player = player;  
-    y = pos.y;
     this->color = color;
-
-    scale = glm::vec3(0.1, 0.1, 0.1);
+    this->fi = fi;
+    this->speed = speed;
+    this->theta = theta;
+    this->speed_disappear = speed_disappear;
 }
 
 
-void ParticleSpin::Update(float delta_time)
+void Particles::Update(float delta_time)
 {
     if (!is_destroyed)
     {
-        if (player->get_current_state() == ATTACKING && !ended)
+        if (scale.x > 0)
         {
-            dir += delta_time * 100;
+            scale.x -= delta_time * speed_disappear;
+            scale.y -= delta_time * speed_disappear;
+            scale.z -= delta_time * speed_disappear;
 
-            position.x = player->player_center_x + sinf(dir) * radius;
-            position.z = player->player_center_z + cosf(dir) * radius;
-            position.y = player->position.y + y;
+            //Coordenadas esfericas
+            position.x += sinf(theta) * cosf(fi) * delta_time * speed;
+            position.y += sinf(fi) * delta_time * speed;
+            position.z += cosf(theta) * cosf(fi) * delta_time * speed;
         }
         else
         {
-            ended = true;
-            if (scale.x > 0)
-            {
-                scale.x -= delta_time * .5;
-                scale.z -= delta_time * .5;
-                scale.y -= delta_time * .5;
-
-
-            }
-            else
-            {
-                is_destroyed = true;    
-            }
+            is_destroyed = true;
         }
     }
     
 }
 
 
-void ParticleSpin::Draw()
+void Particles::Draw()
 {
     // Se a partícula já sumiu, economizamos processamento não desenhando nada
     if (is_destroyed || scale.x <= 0) return;

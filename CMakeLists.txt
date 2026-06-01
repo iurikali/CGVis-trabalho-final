@@ -19,6 +19,7 @@ set(SOURCES
   src/fruit.cpp
   src/box.cpp
   src/particle_spin.cpp
+  src/particles.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
