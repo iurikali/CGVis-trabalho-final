@@ -123,10 +123,12 @@ void Player::Update(float delta_time)
 
     AnimatedObject::Update(delta_time);
 
+    std::cout << "X:" << position.x << std::endl;
+    std::cout << "Y:" << position.y << std::endl;
     std::cout << "Z:" << position.z << std::endl;
-    std::cout << "Sector:" << sector << std::endl;
-    std::cout << "Sector + 1:" << sector + 1 << std::endl;
-    std::cout << "Sector - 1:" << sector - 1 << std::endl;
+    // std::cout << "Sector:" << sector << std::endl;
+    // std::cout << "Sector + 1:" << sector + 1 << std::endl;
+    // std::cout << "Sector - 1:" << sector - 1 << std::endl;
 
     player_center_x = position.x ;
     player_center_z = position.z ;

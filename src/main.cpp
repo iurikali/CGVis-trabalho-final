@@ -474,7 +474,7 @@ int main(int argc, char* argv[])
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
 
-    MapCreator("../../src/objetos.json");   
+    MapCreator("../../src/mapa1.json");   
 
     //new ParticleSpin(glm::vec3(0.0, 1.0, 0.0));
 
@@ -1136,7 +1136,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 
     // Se o usuário apertar a tecla R, recarregamos os shaders dos arquivos "shader_fragment.glsl" e "shader_vertex.glsl".
     if (key == GLFW_KEY_R && action == GLFW_PRESS)
-    {
+    {   
+        for (auto obj : g_destructible_objects)
+            if (!(typeid(*obj) == typeid(Player)))
+                obj->is_destroyed = true;
+                
+
+        MapCreator("../../src/mapa1.json");   
         LoadShadersFromFiles();
         fprintf(stdout,"Shaders recarregados!\n");
         fflush(stdout);
