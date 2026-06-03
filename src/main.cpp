@@ -421,6 +421,8 @@ void MapCreator(std::string path){
         
         glm::vec3 scale = {1.0f, 1.0f, 1.0f};
         if (attrs.contains("scale")) scale  = { attrs["scale"][0], attrs["scale"][1], attrs["scale"][2] };
+
+        if (attrs.contains("offset")) position = position + scale*glm::vec3( attrs["offset"][0], attrs["offset"][1], attrs["offset"][2] );
         
         if (type == "Fruit")
         {
