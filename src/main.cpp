@@ -483,7 +483,7 @@ int main(int argc, char* argv[])
     MapCreator("../../src/mapa1.json");   
 
     //new ParticleSpin(glm::vec3(0.0, 1.0, 0.0));
-    new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, 0.0));
+    new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
 
     player->SetAnimation(1);
 

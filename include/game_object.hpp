@@ -92,6 +92,8 @@ class AABB
     glm::vec3    box_min; // Axis-Aligned Bounding Box do objeto
     glm::vec3    box_max;
 
+    bool disabled;
+
     AABB(glm::vec3 min, glm::vec3 max);
 
     void Update(glm::vec3 position, glm::vec3 scale);

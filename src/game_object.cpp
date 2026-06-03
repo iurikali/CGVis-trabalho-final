@@ -290,8 +290,12 @@ bool AABB::IntersectsX(AABB against)
 }
 bool AABB::Intersects(AABB against)
 {
-    return IntersectsX(against) && IntersectsY(against) && IntersectsZ(against);
+    if (!disabled && !against.disabled)
+        return IntersectsX(against) && IntersectsY(against) && IntersectsZ(against);
+    else
+        return false;
 }
+
 
 float AABB::GetClipX(AABB against, float deltaX)
 {
@@ -367,28 +371,31 @@ float AABB::GetClipZ(AABB against, float deltaZ)
 //Funcao do gemini para visualizar as AABB
 void AABB::DrawDebug() 
 {
-    // 1. Descobre o centro e o tamanho matemático da caixa
-    glm::vec3 center = (box_max + box_min) / 2.0f;
-    glm::vec3 size   = box_max - box_min;
+    if (!disabled)
+    {
+        // 1. Descobre o centro e o tamanho matemático da caixa
+        glm::vec3 center = (box_max + box_min) / 2.0f;
+        glm::vec3 size   = box_max - box_min;
 
-    // 2. Cria a matriz Model que estica e move o cubo pro lugar exato
-    glm::mat4 model = Matrix_Translate(center.x, center.y, center.z) * Matrix_Scale(size.x, size.y, size.z);
+        // 2. Cria a matriz Model que estica e move o cubo pro lugar exato
+        glm::mat4 model = Matrix_Translate(center.x, center.y, center.z) * Matrix_Scale(size.x, size.y, size.z);
 
-    // 3. Puxa as variáveis da GPU
-    extern GLint g_model_uniform;
-    extern GLint g_texture_id_uniform;
-    
-    glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-    
-    // O Truque do Magenta: Textura 99 não existe, então o shader vai pintar as linhas de rosa choque!
-    glUniform1i(g_texture_id_uniform, 99);
+        // 3. Puxa as variáveis da GPU
+        extern GLint g_model_uniform;
+        extern GLint g_texture_id_uniform;
+        
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        
+        // O Truque do Magenta: Textura 99 não existe, então o shader vai pintar as linhas de rosa choque!
+        glUniform1i(g_texture_id_uniform, 99);
 
-    // Como é uma linha, ela não tem vetor "Normal". 
-    // Essa função força o shader a achar que a Normal aponta pra cima, para a luz não deixar a linha preta.
-    glVertexAttrib4f(1, 0.0f, 1.0f, 0.0f, 0.0f);
+        // Como é uma linha, ela não tem vetor "Normal". 
+        // Essa função força o shader a achar que a Normal aponta pra cima, para a luz não deixar a linha preta.
+        glVertexAttrib4f(1, 0.0f, 1.0f, 0.0f, 0.0f);
 
-    // 4. Manda desenhar as linhas!
-    glBindVertexArray(g_AABB_VAO);
-    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+        // 4. Manda desenhar as linhas!
+        glBindVertexArray(g_AABB_VAO);
+        glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    }
 }

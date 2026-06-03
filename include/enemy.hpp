@@ -9,7 +9,10 @@ private:
     float dir = 0.0;
     bool shrink = false;
     float speed_rotation;
+    float speed;
+    float vel_x;
 
+    bool killed_player;
 public:
     Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos);
 
@@ -19,5 +22,7 @@ public:
 
     void on_trigger_jump() override;
 
-    void Destroy();
+    void on_trigger_player() override;
+
+    void CollisionLimits(float delta_time);
 };
