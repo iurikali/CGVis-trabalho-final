@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <ctime>
 
+extern bool restart;
+
 Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     StaticObject(name, obj_id, tex_id, false, true, true, true, true, pos)
 {
@@ -86,7 +88,7 @@ void Enemy::on_trigger_player()
     {
         hitbox->disabled = true;
         vel_x = 0;
-        killed_player = true;
+        restart = true;
     }
 }
 

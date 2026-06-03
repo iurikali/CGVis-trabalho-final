@@ -103,6 +103,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void LoadAnimatedGLTFModel(const char* filename, const char* object_name);
 
 void CleanUpDestroyedObjects();
+void RestartLevel();
 
 // Definimos uma estrutura que armazenará dados necessários para renderizar
 // cada objeto da cena virtual.
@@ -210,6 +211,7 @@ std::vector<GameObject*> g_destructible_objects;
 
 Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
 Camera camera = Camera();
+bool restart = false;
 
 
 void InitDebugAABB() 
@@ -480,9 +482,8 @@ int main(int argc, char* argv[])
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
 
-    MapCreator("../../src/mapa1.json");   
+    MapCreator("../../src/mapa1.json");
 
-    //new ParticleSpin(glm::vec3(0.0, 1.0, 0.0));
     new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
 
     player->SetAnimation(1);
@@ -609,6 +610,8 @@ int main(int argc, char* argv[])
         glfwPollEvents();
 
         CleanUpDestroyedObjects();
+
+        RestartLevel();
     }
 
     // Finalizamos o uso dos recursos do sistema operacional
@@ -1679,3 +1682,41 @@ void CleanUpDestroyedObjects()
     }    
 }  
 
+void RestartLevel()
+{
+    if (restart)
+    {
+        //Limpando as listas
+        for (int i = 0; i < g_destructible_objects.size(); i++)
+        {
+            delete g_destructible_objects[i];
+        }
+        
+        for (int i = 0; i < g_non_destructible_objects.size(); i++)
+        {
+            delete g_non_destructible_objects[i];
+        }
+
+        g_destructible_objects.clear();
+        g_non_destructible_objects.clear();
+        g_collision_jump.clear();
+        g_collision_physics.clear();
+        g_collision_spin.clear();
+        g_collision_triggers.clear();
+
+        //O player antigo já foi apagado no for dos objetos destrutiveis        
+        player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
+
+        MapCreator("../../src/mapa1.json");   
+
+        new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
+
+        player->SetAnimation(1);
+
+        glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
+
+        camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
+
+        restart = false;
+    }
+}
