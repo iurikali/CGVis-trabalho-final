@@ -442,6 +442,11 @@ void MapCreator(std::string path){
             new Box(model, mapping, texture, position);
             is_destructible = true; // Caixas são destrutíveis
         }
+        else if (type == "Enemy")
+        {
+            new Enemy(model, mapping, texture, position);
+            is_destructible = true;
+        }
         
         std::vector<GameObject*> object_vector;
         if (is_destructible) object_vector = g_destructible_objects;
@@ -484,7 +489,7 @@ int main(int argc, char* argv[])
 
     MapCreator("../../src/mapa1.json");
 
-    new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
+    //new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
 
     player->SetAnimation(1);
 
@@ -1709,7 +1714,7 @@ void RestartLevel()
 
         MapCreator("../../src/mapa1.json");   
 
-        new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
+        //new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
 
         player->SetAnimation(1);
 

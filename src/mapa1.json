@@ -32,6 +32,13 @@
       "model": "the_plane",
       "mapping": "PLANE",
       "texture": "ROCKY_TERRAIN"
+    },
+    "enemy": {
+      "type": "Enemy",
+      "model": "the_bunny",
+      "mapping": "BUNNY",
+      "texture": "RED_BRICK",
+      "scale" : [0.5, 0.5, 0.5]
     }
   },
   "objects": [
@@ -40,6 +47,8 @@
     { "prefab": "plane", "position": [0.0, 0.0, -12.0], "scale": [3.0, 1.0, 3.0]},
     { "prefab": "plane", "position": [0.0, 0.0, -18.0], "scale": [3.0, 1.0, 3.0]},
     { "prefab": "plane", "position": [0.0, 0.0, -24.0], "scale": [3.0, 1.0, 3.0]},
+
+    { "prefab": "enemy", "position": [0.0, 0.5, -1.0]},
 
     { "prefab": "crate_interrogacao", "position": [-1.1, 0.0, -2.5]},
     { "prefab": "crate_interrogacao", "position": [1.6, 0.0, -5.5]},
