@@ -49,7 +49,7 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     next_sector(-1),
 
     hit_box(glm::vec3(-0.2, 0.0, -0.2), glm::vec3(0.2, 1.2, 0.2)),
-    spin_hitbox(glm::vec3(-0.8, 0.0, -0.8), glm::vec3(0.8, 1.2, 0.8)),
+    spin_hitbox(glm::vec3(-0.8, -0.1, -0.8), glm::vec3(0.8, 1.2, 0.8)),
     jump_hitbox(glm::vec3(-0.2, -0.1, -0.2), glm::vec3(0.2, 0.5, 0.2))
 {
     std::cout << "PLAYER CRIADO" << std::endl;
