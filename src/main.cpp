@@ -66,6 +66,8 @@
 #include "fruit.hpp"
 #include "box.hpp"
 #include "particle_spin.hpp"
+#include "enemy.hpp"
+
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -481,6 +483,7 @@ int main(int argc, char* argv[])
     MapCreator("../../src/mapa1.json");   
 
     //new ParticleSpin(glm::vec3(0.0, 1.0, 0.0));
+    new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, 0.0));
 
     player->SetAnimation(1);
 

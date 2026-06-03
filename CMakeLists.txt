@@ -20,6 +20,7 @@ set(SOURCES
   src/box.cpp
   src/particle_spin.cpp
   src/particles.cpp
+  src/enemy.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
