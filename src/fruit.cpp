@@ -9,7 +9,7 @@
 Fruit::Fruit(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     StaticObject(name, obj_id, tex_id, false, true, true, false, true, pos)
 {
-    scale = glm::vec3(0.05, 0.05, 0.05);
+    scale = glm::vec3(0.03, 0.03, 0.03);
     //std::cout << "Fruta " << std::endl;
     hitbox = new AABB(glm::vec3(-7.0, 0.0, -7.0), glm::vec3(7.0, 14.0, 7.0));
     this->UpdateHitbox();
@@ -32,9 +32,9 @@ void Fruit::Update(float delta_time)
 
         if (scale.x > 0.0)
         {
-            scale.x -= delta_time;
-            scale.y -= delta_time;
-            scale.z -= delta_time;
+            scale.x -= delta_time * .1;
+            scale.y -= delta_time * .1;
+            scale.z -= delta_time * .1;
         }
         else
         {

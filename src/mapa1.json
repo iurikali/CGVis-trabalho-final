@@ -5,7 +5,7 @@
       "model": "the_wumpa",
       "mapping": "PLANE",
       "texture": "WUMPA",
-      "scale": [0.05, 0.05, 0.05]
+      "scale": [0.03, 0.03, 0.03]
     },
     "cobblestone": {
         "type": "StaticObject",
@@ -24,6 +24,7 @@
         "model": "the_cube_tex",
         "mapping": "CUBE",
         "texture": "CRATE_INTERROGACAO",
+        "scale" : [0.8, 0.8, 0.8],
         "offset": [-0.5, 0.0, -0.5]
     },
     "plane": {

@@ -23,7 +23,7 @@ Box::Box(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     hitbox = new AABB(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 1.0, 1.0));
     this->UpdateHitbox();
 
-    //scale = glm::vec3(0.5, 0.5, 0.5);
+    scale = glm::vec3(0.1, 0.1, 0.1);
 }
 
 
