@@ -28,6 +28,8 @@
 
 #define EPSILON 0.005f
 
+#define X_LIMIT 3.0
+
 struct SceneObject
 {
     std::string  name;        // Nome do objeto

@@ -89,6 +89,7 @@ void Player::Update(float delta_time)
         vel_y = -speed * 4;
     }
 
+    CollisionLimits(delta_time);
     CollisionPhysics(delta_time);
     
     CheckCollisionTrigger(sector - 1);
@@ -129,6 +130,7 @@ void Player::Update(float delta_time)
     // std::cout << "Sector:" << sector << std::endl;
     // std::cout << "Sector + 1:" << sector + 1 << std::endl;
     // std::cout << "Sector - 1:" << sector - 1 << std::endl;
+
 
     player_center_x = position.x ;
     player_center_z = position.z ;
@@ -389,7 +391,6 @@ void Player::CollisionPhysics(float delta_time)
         
     }
 
-
     position.x += vel_x_temp;
     position.y += vel_y_temp;
     position.z += vel_z_temp;
@@ -496,4 +497,19 @@ void Player::CreateParticleSpin(glm::vec3 color, int amount, float y, float radi
 int Player::get_current_state()
 {
     return state;
+}
+
+void Player::CollisionLimits(float delta_time)
+{
+    std::cout << vel_x << std::endl;
+    float half_hitbox = (hit_box.box_max_original.x - hit_box.box_min_original.x) * .5;
+    if (position.x + vel_x * delta_time + half_hitbox > X_LIMIT)
+    {
+        vel_x = 0.0;
+    }
+
+    if (position.x + vel_x * delta_time - half_hitbox < -X_LIMIT)
+    {
+        vel_x = 0.0;
+    }
 }
