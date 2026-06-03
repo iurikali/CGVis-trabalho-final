@@ -328,8 +328,11 @@ void Player::CollisionPhysics(float delta_time)
         auto it = g_collision_physics.find(s);
         if (it != g_collision_physics.end()) 
         {
-            for (GameObject* obj : it->second) 
+            std::vector<GameObject*>& lista = it->second;
+
+            for (size_t i = 0; i < lista.size(); i++) 
             {
+                GameObject *obj = lista[i];
                 if (obj->hitbox != nullptr)
                     vel_z_temp = hit_box.GetClipZ(*(obj->hitbox), vel_z_temp);
             }
@@ -345,8 +348,10 @@ void Player::CollisionPhysics(float delta_time)
         auto it = g_collision_physics.find(s);
         if (it != g_collision_physics.end()) 
         {
-            for (GameObject* obj : it->second) 
+            std::vector<GameObject*>& lista = it->second;
+            for (size_t i = 0; i < lista.size(); i++) 
             {
+                GameObject *obj = lista[i];
                 if (obj->hitbox != nullptr)
                     vel_x_temp = hit_box.GetClipX(*(obj->hitbox), vel_x_temp);
             }
@@ -362,8 +367,11 @@ void Player::CollisionPhysics(float delta_time)
         auto it = g_collision_physics.find(s);
         if (it != g_collision_physics.end()) 
         {
-            for (GameObject* obj : it->second) 
+            std::vector<GameObject*>& lista = it->second;
+
+            for (size_t i = 0; i < lista.size(); i++) 
             {
+                GameObject *obj = lista[i];
                 if (obj->hitbox != nullptr)
                 {
                     vel_y_temp = hit_box.GetClipY(*(obj->hitbox), vel_y_temp);
@@ -408,9 +416,12 @@ void Player::CheckCollisionTrigger(int sector_index)
 
     if (it != g_collision_triggers.end())
     {
+        std::vector<GameObject*>& lista = it->second;
+
         //Vamos verificar a colisao fisica com geral do nosso quadrante
-        for (GameObject* obj : it->second)
+        for (size_t i = 0; i < lista.size(); i++)
         {
+            GameObject* obj = lista[i];
             if (obj->hitbox != nullptr)
             {
                 if (hit_box.Intersects(*(obj->hitbox)))
@@ -429,9 +440,11 @@ void Player::CheckCollisionSpin(int sector_index)
 
     if (it != g_collision_spin.end())
     {
+        std::vector<GameObject*>& lista = it->second;
         //Vamos verificar a colisao fisica com geral do nosso quadrante
-        for (GameObject* obj : it->second)
+        for (size_t i = 0; i < lista.size(); i++)
         {
+            GameObject *obj = lista[i];
             if (obj->hitbox != nullptr)
             {
                 if (spin_hitbox.Intersects(*(obj->hitbox)))
@@ -450,9 +463,11 @@ void Player::CheckCollisionJump(int sector_index)
 
     if (it != g_collision_jump.end())
     {
+        std::vector<GameObject*>& lista = it->second;
         //Vamos verificar a colisao fisica com geral do nosso quadrante
-        for (GameObject* obj : it->second)
+        for (size_t i = 0; i < lista.size(); i++)
         {
+            GameObject *obj = lista[i];
             if (obj->hitbox != nullptr)
             {
                 if (jump_hitbox.Intersects(*(obj->hitbox)) && jump_hitbox.box_max.y > obj->hitbox->box_max.y)
