@@ -101,7 +101,7 @@ void Player::Update(float delta_time)
 
     if (state == ATTACKING)
     {
-        spin_hitbox.Update(position);
+        spin_hitbox.Update(position, scale);
         spin_hitbox.DrawDebug();
 
         CheckCollisionSpin(sector - 1);
@@ -112,7 +112,7 @@ void Player::Update(float delta_time)
 
     if (state == AIR)
     {
-        jump_hitbox.Update(position);
+        jump_hitbox.Update(position, scale);
         jump_hitbox.DrawDebug();
 
         CheckCollisionJump(sector - 1);
@@ -315,7 +315,7 @@ void Player::CollisionPhysics(float delta_time)
     float vel_z_temp = vel_z * delta_time;
     
 
-    hit_box.Update(position);
+    hit_box.Update(position, scale);
 
     //Calculando os setores
     sector = (int)std::floor(position.z / SECTOR_LEN);
@@ -386,7 +386,7 @@ void Player::CollisionPhysics(float delta_time)
     position.y += vel_y_temp;
     position.z += vel_z_temp;
 
-    hit_box.Update(position);
+    hit_box.Update(position, scale);
 
 
     // Colisao com o plano

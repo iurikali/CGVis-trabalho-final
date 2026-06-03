@@ -9,14 +9,14 @@
 Fruit::Fruit(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     StaticObject(name, obj_id, tex_id, false, true, true, false, true, pos)
 {
+    scale = glm::vec3(0.05, 0.05, 0.05);
     //std::cout << "Fruta " << std::endl;
-    hitbox = new AABB(glm::vec3(-0.5, 0.0, -0.5), glm::vec3(0.5, 0.5, 0.5));
-    hitbox->Update(pos);
+    hitbox = new AABB(glm::vec3(-7.0, 0.0, -7.0), glm::vec3(7.0, 14.0, 7.0));
+    this->UpdateHitbox();
 
     velv = 0.0;
     original_y = pos.y;
 
-    scale = glm::vec3(0.05, 0.05, 0.05);
 }
 
 
@@ -45,7 +45,7 @@ void Fruit::Update(float delta_time)
     if (animation)
         Animation(delta_time);
 
-    hitbox->Update(position);
+    this->UpdateHitbox();
 }
 
 

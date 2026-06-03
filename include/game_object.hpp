@@ -92,7 +92,7 @@ class AABB
 
     AABB(glm::vec3 min, glm::vec3 max);
 
-    void Update(glm::vec3 position);
+    void Update(glm::vec3 position, glm::vec3 scale);
 
     bool IntersectsX(AABB against);
 
@@ -131,6 +131,7 @@ public:
     //Componente de colisão (opcional)
     AABB *hitbox = nullptr;
     bool is_destroyed;
+    void UpdateHitbox();
 
     virtual void Update(float delta_time){}
     virtual void Draw() = 0;

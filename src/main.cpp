@@ -419,6 +419,9 @@ void MapCreator(std::string path){
         bool is_jump        = attrs.value("is_jump",        false);
         bool is_destructible= attrs.value("is_destructible",false);
         
+        glm::vec3 scale = {1.0f, 1.0f, 1.0f};
+        if (attrs.contains("scale")) scale  = { attrs["scale"][0], attrs["scale"][1], attrs["scale"][2] };
+        
         if (type == "Fruit")
         {
             new Fruit(model, mapping, texture, position);
@@ -431,22 +434,21 @@ void MapCreator(std::string path){
         else if (type == "Box")
         {
             new Box(model, mapping, texture, position);
+            is_destructible = true; // Caixas são destrutíveis
         }
         
         std::vector<GameObject*> object_vector;
         if (is_destructible) object_vector = g_destructible_objects;
         else object_vector = g_non_destructible_objects;
+
+        object_vector.back()->scale = scale;
         
-        if (attrs.contains("scale")){
-            glm::vec3 scale  = { attrs["scale"][0], attrs["scale"][1], attrs["scale"][2] };
-            object_vector.back()->scale = scale;
-        }
         if (attrs.contains("hitbox")) {
             glm::vec3 hitboxMin(attrs["hitbox"][0][0], attrs["hitbox"][0][1], attrs["hitbox"][0][2]);
             glm::vec3 hitboxMax(attrs["hitbox"][1][0], attrs["hitbox"][1][1], attrs["hitbox"][1][2]);
             object_vector.back()->hitbox = new AABB(hitboxMin, hitboxMax);
-            object_vector.back()->hitbox->Update(object_vector.back()->position + glm::vec3(0.5, 0.0, 0.5)); // esse valor ainda tá fixo para caixas
         }
+        object_vector.back()->UpdateHitbox(); 
     }
 }
 

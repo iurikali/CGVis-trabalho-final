@@ -16,7 +16,7 @@
         "is_trigger": false,
         "is_spin": false, 
         "is_destructible": false,
-        "hitbox":[[-0.5, 0.0, -0.5], [0.5, 1.0, 0.5]]
+        "hitbox":[[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]
     },
     "crate_interrogacao": {
         "type": "Box",
@@ -52,7 +52,7 @@
     { "prefab": "wumpa", "position": [-0.0, 2.0, -8.5]},
     { "prefab": "wumpa", "position": [1.0, 2.0, -8.5]},
     { "prefab": "wumpa", "position": [2.0, 2.0, -8.5]},
-    
+        
     { "prefab": "crate_interrogacao", "position": [-1.7, 0.0, -13.8]},
     { "prefab": "crate_interrogacao", "position": [-1.7, 0.0, -14.8]},
     { "prefab": "crate_interrogacao", "position": [-1.7, 1.0, -14.8]},
@@ -72,6 +72,6 @@
     { "prefab": "wumpa", "position": [2.0, 5.0, -21.0]},
     
     { "prefab": "cobblestone", "position": [-3.0, 0.0, -25.0], "scale": [6.0, 5.0, 3.0]},
-    { "prefab": "wumpa", "position": [0.0, 7.0, -25.0], "scale": [2.0, 2.0, 2.0], "model": "the_bunny", "mapping": "PLANE"}
+    { "prefab": "wumpa", "position": [0.0, 7.0, -25.0], "scale": [2.0, 2.0, 2.0], "model": "the_bunny", "mapping": "PLANE", "hitbox": [[-0.7, -0.7, -0.7], [0.7, 0.7, 0.7]]}
   ]
 }

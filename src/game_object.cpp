@@ -55,6 +55,11 @@ GameObject::GameObject(std::string n, int o_id, int t_id, bool is_physics,
         }
     }
 
+void GameObject::UpdateHitbox()
+{
+    if (hitbox != nullptr)
+        hitbox->Update(position, scale);
+}
 //Matriz final do objeto
 glm::mat4 GameObject::GetModelMatrix()
 {
@@ -265,10 +270,10 @@ void AnimatedObject::ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransfor
 
 AABB::AABB(glm::vec3 min, glm::vec3 max) : box_min(min), box_max(max), box_min_original(min), box_max_original(max){}
 
-void AABB::Update(glm::vec3 position)
+void AABB::Update(glm::vec3 position, glm::vec3 scale)
 {
-    box_min = position + box_min_original;
-    box_max = position + box_max_original;
+    box_min = position + box_min_original * scale;
+    box_max = position + box_max_original * scale;
 }
 
 bool AABB::IntersectsX(AABB against)
