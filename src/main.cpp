@@ -67,6 +67,7 @@
 #include "box.hpp"
 #include "particle_spin.hpp"
 #include "enemy.hpp"
+#include "spikes.hpp"
 
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
@@ -270,7 +271,8 @@ void AssetsLoader(int argc, char* argv[])
     // então nenhuma textura era carregada em 5
     LoadTextureImage("../../data/wumpa.jpg"); 
     LoadTextureImage("../../data/crate.jpg"); 
-    LoadTextureImage("../../data/crate_interrogacao.jpg"); 
+    LoadTextureImage("../../data/crate_interrogacao.jpg");
+    LoadTextureImage("../../data/wooden_picks_diffuse.jpg"); 
 
 
     // --------------------------- .OBJ -------------------------------
@@ -298,6 +300,10 @@ void AssetsLoader(int argc, char* argv[])
     ObjModel cubetexmodel("../../data/cube-tex.obj");
     ComputeNormals(&cubetexmodel);
     BuildTrianglesAndAddToVirtualScene(&cubetexmodel);
+
+    ObjModel spikesmodel("../../data/spikes.obj");
+    ComputeNormals(&spikesmodel);
+    BuildTrianglesAndAddToVirtualScene(&spikesmodel);
 
     if (argc > 1 )
     {
@@ -396,7 +402,8 @@ void MapCreator(std::string path){
         {"CRATE_INTERROGACAO", CRATE_INTERROGACAO},
         {"WUMPA",             WUMPA},
         {"RED_BRICK", RED_BRICK},
-        {"ROCKY_TERRAIN", ROCKY_TERRAIN}
+        {"ROCKY_TERRAIN", ROCKY_TERRAIN},
+        {"SPIKE", SPIKE}
     };
     std::ifstream f(path);
     if (!f.is_open()) {
@@ -447,10 +454,15 @@ void MapCreator(std::string path){
             new Enemy(model, mapping, texture, position);
             is_destructible = true;
         }
+        else if (type == "Spikes")
+        {
+            new Spikes(position);
+        }
         
         std::vector<GameObject*> object_vector;
         if (is_destructible) object_vector = g_destructible_objects;
         else object_vector = g_non_destructible_objects;
+
 
         object_vector.back()->scale = scale;
         

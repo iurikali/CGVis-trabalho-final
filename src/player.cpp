@@ -41,7 +41,7 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     angle_looking(0.0f),
     state(IDLE),
     on_air(false),
-    jump_height(7.5),
+    jump_height(8.0),
     time_spin(0.2),
     time_spin_index(0.0),
     spin_speed(100.0),

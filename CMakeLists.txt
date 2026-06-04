@@ -21,6 +21,7 @@ set(SOURCES
   src/particle_spin.cpp
   src/particles.cpp
   src/enemy.cpp
+  src/spikes.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
