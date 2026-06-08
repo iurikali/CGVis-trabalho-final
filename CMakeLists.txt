@@ -22,6 +22,7 @@ set(SOURCES
   src/particles.cpp
   src/enemy.cpp
   src/spikes.cpp
+  src/sprite.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)

@@ -68,6 +68,7 @@
 #include "particle_spin.hpp"
 #include "enemy.hpp"
 #include "spikes.hpp"
+#include "sprite.hpp"
 
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
@@ -185,9 +186,17 @@ GLint g_bbox_max_uniform;
 GLint g_bones_uniform;
 GLint g_particle_color_uniform;
 
+// ID do novo programa de UI
+GLuint g_GpuProgramUI_ID = 0; 
+
+// Endereços das variáveis do shader de UI
+GLint g_ui_model_uniform;
+GLint g_ui_projection_uniform;
+
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
-
+glm::mat4 g_projection_ui;
+GLuint g_QuadVAO = 0;
 
 //Funcao para visualizar a nossa AABB
 //Foi o gemini que fez
@@ -214,6 +223,59 @@ Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::
 Camera camera = Camera();
 bool restart = false;
 
+void LoadShaderUI()
+{
+    GLuint ui_vertex_shader_id = LoadShader_Vertex("../../src/shader_ui_vertex.glsl");
+    GLuint ui_fragment_shader_id = LoadShader_Fragment("../../src/shader_ui_fragment.glsl");
+
+    if ( g_GpuProgramUI_ID != 0 )
+        glDeleteProgram(g_GpuProgramUI_ID);
+
+    g_GpuProgramUI_ID = CreateGpuProgram(ui_vertex_shader_id, ui_fragment_shader_id);
+
+    // Busca os endereços específicos do shader de UI
+    g_ui_model_uniform      = glGetUniformLocation(g_GpuProgramUI_ID, "model");
+    g_ui_projection_uniform = glGetUniformLocation(g_GpuProgramUI_ID, "projection");
+}
+
+void InitUI()
+{
+    // 1. Carrega os novos shaders
+    LoadShaderUI();
+
+    // 2. Cria a matriz ortogonal (Substitua 800 e 600 pela resolução real da sua janela!)
+    g_projection_ui = Matrix_Orthographic(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+
+    // 3. Gerando o VAO do Quadrado Base (g_QuadVAO) no escopo global
+    GLuint VBO;
+
+    // Coordenadas do quadrado (Posição X, Y e Textura U, V)
+    float quadVertices[] = { 
+        // Posição    // UVs
+        0.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 0.0f,   1.0f, 0.0f,
+        0.0f, 0.0f,   0.0f, 0.0f, 
+
+        0.0f, 1.0f,   0.0f, 1.0f,
+        1.0f, 1.0f,   1.0f, 1.0f,
+        1.0f, 0.0f,   1.0f, 0.0f
+    };
+
+    glGenVertexArrays(1, &g_QuadVAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(g_QuadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glBindVertexArray(0); // Fim da montagem do VAO da UI
+}
 
 void InitDebugAABB() 
 {
@@ -273,6 +335,10 @@ void AssetsLoader(int argc, char* argv[])
     LoadTextureImage("../../data/crate.jpg"); 
     LoadTextureImage("../../data/crate_interrogacao.jpg");
     LoadTextureImage("../../data/wooden_picks_diffuse.jpg"); 
+    
+    glActiveTexture(GL_TEXTURE30);
+    LoadTextureImage("../../data/hands/crash_left_1.png");
+    glActiveTexture(GL_TEXTURE0);
 
 
     // --------------------------- .OBJ -------------------------------
@@ -488,6 +554,7 @@ int main(int argc, char* argv[])
     AssetsLoader(argc, argv);
     // Inicializamos o código para renderização de texto.
     TextRendering_Init();
+    
     // Habilitamos o Z-buffer. Veja slides 104-116 do documento Aula_09_Projecoes.pdf.
     glEnable(GL_DEPTH_TEST);
     // Habilitamos o Backface Culling. Veja slides 8-13 do documento Aula_02_Fundamentos_Matematicos.pdf, slides 23-34 do documento Aula_13_Clipping_and_Culling.pdf e slides 112-123 do documento Aula_14_Laboratorio_3_Revisao.pdf.
@@ -495,6 +562,10 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    InitUI();
+    
+
+    Sprite* barra_vida = new Sprite(9, glm::vec2(20.0f, 20.0f), glm::vec2(200.0f, 50.0f)); 
     
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
@@ -612,6 +683,25 @@ int main(int argc, char* argv[])
         // por segundo (frames per second).
         TextRendering_ShowFramesPerSecond(window);
 
+        //Renderizando a UI
+        // 1. Desliga o Teste de Profundidade (para a UI não ser cortada por paredes)
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        
+        // 2. Habilita transparência para o canal Alpha do PNG funcionar
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // 3. Desenha os seus sprites
+        barra_vida->Draw(g_GpuProgramUI_ID, g_projection_ui);
+
+        // 4. Devolve o OpenGL ao normal para o início do próximo frame
+        glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        
+
+
         // O framebuffer onde OpenGL executa as operações de renderização não
         // é o mesmo que está sendo mostrado para o usuário, caso contrário
         // seria possível ver artefatos conhecidos como "screen tearing". A
@@ -648,7 +738,7 @@ void LoadTextureImage(const char* filename)
     int width;
     int height;
     int channels;
-    unsigned char *data = stbi_load(filename, &width, &height, &channels, 3);
+    unsigned char *data = stbi_load(filename, &width, &height, &channels, 0);
 
     if ( data == NULL )
     {
@@ -681,7 +771,26 @@ void LoadTextureImage(const char* filename)
     GLuint textureunit = g_NumLoadedTextures;
     glActiveTexture(GL_TEXTURE0 + textureunit);
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    
+    // Descobre o formato dinamicamente com base nos canais da imagem!
+    GLenum format;
+    GLenum internalFormat;
+
+    if (channels == 1) {
+        format = GL_RED;
+        internalFormat = GL_RED;
+    } else if (channels == 2) {
+        format = GL_RG;
+        internalFormat = GL_RG;
+    } else if (channels == 3) {
+        format = GL_RGB;
+        internalFormat = GL_SRGB8;
+    } else if (channels == 4) {
+        format = GL_RGBA;
+        internalFormat = GL_SRGB8_ALPHA8;
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindSampler(textureunit, sampler_id);
 
