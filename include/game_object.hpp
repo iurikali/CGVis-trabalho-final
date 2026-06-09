@@ -21,6 +21,9 @@
 #define CRATE_INTERROGACAO 7
 #define SPIKE 8
 
+#define LEFT_HAND 9
+#define RIGHT_HAND 12
+
 #define SPHERE 0
 #define BUNNY  1
 #define PLANE  2

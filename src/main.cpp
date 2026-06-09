@@ -222,6 +222,8 @@ std::vector<GameObject*> g_destructible_objects;
 Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
 Camera camera = Camera();
 bool restart = false;
+bool g_first_person = false;
+
 
 void LoadShaderUI()
 {
@@ -338,6 +340,12 @@ void AssetsLoader(int argc, char* argv[])
     
     glActiveTexture(GL_TEXTURE30);
     LoadTextureImage("../../data/hands/crash_left_1.png");
+    LoadTextureImage("../../data/hands/crash_left_2.png");
+    LoadTextureImage("../../data/hands/crash_left_3.png");
+
+    LoadTextureImage("../../data/hands/crash_right_1.png");
+    LoadTextureImage("../../data/hands/crash_right_2.png");
+    LoadTextureImage("../../data/hands/crash_right_3.png");
     glActiveTexture(GL_TEXTURE0);
 
 
@@ -565,7 +573,8 @@ int main(int argc, char* argv[])
     InitUI();
     
 
-    Sprite* barra_vida = new Sprite(9, glm::vec2(20.0f, 20.0f), glm::vec2(200.0f, 50.0f)); 
+    Sprite* left_hand = new Sprite(LEFT_HAND, 3, 0.2, glm::vec2(20.0f, 20.0f), glm::vec2(245.0f, 144.0f)); 
+    Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(500.0f, 20.0f), glm::vec2(245.0f, 144.0f)); 
     
     // INSTANCIAÇÃO (Orientação a Objetos)
     camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
@@ -693,7 +702,11 @@ int main(int argc, char* argv[])
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // 3. Desenha os seus sprites
-        barra_vida->Draw(g_GpuProgramUI_ID, g_projection_ui);
+        if (g_first_person)
+        {
+            left_hand->Draw(dt, g_GpuProgramUI_ID, g_projection_ui);
+            right_hand->Draw(dt, g_GpuProgramUI_ID, g_projection_ui);
+        }
 
         // 4. Devolve o OpenGL ao normal para o início do próximo frame
         glDisable(GL_BLEND);
@@ -1350,6 +1363,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
             player->CreateParticleSpin(orange, 10, 0.8, 0.7, speed);
             player->CreateParticleSpin(orange, 10, 0.8, 0.8, speed);
         }
+    }
+
+    if (key == GLFW_KEY_P && action == GLFW_PRESS)
+    {
+        g_first_person = !g_first_person;
     }
 }
 

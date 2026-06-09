@@ -10,12 +10,21 @@ public:
     float rotation;     // Rotação em radianos
     GLuint texture_id;  // O ID da textura já carregada no OpenGL
 
-    Sprite(GLuint tex_id, glm::vec2 pos, glm::vec2 size);
+    Sprite(GLuint tex_id, int amount, float speed, glm::vec2 pos, glm::vec2 size);
 
     // O Draw precisa receber o shader_id da UI para saber qual programa ativar
-    void Draw(GLuint shader_ui_id, glm::mat4 ortho_projection);
+    void Draw(float delta_time, GLuint shader_ui_id, glm::mat4 ortho_projection);
 
 private:
     // Retorna a matriz de transformação 2D
     glm::mat4 GetModelMatrix();
+
+    void UpdateSprite(float delta_time);
+
+    int image_index;
+    int image_amount;
+    float image_speed;
+    float image_delta;
+    bool image_returning;
+    int image_first;
 };

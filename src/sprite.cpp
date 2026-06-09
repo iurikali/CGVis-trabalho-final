@@ -1,16 +1,24 @@
 #include "sprite.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 // Vamos assumir que você vai criar esse VAO globalmente na main
 extern GLuint g_QuadVAO; 
 
-Sprite::Sprite(GLuint tex_id, glm::vec2 pos, glm::vec2 size)
+Sprite::Sprite(GLuint tex_id, int amount, float speed, glm::vec2 pos, glm::vec2 size)
 {
     this->position = pos;
     this->scale = size;
     this->rotation = 0.0f;
     this->texture_id = tex_id;
+    image_returning = false;
+    image_delta = 0;
+    image_index = tex_id;
+    image_amount = amount;
+    image_speed = speed;
+
+    image_first = tex_id;
 }
 
 glm::mat4 Sprite::GetModelMatrix()
@@ -30,8 +38,10 @@ glm::mat4 Sprite::GetModelMatrix()
     return model;
 }
 
-void Sprite::Draw(GLuint shader_ui_id, glm::mat4 ortho_projection)
-{
+void Sprite::Draw(float delta_time, GLuint shader_ui_id, glm::mat4 ortho_projection)
+{   
+    UpdateSprite(delta_time);
+
     // 1. Usa o shader da UI
     glUseProgram(shader_ui_id);
 
@@ -57,4 +67,33 @@ void Sprite::Draw(GLuint shader_ui_id, glm::mat4 ortho_projection)
     
     // Volta para a textura 0 (onde o mundo 3D espera estar)
     glActiveTexture(GL_TEXTURE0); 
+}
+
+void Sprite::UpdateSprite(float delta_time)
+{
+    if (image_speed != 0)
+    {
+        image_delta += delta_time;
+
+        if (image_delta >= image_speed)
+        {
+            if (!image_returning)
+                texture_id++;
+            else 
+                texture_id--;
+
+            image_delta = 0;
+
+            if (texture_id >= image_first + image_amount - 1)
+            {
+                image_returning = true;
+            }
+            else if (texture_id <= image_first)
+            {
+                image_returning = false;
+            }
+        }
+    }
+
+    std::cout << "Tex: " << texture_id << std::endl;
 }
