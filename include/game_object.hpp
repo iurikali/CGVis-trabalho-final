@@ -149,6 +149,8 @@ public:
     virtual void on_trigger_spin(float dir){}
     virtual void on_trigger_jump(){}
 
+    bool visible = true;
+
     //Apagando o componente de hitbox ao apagar o objeto
     virtual ~GameObject() 
     {

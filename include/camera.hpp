@@ -5,9 +5,8 @@
 class Camera
 {
 private:
-    float theta; // Ângulo no plano ZX em relação ao eixo Z
-    float phi;   // Ângulo em relação ao eixo Y
-    float distance; // Distância da câmera para a origem
+
+    
 
 public:
     glm::vec3 position;
@@ -26,4 +25,7 @@ public:
 
     void set_look_at(glm::vec3 look_at);
 
-};
+    float distance; // Distância da câmera para a origem
+    float theta; // Ângulo no plano ZX em relação ao eixo Z
+    float phi;   // Ângulo em relação ao eixo Y
+}; 

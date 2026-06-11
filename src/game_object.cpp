@@ -143,50 +143,53 @@ void AnimatedObject::Update(float delta_time)
 
 void AnimatedObject::Draw() 
 {
-    glm::mat4 model = GetModelMatrix();
-    glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-    glUniform1i(g_object_id_uniform, object_id);
-    
-    // Avisa o shader qual número do array usar (Gaveta/Texture Unit)
-    glUniform1i(g_texture_id_uniform, texture_id);
-    
-    glUniformMatrix4fv(g_bones_uniform, 100, GL_FALSE, glm::value_ptr(final_bone_matrices[0]));
-
-    AnimatedSceneObject& obj_data = g_AnimatedScene[name];
-    
-    GLint has_texture_uniform = glGetUniformLocation(g_GpuProgramID, "has_texture");
-    
-    glBindVertexArray(obj_data.vertex_array_object_id);
-
-    // Agora iteramos sobre cada parte (primitiva) do modelo!
-    for (const auto& prim : obj_data.primitives) 
+    if (visible)
     {
-        if (prim.texture_id != 0) 
+        glm::mat4 model = GetModelMatrix();
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, object_id);
+        
+        // Avisa o shader qual número do array usar (Gaveta/Texture Unit)
+        glUniform1i(g_texture_id_uniform, texture_id);
+        
+        glUniformMatrix4fv(g_bones_uniform, 100, GL_FALSE, glm::value_ptr(final_bone_matrices[0]));
+
+        AnimatedSceneObject& obj_data = g_AnimatedScene[name];
+        
+        GLint has_texture_uniform = glGetUniformLocation(g_GpuProgramID, "has_texture");
+        
+        glBindVertexArray(obj_data.vertex_array_object_id);
+
+        // Agora iteramos sobre cada parte (primitiva) do modelo!
+        for (const auto& prim : obj_data.primitives) 
         {
-            glActiveTexture(GL_TEXTURE0 + texture_id); 
-            glBindTexture(GL_TEXTURE_2D, prim.texture_id);
-            glUniform1i(has_texture_uniform, 1); 
-        } 
-        else 
-        {
-            glUniform1i(has_texture_uniform, 0); 
+            if (prim.texture_id != 0) 
+            {
+                glActiveTexture(GL_TEXTURE0 + texture_id); 
+                glBindTexture(GL_TEXTURE_2D, prim.texture_id);
+                glUniform1i(has_texture_uniform, 1); 
+            } 
+            else 
+            {
+                glUniform1i(has_texture_uniform, 0); 
+            }
+
+            // Desenha APENAS os índices relativos a esta primitiva específica.
+            // Multiplicamos o first_index por sizeof(GLuint) porque o OpenGL espera um deslocamento em bytes.
+            glDrawElements(
+                obj_data.rendering_mode, 
+                prim.num_indices, 
+                GL_UNSIGNED_INT, 
+                (void*)(prim.first_index * sizeof(GLuint))
+            );
         }
+        
+        glBindVertexArray(0);
 
-        // Desenha APENAS os índices relativos a esta primitiva específica.
-        // Multiplicamos o first_index por sizeof(GLuint) porque o OpenGL espera um deslocamento em bytes.
-        glDrawElements(
-            obj_data.rendering_mode, 
-            prim.num_indices, 
-            GL_UNSIGNED_INT, 
-            (void*)(prim.first_index * sizeof(GLuint))
-        );
-    }
-    
-    glBindVertexArray(0);
-
-    if (GameObject::hitbox != nullptr)
-    {
-        hitbox->DrawDebug();
+        if (GameObject::hitbox != nullptr)
+        {
+            hitbox->DrawDebug();
+        }
     }
 }
 

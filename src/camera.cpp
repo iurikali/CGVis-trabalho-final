@@ -4,6 +4,8 @@
 #include <cmath>
 //const double M_PI = std::acos(-1.0); // Ou 2 * acos(0.0)
 
+extern bool g_first_person;
+
 Camera::Camera(): 
     theta(0.0f),
     phi(0.0f),
@@ -23,6 +25,12 @@ void Camera::Rotate(float dx, float dy)
     // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
     float phimax = 3.141592f/2;
     float phimin = -phimax;
+
+    if (g_first_person)
+    {
+        phimax = 3.141592f/4;
+        phimin = -phimax;
+    }
     
     if (phi > phimax)
     phi = phimax;

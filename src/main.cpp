@@ -223,7 +223,10 @@ Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::
 Camera camera = Camera();
 bool restart = false;
 bool g_first_person = false;
-
+glm::vec3 g_first_person_vec;
+float original_dist;
+float theta;
+float phi;
 
 void LoadShaderUI()
 {
@@ -588,8 +591,12 @@ int main(int argc, char* argv[])
     glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
 
     camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
+    original_dist = camera.distance;
+    phi = camera.phi;
+    theta = camera.theta;
 
     float last_time = (float)glfwGetTime();
+
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -658,10 +665,24 @@ int main(int argc, char* argv[])
 
         // Personagem animado
 
-        cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
+        if (!g_first_person)
+        {
+            cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
 
-        camera.set_look_at(cam_position);
-        
+            camera.set_look_at(cam_position);
+
+            camera.distance = original_dist;
+        }
+        else
+        {
+            //camera.set_look_at(g_first_person_vec);
+            camera.set_look_at(glm::vec3(player->position.x, player->position.y + 1.0, player->position.z));
+            //camera.set_look_at(player->position);
+            camera.distance = 0.1f;
+            //camera.position = player->position;
+            //camera.position.y = player->position.y + 1.0f;
+            
+        }
 
         // Desenho dos objetos persistentes
         for (auto& gameObject : g_non_destructible_objects)
@@ -1158,7 +1179,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
     // parâmetros que definem a posição da câmera dentro da cena virtual.
     // Assim, temos que o usuário consegue controlar a câmera.
 
-    if (g_LeftMouseButtonPressed)
+    if (g_first_person)
     {
         // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
         float dx = xpos - g_LastCursorPosX;
@@ -1368,6 +1389,26 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
     {
         g_first_person = !g_first_person;
+
+
+        if (g_first_person)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            player->visible = false;
+        }
+        else
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            camera.theta = theta;
+            camera.phi = phi;
+            player->visible = true;
+        }
+    }
+
+    if (key == GLFW_KEY_L && action == GLFW_PRESS)
+    {
+        //g_first_person_vec.y += .1;
+        camera.Rotate(1.0, 0.0);
     }
 }
 

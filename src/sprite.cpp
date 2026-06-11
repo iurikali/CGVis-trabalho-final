@@ -95,5 +95,4 @@ void Sprite::UpdateSprite(float delta_time)
         }
     }
 
-    std::cout << "Tex: " << texture_id << std::endl;
 }
