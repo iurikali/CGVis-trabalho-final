@@ -1,0 +1,22 @@
+ok. tem bastante coisa pra fazer. 
+olhando o spec
+
+
+- Movimento dependente da câmera de primeira pessoa
+
+- Decoração do ambiente
+
+- Fruta com brilho extra
+
+- Inimigo com curva de bezier cúbica (mosca)
+
+- Câmera em trilho
+
+
+Pra começar, fazer a fase, mais fácil
+Tá complicado de achar uma árvore feita
+
+- Melhorar as árvores:
+ coloquei glDisable(GL_CULL_FACE);    em StaticObject::Draw(), de game_object.cpp
+ devo colocar num lugar melhor depois, ou encontrar modelos melhores depois
+ tô cansado, depois encontro árovres melhores
