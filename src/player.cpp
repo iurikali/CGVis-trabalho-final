@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include "particle_spin.hpp"
+#include "matrices.h"
 
 extern bool g_first_person;
 
@@ -33,6 +34,7 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
     is_a_pressed(false),
     is_s_pressed(false),
     is_d_pressed(false),
+    walk_angle(M_PI),
     vel_x(0.0f),
     vel_y(0.0f),
     vel_z(0.0f),
@@ -59,11 +61,15 @@ Player::Player(std::string n, int o_id, int t_id, glm::vec3 pos, float speed):
 
 void Player::Update(float delta_time)
 {
-    vel_x = (float) (is_d_pressed - is_a_pressed) * speed;
-    vel_z = (float) (is_s_pressed - is_w_pressed) * speed;
+    vel_x = (float) (is_a_pressed - is_d_pressed) * speed;
+    vel_z = (float) (is_w_pressed - is_s_pressed) * speed;
+    glm::vec4 walk_vel = glm::vec4(vel_x, 0.0f, vel_z, 0.0f);
+    glm::mat4 yawRotation = Matrix_Rotate_Y(walk_angle);
+    walk_vel = yawRotation * walk_vel;
+    vel_x = walk_vel.x;
+    vel_z = walk_vel.z;
 
-
-    
+        
     //Calculando a rotação
     if (!spin)
     {
@@ -495,6 +501,11 @@ void Player::CreateParticleSpin(glm::vec3 color, int amount, float y, float radi
 int Player::get_current_state()
 {
     return state;
+}
+
+void Player::set_walk_angle(float angle)
+{
+    this->walk_angle = angle;
 }
 
 void Player::CollisionLimits(float delta_time)

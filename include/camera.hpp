@@ -1,5 +1,6 @@
 #pragma once
 #include "game_object.hpp"
+#define M_PI 3.14159265358979323846
 
 
 class Camera
@@ -69,4 +70,5 @@ public:
     FirstPersonCamera();
 
     void Rotate(float dx, float dy);
+    float get_yaw();
 };

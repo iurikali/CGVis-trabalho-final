@@ -18,6 +18,7 @@ private:
     bool is_d_pressed;
     bool is_space_pressed;
 
+    float walk_angle; 
     float vel_x;
     float vel_y;
     float vel_z;
@@ -60,6 +61,8 @@ public:
     void set_space_pressed(bool b);
     void state_machine(float delta_time);
     int get_current_state();
+
+    void set_walk_angle(float angle);
 
     void jump(float height);
 

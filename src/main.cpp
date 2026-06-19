@@ -596,6 +596,8 @@ int main(int argc, char* argv[])
 
     followCamera.set_offset(glm::vec3(0.0f, 1.7f, 3.0f));
 
+    player->set_walk_angle(M_PI);
+
     float last_time = (float)glfwGetTime();
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
@@ -1179,13 +1181,14 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         float dy = ypos - g_LastCursorPosY;
 
         firstPersonCamera.Rotate(dx, dy);
-        
-        // Atualizamos as variáveis globais para armazenar a posição atual do
-        // cursor como sendo a última posição conhecida do cursor.
-        g_LastCursorPosX = xpos;
-        g_LastCursorPosY = ypos;
+        player->set_walk_angle(firstPersonCamera.get_yaw());    
     }
-
+    else
+        player->set_walk_angle(M_PI);
+    // Atualizamos as variáveis globais para armazenar a posição atual do
+    // cursor como sendo a última posição conhecida do cursor.
+    g_LastCursorPosX = xpos;
+    g_LastCursorPosY = ypos;
     if (g_RightMouseButtonPressed)
     {
         // Deslocamento do cursor do mouse em x e y de coordenadas de tela!

@@ -131,7 +131,7 @@ FollowCamera::FollowCamera():
 FirstPersonCamera::FirstPersonCamera():
     mouseSensitivity(0.01f),
     pitch(0.0f),
-    yaw(0.0f),
+    yaw(M_PI),
     BaseCamera(){}
     
     void FirstPersonCamera::Rotate(float dx, float dy)
@@ -149,4 +149,9 @@ FirstPersonCamera::FirstPersonCamera():
         view.z = cos(pitch) * cos(yaw);
 
         set_view(glm::normalize(view));
+    }
+
+    float FirstPersonCamera::get_yaw()
+    {
+        return yaw;
     }
