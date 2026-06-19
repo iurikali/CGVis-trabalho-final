@@ -341,16 +341,17 @@ void AssetsLoader(int argc, char* argv[])
     LoadTextureImage("../../data/crate_interrogacao.jpg");
     LoadTextureImage("../../data/wooden_picks_diffuse.jpg"); 
     
-    glActiveTexture(GL_TEXTURE30);
+    // glActiveTexture(GL_TEXTURE30);
     LoadTextureImage("../../data/hands/crash_left_1.png");
     LoadTextureImage("../../data/hands/crash_left_2.png");
     LoadTextureImage("../../data/hands/crash_left_3.png");
-
+    
     LoadTextureImage("../../data/hands/crash_right_1.png");
     LoadTextureImage("../../data/hands/crash_right_2.png");
     LoadTextureImage("../../data/hands/crash_right_3.png");
-    glActiveTexture(GL_TEXTURE0);
-
+    // glActiveTexture(GL_TEXTURE0);
+    
+    LoadTextureImage("../../data/sand_texture.jpg"); // 15
 
     // --------------------------- .OBJ -------------------------------
     // Construímos a representação de objetos geométricos através de malhas de triângulos
@@ -381,6 +382,10 @@ void AssetsLoader(int argc, char* argv[])
     ObjModel spikesmodel("../../data/spikes.obj");
     ComputeNormals(&spikesmodel);
     BuildTrianglesAndAddToVirtualScene(&spikesmodel);
+
+    ObjModel treemodel("../../data/palmtreeOBJ/palmtree.obj");
+    ComputeNormals(&treemodel);
+    BuildTrianglesAndAddToVirtualScene(&treemodel);
 
     if (argc > 1 )
     {
@@ -480,7 +485,8 @@ void MapCreator(std::string path){
         {"WUMPA",             WUMPA},
         {"RED_BRICK", RED_BRICK},
         {"ROCKY_TERRAIN", ROCKY_TERRAIN},
-        {"SPIKE", SPIKE}
+        {"SPIKE", SPIKE},
+        {"SAND", SAND}
     };
     std::ifstream f(path);
     if (!f.is_open()) {

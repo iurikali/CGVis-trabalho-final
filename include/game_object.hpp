@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 // Número de texturas existentes ! atualizar no shader_fragment também
-#define NUM_TEXTURAS 9
+#define NUM_TEXTURAS 16
 
 #define RED_BRICK 0
 #define ROCKY_TERRAIN 1
@@ -20,6 +20,7 @@
 #define CRATE 6
 #define CRATE_INTERROGACAO 7
 #define SPIKE 8
+#define SAND 15
 
 #define LEFT_HAND 9
 #define RIGHT_HAND 12

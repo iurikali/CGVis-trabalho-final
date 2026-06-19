@@ -31,7 +31,7 @@
       "type": "StaticObject",
       "model": "the_plane",
       "mapping": "PLANE",
-      "texture": "ROCKY_TERRAIN"
+      "texture": "SAND"
     },
     "enemy": {
       "type": "Enemy",
@@ -46,21 +46,41 @@
       "mapping": "PLANE",
       "texture": "SPIKE",
       "scale" : [6.0, 6.0, 6.0]
+    },
+    "palmtree": {
+      "type": "StaticObject",
+      "model": "palmtree",
+      "mapping": "PLANE",
+      "texture": "ROCKY_TERRAIN",
+      "scale": [0.15, 0.1, 0.15],
+      "is_destructible": true
     }
   },
   "objects": [
-    { "prefab": "plane", "position": [0.0, 0.0, 0.0], "scale": [3.0, 1.0, 3.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -6.0], "scale": [3.0, 1.0, 3.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -12.0], "scale": [3.0, 1.0, 3.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -18.0], "scale": [3.0, 1.0, 3.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -24.0], "scale": [3.0, 1.0, 3.0]},
-
+    { "prefab": "plane", "position": [0.0, 0.0, 0.0], "scale": [5.0, 1.0, 5.0]},
+    { "prefab": "plane", "position": [0.0, 0.0, -10.0], "scale": [5.0, 1.0, 5.0]},
+    { "prefab": "plane", "position": [0.0, 0.0, -20.0], "scale": [5.0, 1.0, 5.0]},
+    { "prefab": "plane", "position": [0.0, 0.0, -30.0], "scale": [5.0, 1.0, 5.0]},
+    { "prefab": "plane", "position": [0.0, 0.0, -40.0], "scale": [5.0, 1.0, 5.0]},
+    
+    { "prefab": "palmtree", "position": [4.0, -1.0, 0.0]},
+    { "prefab": "palmtree", "position": [4.2, -1.0, -3.0]},
+    { "prefab": "palmtree", "position": [3.6, -1.0, -6.0]},
+    { "prefab": "palmtree", "position": [4.3, -1.0, -8.0]},
+    { "prefab": "palmtree", "position": [3.8, -1.0, -11.0]},
+    
+    { "prefab": "palmtree", "position": [-4.0, -1.0, 0.0]},
+    { "prefab": "palmtree", "position": [-4.2, -1.0, -3.0]},
+    { "prefab": "palmtree", "position": [-3.6, -1.0, -6.0]},
+    { "prefab": "palmtree", "position": [-4.3, -1.0, -8.0]},
+    { "prefab": "palmtree", "position": [-3.8, -1.0, -11.0]},
+    
     { "prefab": "spikes", "position": [-2.0, 0.0, -2.0]},
     { "prefab": "enemy", "position": [0.0, 0.5, -1.0]},
 
     { "prefab": "crate_interrogacao", "position": [-1.1, 0.0, -2.5]},
     { "prefab": "crate_interrogacao", "position": [1.6, 0.0, -5.5]},
-    { "prefab": "crate_interrogacao", "position": [1.6, 1.0, -5.5]},
+    { "prefab": "crate_interrogacao", "position": [1.6, 0.8, -5.5]},
         
     { "prefab": "crate_interrogacao", "position": [-2.0, 0.0, -8.5]},
     { "prefab": "crate_interrogacao", "position": [-1.0, 0.0, -8.5]},
@@ -75,7 +95,7 @@
         
     { "prefab": "crate_interrogacao", "position": [-1.7, 0.0, -13.8]},
     { "prefab": "crate_interrogacao", "position": [-1.7, 0.0, -14.8]},
-    { "prefab": "crate_interrogacao", "position": [-1.7, 1.0, -14.8]},
+    { "prefab": "crate_interrogacao", "position": [-1.7, 0.8, -14.8]},
     { "prefab": "crate_interrogacao", "position": [-0.7, 0.0, -14.8]},
 
     { "prefab": "cobblestone", "position": [2.0, 0.0, -19.0], "scale": [2.0, 1.0, 2.0]},

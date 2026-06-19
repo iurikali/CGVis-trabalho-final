@@ -77,6 +77,7 @@ StaticObject::StaticObject(std::string n, int o_id, int t_id, bool is_physics,
 
 void StaticObject::Draw()
 {
+    glDisable(GL_CULL_FACE);   // <-- adicionar
     glm::mat4 model = GetModelMatrix();
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, object_id);
@@ -96,6 +97,7 @@ void StaticObject::Draw()
     {
         hitbox->DrawDebug();
     }
+    glEnable(GL_CULL_FACE);    // <-- restaurar depois
 }
 
 //Os .gltf

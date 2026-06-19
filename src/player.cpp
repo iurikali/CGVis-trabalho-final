@@ -499,7 +499,7 @@ int Player::get_current_state()
 
 void Player::CollisionLimits(float delta_time)
 {
-    std::cout << vel_x << std::endl;
+    // std::cout << vel_x << std::endl;
     float half_hitbox = (hit_box.box_max_original.x - hit_box.box_min_original.x) * .5;
     if (position.x + vel_x * delta_time + half_hitbox > X_LIMIT)
     {
