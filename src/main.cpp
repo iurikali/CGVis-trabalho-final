@@ -220,7 +220,9 @@ std::vector<GameObject*> g_destructible_objects;
 
 
 Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
-Camera camera = Camera();
+FollowCamera followCamera = FollowCamera();
+FirstPersonCamera firstPersonCamera = FirstPersonCamera();
+BaseCamera* activeCamera = &followCamera;
 bool restart = false;
 bool g_first_person = false;
 glm::vec3 g_first_person_vec;
@@ -586,20 +588,13 @@ int main(int argc, char* argv[])
     Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(500.0f, 20.0f), glm::vec2(245.0f, 144.0f)); 
     
     // INSTANCIAÇÃO (Orientação a Objetos)
-    camera.set_look_at(glm::vec3(0.0f, 1.0f, 0.0f));
-
     MapCreator("../../src/mapa1.json");
 
     //new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
 
     player->SetAnimation(1);
 
-    glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
-
-    camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
-    original_dist = camera.distance;
-    phi = camera.phi;
-    theta = camera.theta;
+    followCamera.set_offset(glm::vec3(0.0f, 1.7f, 3.0f));
 
     float last_time = (float)glfwGetTime();
 
@@ -617,9 +612,9 @@ int main(int argc, char* argv[])
 
         // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
         // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::vec4 camera_position_c  = glm::vec4(camera.position,1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_view_vector = glm::vec4(camera.view, 0.0f); // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 camera_up_vector   = glm::vec4(camera.up, 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        glm::vec4 camera_position_c  = glm::vec4(activeCamera->get_position(),1.0f); // Ponto "c", centro da câmera
+        glm::vec4 camera_view_vector = glm::vec4(activeCamera->get_view(), 0.0f); // Vetor "view", sentido para onde a câmera está virada
+        glm::vec4 camera_up_vector   = glm::vec4(activeCamera->get_up(), 0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -646,7 +641,8 @@ int main(int argc, char* argv[])
             // PARA PROJEÇÃO ORTOGRÁFICA veja slides 219-224 do documento Aula_09_Projecoes.pdf.
             // Para simular um "zoom" ortográfico, computamos o valor de "t"
             // utilizando a variável g_CameraDistance.
-            float t = 1.5f*camera.get_distance()/2.5f;
+            // float t = 1.5f*camera.get_distance()/2.5f;
+            float t = 1.5f;
             float b = -t;
             float r = t*g_ScreenRatio;
             float l = -r;
@@ -670,24 +666,15 @@ int main(int argc, char* argv[])
         last_time = current_time;
 
         // Personagem animado
-
+        followCamera.set_target(glm::vec3(player->position.x, player->position.y + 1.0, player->position.z));
+        firstPersonCamera.set_position(glm::vec3(player->position.x, player->position.y + 1.0, player->position.z));
         if (!g_first_person)
         {
-            cam_position = glm::vec3(player->position.x, 1.8f, player->position.z);
-
-            camera.set_look_at(cam_position);
-
-            camera.distance = original_dist;
+            activeCamera = &followCamera;
         }
         else
         {
-            //camera.set_look_at(g_first_person_vec);
-            camera.set_look_at(glm::vec3(player->position.x, player->position.y + 1.0, player->position.z));
-            //camera.set_look_at(player->position);
-            camera.distance = 0.1f;
-            //camera.position = player->position;
-            //camera.position.y = player->position.y + 1.0f;
-            
+            activeCamera = &firstPersonCamera;            
         }
 
         // Desenho dos objetos persistentes
@@ -1191,10 +1178,8 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         float dx = xpos - g_LastCursorPosX;
         float dy = ypos - g_LastCursorPosY;
 
-        camera.Rotate(dx, dy);
-    
+        firstPersonCamera.Rotate(dx, dy);
         
-    
         // Atualizamos as variáveis globais para armazenar a posição atual do
         // cursor como sendo a última posição conhecida do cursor.
         g_LastCursorPosX = xpos;
@@ -1237,7 +1222,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 // Função callback chamada sempre que o usuário movimenta a "rodinha" do mouse.
 void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.Zoom(yoffset);
+
 }
 
 void Correcao_KeyCallback(int key, int action, int mod);
@@ -1405,8 +1390,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         else
         {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            camera.theta = theta;
-            camera.phi = phi;
             player->visible = true;
         }
     }
@@ -1414,7 +1397,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if (key == GLFW_KEY_L && action == GLFW_PRESS)
     {
         //g_first_person_vec.y += .1;
-        camera.Rotate(1.0, 0.0);
+        firstPersonCamera.Rotate(1.0, 0.0);
     }
 }
 
@@ -1906,7 +1889,7 @@ void RestartLevel()
 
         glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
 
-        camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
+        // camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
 
         restart = false;
     }

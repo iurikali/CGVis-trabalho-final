@@ -1,5 +1,6 @@
 #include "camera.hpp"
 #include "game_object.hpp"
+#include "matrices.h"
 #include <iostream>
 #include <cmath>
 //const double M_PI = std::acos(-1.0); // Ou 2 * acos(0.0)
@@ -80,3 +81,72 @@ void Camera::set_look_at(glm::vec3 look_at)
     this->look_at = look_at;
     update_position();
 }
+
+
+
+BaseCamera::BaseCamera():
+    position(0.0f, 0.0f, 0.0f),
+    view(0.0f, 0.0f, -1.0f),
+    up(0.0f, 1.0f, 0.0f)
+    {}
+    void BaseCamera::set_position(glm::vec3 position) {this->position = position;}
+    void BaseCamera::set_view(glm::vec3 view) {this->view = view;}
+    void BaseCamera::set_up(glm::vec3 up) {this->up = up;}
+    void BaseCamera::set_look_at(glm::vec3 look_at)
+    {
+        if (look_at - position != glm::vec3(0.0f, 0.0f, 0.0f))
+            view = look_at - position;
+        else
+            std::cout << "look_at deve ser diferente de position!" << std::endl;
+    }
+    
+    glm::vec3 BaseCamera::get_position() {return position;}
+    glm::vec3 BaseCamera::get_view() {return view;}
+    glm::vec3 BaseCamera::get_up() {return up;}
+
+FollowCamera::FollowCamera():
+    target(0.0f, 0.0f, 0.0f),
+    offset(0.0f, 1.0f, -1.0f),
+    BaseCamera(){
+        set_target(target);
+        set_offset(offset);
+    }
+    
+    void FollowCamera::set_target(glm::vec3 target)
+    {
+        this->target = target;
+        this->set_position(target + offset);
+        this->set_look_at(target);
+    }
+    void FollowCamera::set_offset(glm::vec3 offset)
+    {
+        this->offset = offset;
+        if (offset != glm::vec3(0.0f, 0.0f, 0.0f))
+            this->set_position(target + offset);
+        else
+            std::cout << "offset deve ser diferente de zero!" << std::endl;
+    }
+
+
+FirstPersonCamera::FirstPersonCamera():
+    mouseSensitivity(0.01f),
+    pitch(0.0f),
+    yaw(0.0f),
+    BaseCamera(){}
+    
+    void FirstPersonCamera::Rotate(float dx, float dy)
+    {
+        yaw   -= dx * mouseSensitivity;
+        pitch -= dy * mouseSensitivity;
+
+        float limit = glm::radians(75.0f);
+        pitch = glm::clamp(pitch, -limit, limit);
+
+        // Reconstrói o view vetor a partir dos ângulos
+        glm::vec3 view;
+        view.x = cos(pitch) * sin(yaw);
+        view.y = sin(pitch);
+        view.z = cos(pitch) * cos(yaw);
+
+        set_view(glm::normalize(view));
+    }

@@ -544,6 +544,81 @@ Tem como fazer constantes/sinonimos assim no json? Ou eu faço um switch case no
 
 ===========
 
+Em cpp, vou ter uma classe BaseCamera,  e outras subclasses de outros tipos de câmera. Quero poder decidir qual câmera será usada em dado momento. Pra isso, gostaria de uma variável camera_ativa, que é uma cópia ou um ponteiro pra câmera atual, que pode ser de uma subclasse. Como isso seria escrito?
+
 ===========
 
+Fazendo FollowCamera followCamera = FollowCamera();
+BaseCamera* activeCamera = &followCamera;
+Não dá certo
+
+'BaseCamera' is an inaccessible base of 'FollowCamera'cmake GCC
+
+===========
+
+Esse é o jeito mais comum de fazer isso?
+
+===========
+
+Estou tendo dificuldades com os ângulos. Quero impedir do jogador, em primeira pessoa, de olhar totalmente pra cima ou pra baixo.
+
+void FirstPersonCamera::Rotate(float dx, float dy)
+    {
+        // Rodar view ao redor de y para dx
+        // ao redor de x para dy, mas tem q ser um x local, ou cross(view, up)
+        dx = -dx * mouseSensitivity;
+        dy = -dy * mouseSensitivity;
+        
+        glm::vec4 calc_up = glm::vec4(get_up(), 0.0f);
+        glm::vec4 calc_view = glm::vec4(get_view(), 0.0f);
+
+        glm::mat4 matrixRotateX = Matrix_Rotate(dx, calc_up);
+        glm::vec4 rotatedX = matrixRotateX * calc_view;
+        glm::vec4 xLocal = crossproduct(rotatedX, calc_up);
+
+        // ângulo entre up e view deve ser maior que 3.141592f/4
+        float angle = acos(dotproduct(rotatedX, calc_up));
+        std::cout << angle << std::endl;
+        if (angle < 3.141592f/4.0f)
+            angle = 3.141592f/4.0f;
+        else if (angle > 3*3.141592f/4.0f)
+            
+        glm::mat4 matrixRotateY = Matrix_Rotate(dy, xLocal);
+        glm::vec4 rotatedXY = matrixRotateY * rotatedX;
+            
+        
+
+        
+        set_view(glm::vec3(rotatedXY));
+        // Falta verificar se não tá olhando muito pra cima ou pra baixo 3.141592f/4;
+
+
+
+        // // Atualizamos parâmetros da câmera com os deslocamentos
+        // theta -= 0.01f*dx;
+        // phi   += 0.01f*dy;
+        
+        // // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
+        // float phimax = 3.141592f/2;
+        // float phimin = -phimax;
+
+        // if (g_first_person)
+        // {
+        //     phimax = 3.141592f/4;
+        //     phimin = -phimax;
+        // }
+        
+        // if (phi > phimax)
+        // phi = phimax;
+        
+        // if (phi < phimin)
+        // phi = phimin;
+        // update_position();
+    }
+
+
+Qual seria a lógica certa? O que estou fazendo de errado?
+
+===========
+===========
 ===========

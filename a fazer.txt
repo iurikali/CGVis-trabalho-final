@@ -5,6 +5,11 @@ olhando o spec
 - Movimento dependente da câmera de primeira pessoa
 
 - Decoração do ambiente
+    - Melhorar as árvores:
+    coloquei glDisable(GL_CULL_FACE);    em StaticObject::Draw(), de game_object.cpp
+    devo colocar num lugar melhor depois, ou encontrar modelos melhores depois
+    tô cansado, depois encontro árovres melhores
+    - Colocar umas pedras, uns moai
 
 - Fruta com brilho extra
 
@@ -12,11 +17,29 @@ olhando o spec
 
 - Câmera em trilho
 
+- Textura repetindo (talvez)
+
+
 
 Pra começar, fazer a fase, mais fácil
 Tá complicado de achar uma árvore feita
 
-- Melhorar as árvores:
- coloquei glDisable(GL_CULL_FACE);    em StaticObject::Draw(), de game_object.cpp
- devo colocar num lugar melhor depois, ou encontrar modelos melhores depois
- tô cansado, depois encontro árovres melhores
+Decorei o suficiente por enquanto. Depois ajeito a de primeira pessoa.
+
+Tá bem confuso a câmera. Pensando em refatorar tudo mesmo. 
+Talvez precise pra câmera em trilho sim. Por enquanto não dá pra definir uma posição e um lookat, só um lookat e uma distância, o que atrapalha bastante. 
+Vou querer uma classe câmera genérica, que recebe de fora a posição, lookat e outras coisas importantes.
+Talvez seja melhor ter diferentes câmeras já instanciadas, só mudar qual a ativa a cada momento?
+Pra não editar tudo de uma vez, como fazer aos poucos?
+Criar uma nova classe e depois tentar adaptar, não remover a atual ainda.
+
+Mexi em bastante coisa, acho q tá melhor agora.
+Agora fazer pra primeira pessoa.
+Ok, agora tá funcionando, mas com as minhas classes. Espero que tenha valido a pena.
+Agora posso remover a câmera antiga
+
+
+
+
+
+ 
