@@ -186,7 +186,7 @@ void main()
     float especular = pow(max(dot(r,v),0),2);
     float phong = 0.01 + lambert + 0.3*pow(max(0,dot(v,l)), 2);
     lambert += 0.01; // Iluminação base
-    color.rgb = Kd0 * Ks0 * (especular) + Kd0 * lambert * 0.8;
+    color.rgb = Kd0 * Ks0 * (especular) + Kd0 * half_lambert * 0.8;
 
     //Fazendo a cor solida
     if (texture_id == 98)
