@@ -16,6 +16,8 @@ olhando o spec
 
 - Textura repetindo (talvez)
 
+- Consertar primeira pessoa: flick da visão
+
 
 
 Pra começar, fazer a fase, mais fácil
@@ -62,3 +64,4 @@ Não é ideal, mas vou tentar reescrever de uma vez
 Pra fazer movimentação com multiplos segmentos de curva, teria que fazer algo melhor. Pra começar vou fazer só um segmento.
 Tá funcionando.
 Pro inimigo, já que é só por tempo, daria pra deixar um tempo igual pra cada segmento de curva.
+Isso vai ser pra outro momento, se realmente quiser 

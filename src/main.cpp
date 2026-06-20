@@ -1959,7 +1959,8 @@ void RestartLevel()
         MapCreator("../../src/mapa1.json");   
 
         //new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
-
+        if (g_first_person)
+            player->visible = false;
         player->SetAnimation(1);
 
         glm::vec3 cam_position = glm::vec3(player->position.x, player->position.y, player->position.z);
