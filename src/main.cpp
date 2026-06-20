@@ -69,7 +69,7 @@
 #include "enemy.hpp"
 #include "spikes.hpp"
 #include "sprite.hpp"
-
+#include "bezier.hpp"
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -219,9 +219,10 @@ std::vector<GameObject*> g_non_destructible_objects;
 std::vector<GameObject*> g_destructible_objects;
 
 
-Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
+Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
 FollowCamera followCamera = FollowCamera();
 FirstPersonCamera firstPersonCamera = FirstPersonCamera();
+BaseCamera railCamera = BaseCamera();
 BaseCamera* activeCamera = &followCamera;
 bool restart = false;
 bool g_first_person = false;
@@ -590,11 +591,12 @@ int main(int argc, char* argv[])
     // INSTANCIAÇÃO (Orientação a Objetos)
     MapCreator("../../src/mapa1.json");
 
-    //new Enemy("the_bunny", BUNNY, RED_BRICK, glm::vec3(0.0, 0.5, -1.0));
-
     player->SetAnimation(1);
 
     followCamera.set_offset(glm::vec3(0.0f, 1.7f, 3.0f));
+
+    railCamera.set_position(glm::vec3(0.0f, 2.7f, 3.0f));
+    railCamera.set_view(glm::vec3(0.0f, -1.7f, -3.0f));
 
     player->set_walk_angle(M_PI);
 
@@ -668,17 +670,77 @@ int main(int argc, char* argv[])
         last_time = current_time;
 
         // Personagem animado
+        // Se alguma hora eu tiver que mexer nisso aqui, boa sorte.
+        // Sugestão da IA se quiser refatorar
+// Definido uma vez, fora do update (membro da câmera ou constante global)
+// enum class Axis { X, Y, Z };
+
+// struct RailSegment {
+//     std::vector<glm::vec3> points;
+//     Axis axis;
+//     float t_start, t_end;
+// };
+
+// const std::vector<RailSegment> rail = {
+//     { {glm::vec3(0,2.7, 3.0), glm::vec3(0,2.7,-15.0)},  Axis::Z,  0.0f, -17.0f },
+//     { {glm::vec3(0,2.7,-15.0)},                           Axis::Y,  0.0f,   1.5f },
+//     { {glm::vec3(0,2.7,-15.0), glm::vec3(0,7.7,-19.0)},  Axis::Y,  1.5f,   5.0f },
+//     { {glm::vec3(0,7.7,-19.0), glm::vec3(0,7.7,-30.0)},  Axis::Z, -22.0f, -33.0f},
+// };
+// No update, substituindo todo aquele bloco:
+// auto getAxis = [&](Axis a) {
+//     if (a == Axis::X) return player->position.x;
+//     if (a == Axis::Y) return player->position.y;
+//     return player->position.z;
+// };
+
+// for (const auto& seg : rail) {
+//     float val = getAxis(seg.axis);
+//     float t = (val - seg.t_start) / (seg.t_end - seg.t_start);
+//     railCamera.set_position(bezier(glm::clamp(t, 0.0f, 1.0f), seg.points));
+//     if (t < 1.0f) break;  // ainda nesse segmento, para aqui
+// }
+        std::vector<glm::vec3> trilho1 = {glm::vec3(0.0f, 2.7f, 3.0f), glm::vec3(0.0f, 3.7f, -6.0f), glm::vec3(0.0f, 2.7f, -15.0f)};
+        std::vector<glm::vec3> trilho2 = {glm::vec3(0.0f, 2.7f, -15.0f)};
+        std::vector<glm::vec3> trilho3 = {glm::vec3(0.0f, 2.7f, -15.0f), glm::vec3(0.0f, 7.7f, -19.0f)};
+        std::vector<glm::vec3> trilho4 = {glm::vec3(0.0f, 7.7f, -19.0f), glm::vec3(0.0f, 7.7f, -30.0f)};
+        // float t = glm::clamp((player->position.z - 0.0f) / (-18.0f - 0.0f), 0.0f, 1.0f);
+        float t = (player->position.z - 0.0f) / (-17.0f - 0.0f);
+        if (t < 0) t = 0;
+        else
+            railCamera.set_position(bezier(t, trilho1));
+        if (t > 1) // z < -17
+        {
+            t = (player->position.y - 0.0f) / (1.5f - 0.0f);
+            railCamera.set_position(bezier(t, trilho2));
+            if (t > 1) // y > 1.5
+            {
+                t = (player->position.y - 1.5f) / (5.0f - 1.5f);
+                railCamera.set_position(bezier(t, trilho3));
+                
+                if (t >= 1) // y >= 5
+                {
+                    t = (player->position.z - -22.0f) / (-33.0f - -22.0f);
+                    if (t < 0) t = 0;
+                    railCamera.set_position(bezier(t, trilho4));
+
+                }
+
+            }
+        }
+
         followCamera.set_target(glm::vec3(player->position.x, player->position.y + 1.0, player->position.z));
         firstPersonCamera.set_position(glm::vec3(player->position.x, player->position.y + 1.0, player->position.z));
         if (!g_first_person)
         {
-            activeCamera = &followCamera;
+            activeCamera = &railCamera;
         }
         else
         {
             activeCamera = &firstPersonCamera;            
         }
 
+        
         // Desenho dos objetos persistentes
         for (auto& gameObject : g_non_destructible_objects)
         {
@@ -1480,9 +1542,10 @@ void TextRendering_ShowEulerAngles(GLFWwindow* window)
         return;
 
     float pad = TextRendering_LineHeight(window);
-
+    
     char buffer[80];
-    snprintf(buffer, 80, "Euler Angles rotation matrix = Z(%.2f)*Y(%.2f)*X(%.2f)\n", g_AngleZ, g_AngleY, g_AngleX);
+    snprintf(buffer, 80, "Posicao Camera = X(%.2f) Y(%.2f) Z(%.2f)\n", activeCamera->get_position().x, activeCamera->get_position().y, activeCamera->get_position().z);
+    // snprintf(buffer, 80, "Euler Angles rotation matrix = Z(%.2f)*Y(%.2f)*X(%.2f)\n", g_AngleZ, g_AngleY, g_AngleX);
 
     TextRendering_PrintString(window, buffer, -1.0f+pad/10, -1.0f+2*pad/10, 1.0f);
 }

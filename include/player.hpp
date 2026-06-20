@@ -7,7 +7,7 @@
 #define ATTACKING 0
 
 #define M_PI 3.14159265358979323846
-#define GRAVITY 12.0
+#define GRAVITY 24.0
 
 class Player : public AnimatedObject
 {

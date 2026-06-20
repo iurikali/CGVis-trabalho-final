@@ -2,7 +2,6 @@ ok. tem bastante coisa pra fazer.
 olhando o spec
 
 
-- Movimento dependente da câmera de primeira pessoa
 
 - Decoração do ambiente
     - Melhorar as árvores:
@@ -14,8 +13,6 @@ olhando o spec
 - Fruta com brilho extra
 
 - Inimigo com curva de bezier cúbica (mosca)
-
-- Câmera em trilho
 
 - Textura repetindo (talvez)
 
@@ -37,7 +34,28 @@ Mexi em bastante coisa, acho q tá melhor agora.
 Agora fazer pra primeira pessoa.
 Ok, agora tá funcionando, mas com as minhas classes. Espero que tenha valido a pena.
 Agora posso remover a câmera antiga
+Ok, câmera primeira pessoa pronta.
+- Movimento dependente da câmera de primeira pessoa
 
+Próximo grande passo: curvas de bezier.
+Vão ter inimigos nela e colocar a câmera também.
+Pra câmera: uma pro posição, outra pro lookat
+Inimigos: valor de acordo com tempo, vai aumentando
+Câmera: valor de acordo com posição z do crash
+Precisa ser dividida em várias seções.
+
+O que quero:
+Definir pontos e interpolar entre eles.
+Fiquei meia hora tentando fazer funcionar uma função que tava certo de primeira por causa disso:
+for (int size = pontos.size(); size--; size > 0)
+Eu inverti a ordem do if.
+Vou começar a usar mais o claude. Não preciso escrever interpolação do zero
+float t = glm::clamp((player.z - z_start) / (z_end - z_start), 0.0f, 1.0f);
+glm::vec3 camPos = CubicBezier(p0, p1, p2, p3, t);
+
+Tá, a câmera tá nos trilhos (extremamente hardcoded, mas tá lá)
+- Câmera em trilho
+Ótimo progresso. De requisito mesmo, falta inimigo com curva de bezier, fazer alguma iluminação mais legal e talvez fazer as texturas repetirem em vez de esticar. Depois é mais detalhes mesmo.
 
 
 

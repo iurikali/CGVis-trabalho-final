@@ -87,7 +87,7 @@ void Player::Update(float delta_time)
     //Gravidade
     if (position.y > 0) // Não está no chão
     {
-        vel_y -= GRAVITY * speed * delta_time;
+        vel_y -= GRAVITY * delta_time;
         on_air = true;
     }
     if (vel_y <= -speed * 4)

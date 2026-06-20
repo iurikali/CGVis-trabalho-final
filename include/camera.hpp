@@ -3,31 +3,6 @@
 #define M_PI 3.14159265358979323846
 
 
-class Camera
-{
-public:
-    glm::vec3 position;
-    glm::vec3 view;
-    glm::vec3 up;
-    glm::vec3 look_at;
-    Camera();
-
-    void Rotate(float dx, float dy);
-
-    void Zoom(float yoffset);
-
-    void update_position();
-
-    float get_distance();
-
-    void set_look_at(glm::vec3 look_at);
-
-    float distance; // Distância da câmera para a origem
-    float theta; // Ângulo no plano ZX em relação ao eixo Z
-    float phi;   // Ângulo em relação ao eixo Y
-}; 
-
-
 class BaseCamera
 {
 private:
@@ -72,3 +47,32 @@ public:
     void Rotate(float dx, float dy);
     float get_yaw();
 };
+
+
+
+
+
+
+class Camera
+{
+public:
+    glm::vec3 position;
+    glm::vec3 view;
+    glm::vec3 up;
+    glm::vec3 look_at;
+    Camera();
+
+    void Rotate(float dx, float dy);
+
+    void Zoom(float yoffset);
+
+    void update_position();
+
+    float get_distance();
+
+    void set_look_at(glm::vec3 look_at);
+
+    float distance; // Distância da câmera para a origem
+    float theta; // Ângulo no plano ZX em relação ao eixo Z
+    float phi;   // Ângulo em relação ao eixo Y
+}; 

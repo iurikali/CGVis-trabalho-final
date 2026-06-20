@@ -23,6 +23,7 @@ set(SOURCES
   src/enemy.cpp
   src/spikes.cpp
   src/sprite.cpp
+  src/bezier.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)
