@@ -13,8 +13,12 @@ private:
     float vel_x;
 
     bool killed_player;
+
+    std::vector<glm::vec3> curve;
+    float curve_t;
+    float curve_duration;
 public:
-    Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos);
+    Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vector<glm::vec3> curve, float curve_duration);
 
     void Update(float delta_time) override;
 

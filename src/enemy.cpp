@@ -1,15 +1,17 @@
 #include "enemy.hpp"
 #include "game_object.hpp"
+#include "bezier.hpp"
 #include <iostream>
 #include <cmath>
 #include "player.hpp"
 #include <random>
 #include <cstdlib>
+#include <vector>
 #include <ctime>
 
 extern bool restart;
 
-Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos):
+Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vector<glm::vec3> curve, float curve_duration):
     StaticObject(name, obj_id, tex_id, false, true, true, true, true, pos)
 {
     //std::cout << "Fruta " << std::endl;
@@ -20,8 +22,13 @@ Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     speed_rotation = 15.0;
     speed = 1.0;
     vel_x = speed;
-    rotation.y = M_PI;
+    rotation.y = 0.0f;
     killed_player = false;
+    this->curve = curve;
+    curve_t = 0;
+    this->curve_duration = curve_duration;
+    for (size_t i = 0; i < this->curve.size(); i++)
+        this->curve[i] += pos;
 }
 
 
@@ -56,9 +63,11 @@ void Enemy::Update(float delta_time)
 
     //Colisao e fazendo ele andar
     
-    CollisionLimits(delta_time);
+    // CollisionLimits(delta_time);
 
-    position.x += vel_x * delta_time;
+    // position.x += vel_x * delta_time;
+    curve_t += delta_time;
+    position = bezier(fmod(curve_t/curve_duration, 1.0f), curve);
     hitbox->Update(position, glm::vec3(1.0, 1.0, 1.0));
 }
 

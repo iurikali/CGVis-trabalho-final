@@ -620,5 +620,54 @@ void FirstPersonCamera::Rotate(float dx, float dy)
 Qual seria a lógica certa? O que estou fazendo de errado?
 
 ===========
+
+Quero poder movimentar objetos  com curvas de Bezier cúbicas. Também vou querer mexer a câmera desse jeito (sendo uma curva pra posição e outra para onde está olhando).
+Como posso implementar isso?
+
+===========
+
+Para a câmera, ela não vai se mover de acordo com o tempo, mas de acordo com a posição do jogador (ainda vou pensar exatamente como definir isso, talvez só pela coordenada z). Então para encadear Beziers precisa de algum outro jeito
+
+===========
+
+No jogo, tem uma longa reta, uma escadaria e outra reta. Gostaria de que a câmera acompanhasse numa distância fixa do jogador, mas que fosse subindo com o jogador na parte da escadaria. É pra ser uma câmera "em trilho" estilo Crash Bandicoot
+
+===========
+
+Consegui um resultado com o qual fiquei satisfeito. Como posso refatorar, melhorar, generalizar, etc. ?
+
+std::vector<glm::vec3> trilho1 = {glm::vec3(0.0f, 2.7f, 3.0f), glm::vec3(0.0f, 2.7f, -15.0f)};
+        std::vector<glm::vec3> trilho2 = {glm::vec3(0.0f, 2.7f, -15.0f)};
+        std::vector<glm::vec3> trilho3 = {glm::vec3(0.0f, 2.7f, -15.0f), glm::vec3(0.0f, 7.7f, -19.0f)};
+        std::vector<glm::vec3> trilho4 = {glm::vec3(0.0f, 7.7f, -19.0f), glm::vec3(0.0f, 7.7f, -30.0f)};
+        // float t = glm::clamp((player->position.z - 0.0f) / (-18.0f - 0.0f), 0.0f, 1.0f);
+        float t = (player->position.z - 0.0f) / (-17.0f - 0.0f);
+        if (t < 0) t = 0;
+        else
+            railCamera.set_position(bezier(t, trilho1));
+        if (t > 1) // z < -17
+        {
+            t = (player->position.y - 0.0f) / (1.5f - 0.0f);
+            railCamera.set_position(bezier(t, trilho2));
+            if (t > 1) // y > 1.5
+            {
+                t = (player->position.y - 1.5f) / (5.0f - 1.5f);
+                railCamera.set_position(bezier(t, trilho3));
+                
+                if (t >= 1) // y >= 5
+                {
+                    t = (player->position.z - -22.0f) / (-33.0f - -22.0f);
+                    if (t < 0) t = 0;
+                    railCamera.set_position(bezier(t, trilho4));
+
+                }
+
+            }
+        }
+
+===========
+
+Olhe o arquivo enemy.cpp e .hpp. Como é feita a movimentação do inimigo? Onde que está definido que ele vai até um limite, depois anda de volta?
+
 ===========
 ===========

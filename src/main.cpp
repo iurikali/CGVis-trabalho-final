@@ -521,6 +521,15 @@ void MapCreator(std::string path){
 
         if (attrs.contains("offset")) position = position + scale*glm::vec3( attrs["offset"][0], attrs["offset"][1], attrs["offset"][2] );
         
+        std::vector<glm::vec3> curve;
+        if (attrs.contains("curve")) {
+            for (auto& point : attrs["curve"])
+                curve.push_back(glm::vec3(point[0], point[1], point[2]));
+        } else {
+            curve = { glm::vec3(0.0f, 0.0f, 0.0f) };
+        }
+        float curve_duration = attrs.value("curve_duration", 1.0f);
+
         if (type == "Fruit")
         {
             new Fruit(model, mapping, texture, position);
@@ -537,7 +546,7 @@ void MapCreator(std::string path){
         }
         else if (type == "Enemy")
         {
-            new Enemy(model, mapping, texture, position);
+            new Enemy(model, mapping, texture, position, curve, curve_duration);
             is_destructible = true;
         }
         else if (type == "Spikes")

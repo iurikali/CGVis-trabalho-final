@@ -57,7 +57,8 @@ Tá, a câmera tá nos trilhos (extremamente hardcoded, mas tá lá)
 - Câmera em trilho
 Ótimo progresso. De requisito mesmo, falta inimigo com curva de bezier, fazer alguma iluminação mais legal e talvez fazer as texturas repetirem em vez de esticar. Depois é mais detalhes mesmo.
 
-
-
-
- 
+Beleza, vou olhar como a movimentação do inimigo é feita.
+Não é ideal, mas vou tentar reescrever de uma vez
+Pra fazer movimentação com multiplos segmentos de curva, teria que fazer algo melhor. Pra começar vou fazer só um segmento.
+Tá funcionando.
+Pro inimigo, já que é só por tempo, daria pra deixar um tempo igual pra cada segmento de curva.
