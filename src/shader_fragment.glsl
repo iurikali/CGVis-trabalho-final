@@ -79,7 +79,7 @@ void main()
     vec4 n = normalize(frag_normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,1.0,0.0));
+    vec4 l = normalize(vec4(0.0,1.0,-2.0,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -90,7 +90,8 @@ void main()
 
 	// Coeficiente de refletância difusa
 	vec3 Kd0;
-    
+    // Coeficiente de refletância especular
+    vec3 Ks0 = vec3(0.0, 0.0, 0.0);
 
     if ( object_id == SPHERE )
     {
@@ -154,6 +155,7 @@ void main()
 
 		// Obtemos a refletância difusa a partir da leitura da imagem
 		Kd0 = get_texture_color(texture_id, vec2(U,V));
+        Ks0 = vec3(1.0, 1.0, 1.0);
     }
     else if ( object_id == CHARACTER )
     {
@@ -178,8 +180,13 @@ void main()
     // Equação de Iluminação
     float lambert = max(0,dot(n,l));
     float half_lambert = pow(dot(n,l)*0.5 + 0.5, 2);
+    // float especular = pow(max(0,dot(n,v)),2);
+    vec4 r = -l + 2*n*(dot(n,l));
+    // float especular = max(pow(dot(r,v),2),0);
+    float especular = pow(max(dot(r,v),0),2);
+    float phong = 0.01 + lambert + 0.3*pow(max(0,dot(v,l)), 2);
     lambert += 0.01; // Iluminação base
-    color.rgb = Kd0 * (half_lambert);
+    color.rgb = Kd0 * Ks0 * (especular) + Kd0 * lambert * 0.8;
 
     //Fazendo a cor solida
     if (texture_id == 98)

@@ -1954,7 +1954,7 @@ void RestartLevel()
         g_collision_triggers.clear();
 
         //O player antigo já foi apagado no for dos objetos destrutiveis        
-        player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
+        player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
 
         MapCreator("../../src/mapa1.json");   
 

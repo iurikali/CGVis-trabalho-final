@@ -1,7 +1,9 @@
 ok. tem bastante coisa pra fazer. 
 olhando o spec
 
+- Fruta com brilho extra
 
+- Textura repetindo (talvez)
 
 - Decoração do ambiente
     - Melhorar as árvores:
@@ -9,12 +11,6 @@ olhando o spec
     devo colocar num lugar melhor depois, ou encontrar modelos melhores depois
     tô cansado, depois encontro árovres melhores
     - Colocar umas pedras, uns moai
-
-- Fruta com brilho extra
-
-- Inimigo com curva de bezier cúbica (mosca)
-
-- Textura repetindo (talvez)
 
 - Consertar primeira pessoa: flick da visão
 
@@ -65,3 +61,6 @@ Pra fazer movimentação com multiplos segmentos de curva, teria que fazer algo 
 Tá funcionando.
 Pro inimigo, já que é só por tempo, daria pra deixar um tempo igual pra cada segmento de curva.
 Isso vai ser pra outro momento, se realmente quiser 
+- Inimigo com curva de bezier cúbica (mosca)
+Hmm tá difícil de fazer uma iluminação legal.
+Talvez delimitando pras frutas fique bom
