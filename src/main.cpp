@@ -220,7 +220,7 @@ std::vector<GameObject*> g_non_destructible_objects;
 std::vector<GameObject*> g_destructible_objects;
 
 
-Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
+Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 3.0f);
 FollowCamera followCamera = FollowCamera();
 FirstPersonCamera firstPersonCamera = FirstPersonCamera();
 BaseCamera railCamera = BaseCamera();
@@ -1176,7 +1176,6 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     // coordinates" (NDC) para "pixel coordinates".  Essa é a operação de
     // "Screen Mapping" ou "Viewport Mapping" vista em aula ({+ViewportMapping2+}).
     glViewport(0, 0, width, height);
-    std::cout << width << ", " << height << std::endl;
 
     // Atualizamos também a razão que define a proporção da janela (largura /
     // altura), a qual será utilizada na definição das matrizes de projeção,
@@ -1842,14 +1841,20 @@ void CleanUpDestroyedObjects()
     {
         std::vector<GameObject*>& lista = pair.second;
         
-        for (int i = lista.size() - 1; i >= 0; i--)
-{
-    if (lista[i]->is_destroyed)
-    {
-        lista[i] = lista.back();
-        lista.pop_back();
-    }
-}
+        for (int i = 0; i < lista.size(); ) 
+        {
+            if (lista[i]->is_destroyed) 
+            {
+                lista[i] = lista.back();
+                lista.pop_back();
+                
+            }
+            else 
+            {
+                i++;
+            }
+        }
+
     }
 
     // Varrendo os fisicos
@@ -1859,14 +1864,17 @@ void CleanUpDestroyedObjects()
         
         for (int i = 0; i < lista.size(); ) 
         {
-            for (int i = lista.size() - 1; i >= 0; i--)
-{
-    if (lista[i]->is_destroyed)
-    {
-        lista[i] = lista.back();
-        lista.pop_back();
-    }
-}
+            if (lista[i]->is_destroyed) 
+            {
+                
+                lista[i] = lista.back();
+                lista.pop_back();
+                
+            }
+            else 
+            {
+                i++;
+            }
         }
     }
 
@@ -1877,14 +1885,17 @@ void CleanUpDestroyedObjects()
         
         for (int i = 0; i < lista.size(); ) 
         {
-            for (int i = lista.size() - 1; i >= 0; i--)
-{
-    if (lista[i]->is_destroyed)
-    {
-        lista[i] = lista.back();
-        lista.pop_back();
-    }
-}
+            if (lista[i]->is_destroyed) 
+            {
+
+                lista[i] = lista.back();
+                lista.pop_back();
+
+            }
+            else 
+            {
+                i++;
+            }
         }
     }
 
@@ -1896,14 +1907,17 @@ void CleanUpDestroyedObjects()
         
         for (int i = 0; i < lista.size(); ) 
         {
-            for (int i = lista.size() - 1; i >= 0; i--)
-{
-    if (lista[i]->is_destroyed)
-    {
-        lista[i] = lista.back();
-        lista.pop_back();
-    }
-}
+           if (lista[i]->is_destroyed) 
+            {
+
+                lista[i] = lista.back();
+                lista.pop_back();
+
+            }
+            else 
+            {
+                i++;
+            }
         }
     }
 
@@ -1948,7 +1962,7 @@ void RestartLevel()
         g_collision_triggers.clear();
 
         //O player antigo já foi apagado no for dos objetos destrutiveis        
-        player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
+        player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 3.0f);
 
         MapCreator("../../src/mapa1.json");   
 

@@ -108,7 +108,7 @@ AnimatedObject::AnimatedObject(std::string n, int o_id, int t_id, bool is_physic
 
     GameObject(n, o_id, t_id, is_physics, is_trigger, is_spin, is_jump, is_destructible, pos),
     current_animation(0),
-    animation_speed(1.0f),
+    animation_speed(1.5f),
     current_time(0.0f)
 {
     for (int i = 0; i < 100; i++)
