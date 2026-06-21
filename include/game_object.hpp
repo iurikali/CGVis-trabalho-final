@@ -30,6 +30,7 @@
 #define PLANE  2
 #define CHARACTER 3
 #define CUBE 4
+#define FRUIT 5
 
 
 #define EPSILON 0.005f

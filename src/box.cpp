@@ -73,6 +73,6 @@ void Box::Destroy()
     }
 
     //Instanciando a fruta
-    Fruit *fruit = new Fruit("the_wumpa", PLANE, WUMPA, center);
+    Fruit *fruit = new Fruit("the_wumpa", FRUIT, WUMPA, center);
     fruit->Jump(5.0);
 }

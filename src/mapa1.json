@@ -3,7 +3,7 @@
     "wumpa": {
       "type": "Fruit",
       "model": "the_wumpa",
-      "mapping": "PLANE",
+      "mapping": "FRUIT",
       "texture": "WUMPA",
       "scale": [0.03, 0.03, 0.03]
     },
@@ -124,7 +124,7 @@
     
     { "prefab": "cobblestone", "position": [0.0, 0.0, -24.0], "scale": [6.0, 5.0, 4.0]},
     { "prefab": "cobblestone", "position": [0.0, 0.0, -28.0], "scale": [6.0, 1.0, 4.0]},
-    { "prefab": "wumpa", "position": [0.0, 7.0, -28.0], "scale": [2.0, 2.0, 2.0], "model": "the_bunny", "mapping": "PLANE", "hitbox": [[-0.7, -0.7, -0.7], [0.7, 0.7, 0.7]]},
+    { "prefab": "wumpa", "position": [0.0, 7.0, -28.0], "scale": [2.0, 2.0, 2.0], "model": "the_bunny", "texture": "ROCKY_TERRAIN", "hitbox": [[-0.7, -0.7, -0.7], [0.7, 0.7, 0.7]]},
     { "prefab": "cobblestone", "position": [0.0, 4.0, -28.0], "scale": [6.0, 1.0, 4.0]},
     { "prefab": "cobblestone", "position": [0.0, 0.0, -32.0], "scale": [6.0, 5.0, 4.0]}
   ]

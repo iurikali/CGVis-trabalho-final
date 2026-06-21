@@ -480,6 +480,7 @@ void MapCreator(std::string path){
         {"PLANE",  PLANE},
         {"CUBE",   CUBE},
         {"BUNNY",  BUNNY},
+        {"FRUIT",  FRUIT},
     };
 
     const std::map<std::string, int> TEXTURE_MAP = {
@@ -610,11 +611,10 @@ int main(int argc, char* argv[])
     player->set_walk_angle(M_PI);
 
     float last_time = (float)glfwGetTime();
-
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
-        glClearColor(0.9f, 0.9f, 1.0f, 1.0f); // Cor de fundo
+        glClearColor(0.3f, 0.7f, 1.0f, 1.0f); // Cor de fundo
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Pintar buffer e resetar z-buffer
         glUseProgram(g_GpuProgramID); // Utilizar programa de GPU: vertex e fragment shader
 

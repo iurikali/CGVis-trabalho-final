@@ -24,6 +24,7 @@ uniform mat4 projection;
 #define PLANE  2
 #define CHARACTER 3
 #define CUBE 4
+#define FRUIT 5
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -76,10 +77,10 @@ void main()
 
     // Normal do fragmento atual, interpolada pelo rasterizador a partir das
     // normais de cada vértice.
-    vec4 n = normalize(frag_normal);
+    vec4 n = normalize(vec4(frag_normal.xyz, 0.0));
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(0.0,1.0,-2.0,0.0));
+    vec4 l = normalize(vec4(1.0,1.0,1.0,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -91,7 +92,7 @@ void main()
 	// Coeficiente de refletância difusa
 	vec3 Kd0;
     // Coeficiente de refletância especular
-    vec3 Ks0 = vec3(0.0, 0.0, 0.0);
+    vec3 Ks0 = vec3(1.0, 1.0, 1.0);
 
     if ( object_id == SPHERE )
     {
@@ -155,7 +156,6 @@ void main()
 
 		// Obtemos a refletância difusa a partir da leitura da imagem
 		Kd0 = get_texture_color(texture_id, vec2(U,V));
-        Ks0 = vec3(1.0, 1.0, 1.0);
     }
     else if ( object_id == CHARACTER )
     {
@@ -176,23 +176,37 @@ void main()
 
 		Kd0 = get_texture_color(texture_id, vec2(U,V)); 
     }
+    else if ( object_id == FRUIT) // plane, mas mais brilhoso
+    {
+        U = texcoords.x;
+        V = texcoords.y;
+
+		// Obtemos a refletância difusa a partir da leitura da imagem
+		Kd0 = get_texture_color(texture_id, vec2(U,V));
+        Ks0 = vec3(8.0, 8.0, 4.0);
+    }
 
     // Equação de Iluminação
     float lambert = max(0,dot(n,l));
-    float half_lambert = pow(dot(n,l)*0.5 + 0.5, 2);
+    float half_lambert = pow(dot(n,l)*0.5 + 0.6, 2);
     // float especular = pow(max(0,dot(n,v)),2);
     vec4 r = -l + 2*n*(dot(n,l));
     // float especular = max(pow(dot(r,v),2),0);
-    float especular = pow(max(dot(r,v),0),2);
+    //float especular = pow(max(dot(r,v),0),2);
+    float especular = 0.0;
+    if (dot(n, l) > 0.0)
+        especular = 2*pow(max(dot(r, v), 0.0), 4.0);
+
+    color.rgb = Kd0 * (0.8 * lambert) + vec3(0.3) * especular;
     float phong = 0.01 + lambert + 0.3*pow(max(0,dot(v,l)), 2);
     lambert += 0.01; // Iluminação base
-    color.rgb = Kd0 * Ks0 * (especular) + Kd0 * half_lambert * 0.8;
+    color.rgb = Kd0 * Ks0 * (especular) * 1+ Kd0 * half_lambert * 1.0;
 
     //Fazendo a cor solida
     if (texture_id == 98)
     {
         float luz_ambiente = 0.2; 
-        color.rgb = particle_color * (half_lambert + luz_ambiente);
+        color.rgb = particle_color * (half_lambert + luz_ambiente + especular);
     }
 
     // NOTE: Se você quiser fazer o rendering de objetos transparentes, é
