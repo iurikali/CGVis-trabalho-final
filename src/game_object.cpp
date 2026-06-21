@@ -13,13 +13,14 @@ extern GLint g_texture_id_uniform;
 extern GLint g_bones_uniform;
 extern GLint g_bbox_min_uniform;
 extern GLint g_bbox_max_uniform;
+extern GLfloat g_tiling;
 
 
 extern GLuint g_AABB_VAO;
 
 GameObject::GameObject(std::string n, int o_id, int t_id, bool is_physics, 
     bool is_trigger, bool is_spin, bool is_jump, bool is_destructible, glm::vec3 pos) : 
-    name(n), object_id(o_id), texture_id(t_id), position(pos), is_destroyed(false)
+    name(n), object_id(o_id), texture_id(t_id), tiling(1.0f), position(pos), is_destroyed(false)
     {
         int sector = (int) std::floor(position.z / SECTOR_LEN);
 
@@ -82,6 +83,7 @@ void StaticObject::Draw()
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, object_id);
     glUniform1i(g_texture_id_uniform, texture_id);
+    glUniform1f(g_tiling, tiling);
 
     SceneObject& obj_data = g_VirtualScene[name];
     
@@ -95,7 +97,7 @@ void StaticObject::Draw()
 
     if (GameObject::hitbox != nullptr)
     {
-        hitbox->DrawDebug();
+        // hitbox->DrawDebug();
     }
     glEnable(GL_CULL_FACE);    // <-- restaurar depois
 }
@@ -190,7 +192,7 @@ void AnimatedObject::Draw()
 
         if (GameObject::hitbox != nullptr)
         {
-            hitbox->DrawDebug();
+            // hitbox->DrawDebug();
         }
     }
 }

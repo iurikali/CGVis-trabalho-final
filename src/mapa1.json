@@ -30,7 +30,7 @@
     "plane": {
       "type": "StaticObject",
       "model": "the_plane",
-      "mapping": "PLANE",
+      "mapping": "GROUND",
       "texture": "SAND"
     },
     "enemy": {
@@ -39,31 +39,28 @@
       "mapping": "BUNNY",
       "texture": "RED_BRICK",
       "scale" : [0.5, 0.5, 0.5],
-      "curve" : [[-6.0, 0.0, 0.0], [3.0, 0.0, 0.0], [0.0, 0.0, 0.0], [-3.0, 0.0, 0.0], [6.0, 0.0, 0.0]],
-      "curve_duration" : 4.0
+      "curve" : [[0.0, 0.0, 0.0], [-4.0, 0.0, 1.0], [0.0, 0.0, 3.0], [4.0, 0.0, 1.0],[0.0, 0.0, 0.0]],
+      "curve_duration" : 4.0,
+      "curve_bounce": false
     },
     "spikes": {
       "type": "Spikes",
       "model": "the_spike",
       "mapping": "PLANE",
       "texture": "SPIKE",
-      "scale" : [6.0, 6.0, 6.0]
+      "scale" : [10.0, 10.0, 10.0]
     },
     "palmtree": {
       "type": "StaticObject",
       "model": "palmtree",
       "mapping": "PLANE",
       "texture": "ROCKY_TERRAIN",
-      "scale": [0.15, 0.1, 0.15],
+      "scale": [0.1, 0.08, 0.1],
       "is_destructible": true
     }
   },
   "objects": [
-    { "prefab": "plane", "position": [0.0, 0.0, 0.0], "scale": [5.0, 1.0, 5.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -10.0], "scale": [5.0, 1.0, 5.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -20.0], "scale": [5.0, 1.0, 5.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -30.0], "scale": [5.0, 1.0, 5.0]},
-    { "prefab": "plane", "position": [0.0, 0.0, -40.0], "scale": [5.0, 1.0, 5.0]},
+    { "prefab": "plane", "position": [0.0, 0.0, 0.0], "scale": [200.0, 1.0, 200.0], "tiling": 200},
     
     { "prefab": "palmtree", "position": [-4.0, -1.0, 0.0]}, { "prefab": "palmtree", "position": [4.0, -1.0, 0.0]},
     { "prefab": "palmtree", "position": [-4.2, -1.0, -2.0]}, { "prefab": "palmtree", "position": [4.2, -1.0, -2.0]},
@@ -86,46 +83,75 @@
     { "prefab": "palmtree", "position": [-3.8, -1.0, -25.2]}, { "prefab": "palmtree", "position": [3.8, -1.0, -25.2]},
     { "prefab": "palmtree", "position": [-3.8, -1.0, -26.7]}, { "prefab": "palmtree", "position": [3.8, -1.0, -26.7]},
     
-    { "prefab": "spikes", "position": [-2.0, 0.0, -2.0]},
-    { "prefab": "enemy", "position": [0.0, 0.5, -1.0]},
+    { "prefab": "palmtree", "position": [-4.0, -3.5, 0.0]}, { "prefab": "palmtree", "position": [4.0, -3.5, 0.0]},
+    { "prefab": "palmtree", "position": [-4.2, -3.5, -2.0]}, { "prefab": "palmtree", "position": [4.2, -3.5, -2.0]},
+    { "prefab": "palmtree", "position": [-3.6, -3.5, -3.0]}, { "prefab": "palmtree", "position": [3.6, -3.5, -3.0]},
+    { "prefab": "palmtree", "position": [-4.3, -3.5, -5.0]}, { "prefab": "palmtree", "position": [4.3, -3.5, -5.0]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -6.5]}, { "prefab": "palmtree", "position": [3.8, -3.5, -6.5]},
+    { "prefab": "palmtree", "position": [-4.0, -3.5, -8.0]}, { "prefab": "palmtree", "position": [4.0, -3.5, -8.0]},
+    { "prefab": "palmtree", "position": [-4.2, -3.5, -9.7]}, { "prefab": "palmtree", "position": [4.2, -3.5, -9.7]},
+    { "prefab": "palmtree", "position": [-3.6, -3.5, -10.6]}, { "prefab": "palmtree", "position": [3.6, -3.5, -10.6]},
+    { "prefab": "palmtree", "position": [-4.3, -3.5, -13.0]}, { "prefab": "palmtree", "position": [4.3, -3.5, -13.0]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -14.5]}, { "prefab": "palmtree", "position": [3.8, -3.5, -14.5]},
+    { "prefab": "palmtree", "position": [-3.6, -3.5, -16.0]}, { "prefab": "palmtree", "position": [3.6, -3.5, -16.0]},
+    { "prefab": "palmtree", "position": [-4.3, -3.5, -18.0]}, { "prefab": "palmtree", "position": [4.3, -3.5, -18.0]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -19.5]}, { "prefab": "palmtree", "position": [3.8, -3.5, -19.5]},
+    { "prefab": "palmtree", "position": [-3.6, -3.5, -20.3]}, { "prefab": "palmtree", "position": [3.6, -3.5, -20.3]},
+    { "prefab": "palmtree", "position": [-4.3, -3.5, -20.9]}, { "prefab": "palmtree", "position": [4.3, -3.5, -20.9]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -22.5]}, { "prefab": "palmtree", "position": [3.8, -3.5, -22.5]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -23.2]}, { "prefab": "palmtree", "position": [3.8, -3.5, -23.2]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -24.7]}, { "prefab": "palmtree", "position": [3.8, -3.5, -24.7]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -25.2]}, { "prefab": "palmtree", "position": [3.8, -3.5, -25.2]},
+    { "prefab": "palmtree", "position": [-3.8, -3.5, -26.7]}, { "prefab": "palmtree", "position": [3.8, -3.5, -26.7]},
+    
 
-    { "prefab": "crate_interrogacao", "position": [-1.1, 0.0, -2.5]},
-    { "prefab": "crate_interrogacao", "position": [1.6, 0.0, -5.5]},
-    { "prefab": "crate_interrogacao", "position": [1.6, 0.8, -5.5]},
-        
-    { "prefab": "crate_interrogacao", "position": [-2.0, 0.0, -8.5]},
-    { "prefab": "crate_interrogacao", "position": [-1.0, 0.0, -8.5]},
-    { "prefab": "crate_interrogacao", "position": [-0.0, 0.0, -8.5]},
-    { "prefab": "crate_interrogacao", "position": [1.0, 0.0, -8.5]},
-    { "prefab": "crate_interrogacao", "position": [2.0, 0.0, -8.5]},
-    { "prefab": "wumpa", "position": [-2.0, 2.0, -8.5]},
-    { "prefab": "wumpa", "position": [-1.0, 2.0, -8.5]},
-    { "prefab": "wumpa", "position": [-0.0, 2.0, -8.5]},
-    { "prefab": "wumpa", "position": [1.0, 2.0, -8.5]},
-    { "prefab": "wumpa", "position": [2.0, 2.0, -8.5]},
-        
-    { "prefab": "crate_interrogacao", "position": [-1.7, 0.0, -13.8]},
-    { "prefab": "crate_interrogacao", "position": [-1.7, 0.0, -14.8]},
-    { "prefab": "crate_interrogacao", "position": [-1.7, 0.8, -14.8]},
-    { "prefab": "crate_interrogacao", "position": [-0.7, 0.0, -14.8]},
+    { "prefab": "crate_interrogacao", "position": [-1.1, 0.0, -1.5]},
+    { "prefab": "crate_interrogacao", "position": [1.6, 0.0, -2.5]},
+    { "prefab": "crate_interrogacao", "position": [1.6, 0.8, -2.5]},
+    
+    { "prefab": "spikes", "position": [-3.0, 0.0, -5.0]}, 
+    { "prefab": "spikes", "position": [-2.0, 0.0, -5.0]},
+    { "prefab": "spikes", "position": [-1.0, 0.0, -5.0]}, { "prefab": "wumpa", "position": [-1.0, 2.0, -5.0]},
+    { "prefab": "spikes", "position": [0.0, 0.0, -5.0]}, { "prefab": "wumpa", "position": [0.0, 2.0, -5.0]},
+    { "prefab": "spikes", "position": [1.0, 0.0, -5.0]}, { "prefab": "wumpa", "position": [1.0, 2.0, -5.0]},
+    { "prefab": "spikes", "position": [2.0, 0.0, -5.0]},
+    { "prefab": "spikes", "position": [3.0, 0.0, -5.0]}, 
 
-    { "prefab": "cobblestone", "position": [2.0, 0.0, -19.0], "scale": [2.0, 1.0, 2.0]},
-    { "prefab": "cobblestone", "position": [0.0, 1.0, -19.0], "scale": [2.0, 1.0, 2.0]},
-    { "prefab": "cobblestone", "position": [-2.0, 2.0, -19.0], "scale": [2.0, 1.0, 2.0]},
-    { "prefab": "cobblestone", "position": [-2.0, 2.0, -21.0], "scale": [2.0, 1.0, 2.0]},
-    { "prefab": "cobblestone", "position": [0.0, 3.0, -21.0], "scale": [2.0, 1.0, 2.0]},
-    { "prefab": "cobblestone", "position": [2.0, 4.0, -21.0], "scale": [2.0, 1.0, 2.0]},
+    { "prefab": "crate_interrogacao", "position": [2.0, 0.0, -7.5]},
+    { "prefab": "crate_interrogacao", "position": [1.2, 0.0, -7.5]},
+    { "prefab": "crate_interrogacao", "position": [2.0, 0.0, -6.7]},
+    { "prefab": "crate_interrogacao", "position": [2.0, 0.8, -7.5]},
+    
+    { "prefab": "enemy", "position": [0.0, 0.5, -12.0]},
+    { "prefab": "wumpa", "position": [-0.5, 0.0, -11.0]},
+    { "prefab": "wumpa", "position": [0.0, 0.0, -11.0]},
+    { "prefab": "wumpa", "position": [0.5, 0.0, -11.0]},
+    
+    { "prefab": "crate_interrogacao", "position": [-0.8, 0.0, -13]},
+    { "prefab": "crate_interrogacao", "position": [0.0, 0.0, -13]},
+    { "prefab": "crate_interrogacao", "position": [0.8, 0.0, -13]},
+    { "prefab": "enemy", "position": [0.0, 1, -15.0], "curve": [[0.0, 0.0, 0.0], [-4.0, 0.0, 0.0], [4.0, 0.0, 0.0],[0.0, 0.0, 0.0]], "scale": [1.0, 1.0, 1.0], "hitbox":[[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]},
+        
+    
+
+    { "prefab": "cobblestone", "position": [2.0, -1.0, -19.0], "scale": [2.0, 2.0, 2.0], "tiling": 2},
+    { "prefab": "cobblestone", "position": [0.0, 0.0, -19.0], "scale": [2.0, 2.0, 2.0], "tiling": 2},
+    { "prefab": "cobblestone", "position": [-2.0, 1.0, -19.0], "scale": [2.0, 2.0, 2.0], "tiling": 2}, { "prefab": "cobblestone", "position": [-2.0, -1.0, -19.0], "scale": [2.0, 2.0, 2.0], "tiling": 2},
+    { "prefab": "cobblestone", "position": [-2.0, 1.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2}, { "prefab": "cobblestone", "position": [-2.0, -1.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2},
+    { "prefab": "cobblestone", "position": [0.0, 2.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2}, { "prefab": "cobblestone", "position": [0.0, 0.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2},
+    { "prefab": "cobblestone", "position": [2.0, 3.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2}, { "prefab": "cobblestone", "position": [2.0, 1.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2}, { "prefab": "cobblestone", "position": [2.0, -1.0, -21.0], "scale": [2.0, 2.0, 2.0], "tiling": 2},
     { "prefab": "wumpa", "position": [2.0, 1.0, -19.0]},
     { "prefab": "wumpa", "position": [0.0, 2.0, -19.0]},
     { "prefab": "wumpa", "position": [-2.0, 3.0, -19.0]},
     { "prefab": "wumpa", "position": [-2.0, 3.0, -21.0]},
     { "prefab": "wumpa", "position": [0.0, 4.0, -21.0]},
     { "prefab": "wumpa", "position": [2.0, 5.0, -21.0]},
+
+
     
-    { "prefab": "cobblestone", "position": [0.0, 0.0, -24.0], "scale": [6.0, 5.0, 4.0]},
-    { "prefab": "cobblestone", "position": [0.0, 0.0, -28.0], "scale": [6.0, 1.0, 4.0]},
-    { "prefab": "wumpa", "position": [0.0, 7.0, -28.0], "scale": [2.0, 2.0, 2.0], "model": "the_bunny", "texture": "ROCKY_TERRAIN", "hitbox": [[-0.7, -0.7, -0.7], [0.7, 0.7, 0.7]]},
-    { "prefab": "cobblestone", "position": [0.0, 4.0, -28.0], "scale": [6.0, 1.0, 4.0]},
-    { "prefab": "cobblestone", "position": [0.0, 0.0, -32.0], "scale": [6.0, 5.0, 4.0]}
+    { "prefab": "cobblestone", "position": [0.0, -1.0, -25.0], "scale": [6.0, 6.0, 6.0], "tiling": 6},
+    { "prefab": "wumpa", "position": [0.0, 6.5, -28.0], "scale": [1.5, 1.5, 1.5], "model": "the_bunny", "texture": "ROCKY_TERRAIN", "hitbox": [[-0.7, -0.7, -0.7], [0.7, 0.7, 0.7]]},
+    { "prefab": "cobblestone", "position": [0.0, -1.0, -31.0], "scale": [6.0, 6.0, 6.0], "tiling": 6},
+    { "prefab": "cobblestone", "position": [0.0, -1.0, -31.0], "scale": [1.0, 1.0, 1.0]}
   ]
 }

@@ -17,8 +17,9 @@ private:
     std::vector<glm::vec3> curve;
     float curve_t;
     float curve_duration;
+    bool curve_bounce;
 public:
-    Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vector<glm::vec3> curve, float curve_duration);
+    Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vector<glm::vec3> curve, float curve_duration, bool curve_bounce);
 
     void Update(float delta_time) override;
 

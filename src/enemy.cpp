@@ -11,7 +11,7 @@
 
 extern bool restart;
 
-Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vector<glm::vec3> curve, float curve_duration):
+Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vector<glm::vec3> curve, float curve_duration, bool curve_bounce):
     StaticObject(name, obj_id, tex_id, false, true, true, true, true, pos)
 {
     //std::cout << "Fruta " << std::endl;
@@ -27,6 +27,7 @@ Enemy::Enemy(std::string name, int obj_id, int tex_id, glm::vec3 pos, std::vecto
     this->curve = curve;
     curve_t = 0;
     this->curve_duration = curve_duration;
+    this->curve_bounce = curve_bounce;
     for (size_t i = 0; i < this->curve.size(); i++)
         this->curve[i] += pos;
 }
@@ -67,7 +68,17 @@ void Enemy::Update(float delta_time)
 
     // position.x += vel_x * delta_time;
     curve_t += delta_time;
-    position = bezier(fmod(curve_t/curve_duration, 1.0f), curve);
+    float t;
+    if (curve_bounce)
+    {
+        t = fmod(curve_t / curve_duration, 2.0f); // ciclo de 0 a 2
+        if (t > 1.0f) t = 2.0f - t;                     // espelha: 1→2 vira 1→0
+    }
+    else
+    {
+        t = fmod(curve_t / curve_duration, 1.0f); 
+    }
+    position = bezier(t, curve);
     hitbox->Update(position, glm::vec3(1.0, 1.0, 1.0));
 }
 

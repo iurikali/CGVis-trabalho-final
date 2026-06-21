@@ -185,6 +185,7 @@ GLint g_bbox_min_uniform;
 GLint g_bbox_max_uniform;
 GLint g_bones_uniform;
 GLint g_particle_color_uniform;
+GLfloat g_tiling;
 
 // ID do novo programa de UI
 GLuint g_GpuProgramUI_ID = 0; 
@@ -252,7 +253,7 @@ void InitUI()
     LoadShaderUI();
 
     // 2. Cria a matriz ortogonal (Substitua 800 e 600 pela resolução real da sua janela!)
-    g_projection_ui = Matrix_Orthographic(0.0f, 800.0f, 0.0f, 600.0f, -1.0f, 1.0f);
+    g_projection_ui = Matrix_Orthographic(0.0f, 1600.0f, 0.0f, 900.0f, -1.0f, 1.0f);
 
     // 3. Gerando o VAO do Quadrado Base (g_QuadVAO) no escopo global
     GLuint VBO;
@@ -434,7 +435,7 @@ GLFWwindow* InitializeWindow(){
     // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
     // de pixels, e com título "INF01047 ...".
     GLFWwindow* window;
-    window = glfwCreateWindow(800, 600, "INF01047 - Seu Cartao - Seu Nome", NULL, NULL);
+    window = glfwCreateWindow(1600, 900, "Créxi Bandecute", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -463,7 +464,7 @@ GLFWwindow* InitializeWindow(){
     // redimensionada, por consequência alterando o tamanho do "framebuffer"
     // (região de memória onde são armazenados os pixels da imagem).
     glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
-    FramebufferSizeCallback(window, 800, 600); // Forçamos a chamada do callback acima, para definir g_ScreenRatio.
+    FramebufferSizeCallback(window, 1600, 900); // Forçamos a chamada do callback acima, para definir g_ScreenRatio.
     
     // Imprimimos no terminal informações sobre a GPU do sistema
     const GLubyte *vendor      = glGetString(GL_VENDOR);
@@ -481,6 +482,7 @@ void MapCreator(std::string path){
         {"CUBE",   CUBE},
         {"BUNNY",  BUNNY},
         {"FRUIT",  FRUIT},
+        {"GROUND",  GROUND},
     };
 
     const std::map<std::string, int> TEXTURE_MAP = {
@@ -517,6 +519,8 @@ void MapCreator(std::string path){
         bool is_jump        = attrs.value("is_jump",        false);
         bool is_destructible= attrs.value("is_destructible",false);
         
+        float tiling = attrs.value("tiling",1.0f);
+
         glm::vec3 scale = {1.0f, 1.0f, 1.0f};
         if (attrs.contains("scale")) scale  = { attrs["scale"][0], attrs["scale"][1], attrs["scale"][2] };
 
@@ -530,7 +534,7 @@ void MapCreator(std::string path){
             curve = { glm::vec3(0.0f, 0.0f, 0.0f) };
         }
         float curve_duration = attrs.value("curve_duration", 1.0f);
-
+        bool curve_bounce = attrs.value("curve_bounce", false);
         if (type == "Fruit")
         {
             new Fruit(model, mapping, texture, position);
@@ -547,7 +551,7 @@ void MapCreator(std::string path){
         }
         else if (type == "Enemy")
         {
-            new Enemy(model, mapping, texture, position, curve, curve_duration);
+            new Enemy(model, mapping, texture, position, curve, curve_duration, curve_bounce);
             is_destructible = true;
         }
         else if (type == "Spikes")
@@ -561,6 +565,7 @@ void MapCreator(std::string path){
 
 
         object_vector.back()->scale = scale;
+        object_vector.back()->tiling = tiling;
         
         if (attrs.contains("hitbox")) {
             glm::vec3 hitboxMin(attrs["hitbox"][0][0], attrs["hitbox"][0][1], attrs["hitbox"][0][2]);
@@ -595,8 +600,8 @@ int main(int argc, char* argv[])
     InitUI();
     
 
-    Sprite* left_hand = new Sprite(LEFT_HAND, 3, 0.2, glm::vec2(20.0f, 20.0f), glm::vec2(245.0f, 144.0f)); 
-    Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(500.0f, 20.0f), glm::vec2(245.0f, 144.0f)); 
+    Sprite* left_hand  = new Sprite(LEFT_HAND,  3, 0.2, glm::vec2(  40.0f, 0.0f), glm::vec2(490.0f, 288.0f));
+    Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(1000.0f, 0.0f), glm::vec2(490.0f, 288.0f));
     
     // INSTANCIAÇÃO (Orientação a Objetos)
     MapCreator("../../src/mapa1.json");
@@ -743,10 +748,12 @@ int main(int argc, char* argv[])
         if (!g_first_person)
         {
             activeCamera = &railCamera;
+            player->set_walk_angle(M_PI);
         }
         else
         {
-            activeCamera = &firstPersonCamera;            
+            activeCamera = &firstPersonCamera;     
+            player->set_walk_angle(firstPersonCamera.get_yaw());           
         }
 
         
@@ -770,10 +777,10 @@ int main(int argc, char* argv[])
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
-        TextRendering_ShowEulerAngles(window);
+        // TextRendering_ShowEulerAngles(window);
 
         // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
-        TextRendering_ShowProjection(window);
+        // TextRendering_ShowProjection(window);
 
         // Imprimimos na tela informação sobre o número de quadros renderizados
         // por segundo (frames per second).
@@ -855,8 +862,10 @@ void LoadTextureImage(const char* filename)
     glGenSamplers(1, &sampler_id);
 
     // Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
-    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // Parâmetros de amostragem da textura.
     glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -976,6 +985,7 @@ void LoadShadersFromFiles()
     g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
     g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
     g_particle_color_uniform = glGetUniformLocation(g_GpuProgramID, "particle_color");
+    g_tiling = glGetUniformLocation(g_GpuProgramID, "tiling");
 
     // Variáveis em "shader_fragment.glsl" para acesso das imagens de textura
     glUseProgram(g_GpuProgramID);
@@ -1166,6 +1176,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
     // coordinates" (NDC) para "pixel coordinates".  Essa é a operação de
     // "Screen Mapping" ou "Viewport Mapping" vista em aula ({+ViewportMapping2+}).
     glViewport(0, 0, width, height);
+    std::cout << width << ", " << height << std::endl;
 
     // Atualizamos também a razão que define a proporção da janela (largura /
     // altura), a qual será utilizada na definição das matrizes de projeção,
@@ -1252,10 +1263,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         float dy = ypos - g_LastCursorPosY;
 
         firstPersonCamera.Rotate(dx, dy);
-        player->set_walk_angle(firstPersonCamera.get_yaw());    
     }
-    else
-        player->set_walk_angle(M_PI);
     // Atualizamos as variáveis globais para armazenar a posição atual do
     // cursor como sendo a última posição conhecida do cursor.
     g_LastCursorPosX = xpos;
@@ -1834,19 +1842,14 @@ void CleanUpDestroyedObjects()
     {
         std::vector<GameObject*>& lista = pair.second;
         
-        for (int i = 0; i < lista.size(); ) 
-        {
-            if (lista[i]->is_destroyed) 
-            {
-                lista[i] = lista.back();
-                lista.pop_back();
-                
-            }
-            else 
-            {
-                i++;
-            }
-        }
+        for (int i = lista.size() - 1; i >= 0; i--)
+{
+    if (lista[i]->is_destroyed)
+    {
+        lista[i] = lista.back();
+        lista.pop_back();
+    }
+}
     }
 
     // Varrendo os fisicos
@@ -1856,17 +1859,14 @@ void CleanUpDestroyedObjects()
         
         for (int i = 0; i < lista.size(); ) 
         {
-            if (lista[i]->is_destroyed) 
-            {
-                
-                lista[i] = lista.back();
-                lista.pop_back();
-                
-            }
-            else 
-            {
-                i++;
-            }
+            for (int i = lista.size() - 1; i >= 0; i--)
+{
+    if (lista[i]->is_destroyed)
+    {
+        lista[i] = lista.back();
+        lista.pop_back();
+    }
+}
         }
     }
 
@@ -1877,17 +1877,14 @@ void CleanUpDestroyedObjects()
         
         for (int i = 0; i < lista.size(); ) 
         {
-            if (lista[i]->is_destroyed) 
-            {
-
-                lista[i] = lista.back();
-                lista.pop_back();
-
-            }
-            else 
-            {
-                i++;
-            }
+            for (int i = lista.size() - 1; i >= 0; i--)
+{
+    if (lista[i]->is_destroyed)
+    {
+        lista[i] = lista.back();
+        lista.pop_back();
+    }
+}
         }
     }
 
@@ -1899,17 +1896,14 @@ void CleanUpDestroyedObjects()
         
         for (int i = 0; i < lista.size(); ) 
         {
-            if (lista[i]->is_destroyed) 
-            {
-
-                lista[i] = lista.back();
-                lista.pop_back();
-
-            }
-            else 
-            {
-                i++;
-            }
+            for (int i = lista.size() - 1; i >= 0; i--)
+{
+    if (lista[i]->is_destroyed)
+    {
+        lista[i] = lista.back();
+        lista.pop_back();
+    }
+}
         }
     }
 

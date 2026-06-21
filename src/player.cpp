@@ -104,12 +104,12 @@ void Player::Update(float delta_time)
 
 
 
-    hit_box.DrawDebug();
+    // hit_box.DrawDebug();
 
     if (state == ATTACKING)
     {
         spin_hitbox.Update(position, scale);
-        spin_hitbox.DrawDebug();
+        // spin_hitbox.DrawDebug();
 
         CheckCollisionSpin(sector - 1);
         CheckCollisionSpin(sector);
@@ -120,7 +120,7 @@ void Player::Update(float delta_time)
     if (state == AIR)
     {
         jump_hitbox.Update(position, scale);
-        jump_hitbox.DrawDebug();
+        // jump_hitbox.DrawDebug();
 
         CheckCollisionJump(sector - 1);
         CheckCollisionJump(sector);

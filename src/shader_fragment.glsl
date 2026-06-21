@@ -25,7 +25,9 @@ uniform mat4 projection;
 #define CHARACTER 3
 #define CUBE 4
 #define FRUIT 5
+#define GROUND  6
 uniform int object_id;
+uniform float tiling;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
 uniform vec4 bbox_min;
@@ -46,6 +48,7 @@ out vec4 color;
 
 // Para evitar a indexação dinâmica (tava dando problema em placa AMD)
 vec3 get_texture_color(int id, vec2 uv) {
+    uv = uv * tiling;
     if (id == 0) return texture(TextureImages[0], uv).rgb;
     else if (id == 1) return texture(TextureImages[1], uv).rgb;
     else if (id == 2) return texture(TextureImages[2], uv).rgb;
@@ -154,8 +157,9 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
-		// Obtemos a refletância difusa a partir da leitura da imagem
-		Kd0 = get_texture_color(texture_id, vec2(U,V));
+
+
+        Kd0 = get_texture_color(texture_id, vec2(U, V));
     }
     else if ( object_id == CHARACTER )
     {
@@ -174,7 +178,7 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
-		Kd0 = get_texture_color(texture_id, vec2(U,V)); 
+        Kd0 = get_texture_color(texture_id, vec2(U, V));
     }
     else if ( object_id == FRUIT) // plane, mas mais brilhoso
     {
@@ -184,6 +188,16 @@ void main()
 		// Obtemos a refletância difusa a partir da leitura da imagem
 		Kd0 = get_texture_color(texture_id, vec2(U,V));
         Ks0 = vec3(8.0, 8.0, 4.0);
+    }
+    else if ( object_id == GROUND) // plane, mas mais brilhoso
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+
+
+        Kd0 = get_texture_color(texture_id, vec2(U, V));
     }
 
     // Equação de Iluminação

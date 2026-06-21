@@ -31,6 +31,8 @@
 #define CHARACTER 3
 #define CUBE 4
 #define FRUIT 5
+#define GROUND  6
+
 
 
 #define EPSILON 0.005f
@@ -129,6 +131,7 @@ public:
     std::string name;
     int object_id;
     int texture_id;
+    float tiling;
 
     glm::vec3 position{0.0f, 0.0f, 0.0f};
     glm::vec3 rotation{0.0f, 0.0f, 0.0f};

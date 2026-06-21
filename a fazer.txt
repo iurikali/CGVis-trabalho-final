@@ -1,7 +1,6 @@
 ok. tem bastante coisa pra fazer. 
 olhando o spec
 
-- Fruta com brilho extra
 
 - Textura repetindo (talvez)
 
@@ -12,7 +11,6 @@ olhando o spec
     tô cansado, depois encontro árovres melhores
     - Colocar umas pedras, uns moai
 
-- Consertar primeira pessoa: flick da visão
 
 
 
@@ -64,3 +62,5 @@ Isso vai ser pra outro momento, se realmente quiser
 - Inimigo com curva de bezier cúbica (mosca)
 Hmm tá difícil de fazer uma iluminação legal.
 Talvez delimitando pras frutas fique bom
+
+- Fruta com brilho extra
