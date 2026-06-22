@@ -600,8 +600,8 @@ int main(int argc, char* argv[])
     InitUI();
     
 
-    Sprite* left_hand  = new Sprite(LEFT_HAND,  3, 0.2, glm::vec2(  40.0f, 0.0f), glm::vec2(490.0f, 287.0f));
-    Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(1000.0f, 0.0f), glm::vec2(490.0f, 287.0f));
+    Sprite* left_hand  = new Sprite(LEFT_HAND,  3, 0.2, glm::vec2(  40.0f, 0.0f), glm::vec2(490.0f, 280.0f));
+    Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(1000.0f, 0.0f), glm::vec2(490.0f, 280.0f));
     
     // INSTANCIAÇÃO (Orientação a Objetos)
     MapCreator("../../src/mapa1.json");
