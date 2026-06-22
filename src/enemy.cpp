@@ -67,18 +67,25 @@ void Enemy::Update(float delta_time)
     // CollisionLimits(delta_time);
 
     // position.x += vel_x * delta_time;
-    curve_t += delta_time;
-    float t;
-    if (curve_bounce)
+    if (!go_away && !shrink)
     {
-        t = fmod(curve_t / curve_duration, 2.0f); // ciclo de 0 a 2
-        if (t > 1.0f) t = 2.0f - t;                     // espelha: 1→2 vira 1→0
+        curve_t += delta_time;
+        float t;
+        if (curve_bounce)
+        {
+            t = fmod(curve_t / curve_duration, 2.0f); // ciclo de 0 a 2
+            if (t > 1.0f) t = 2.0f - t;                     // espelha: 1→2 vira 1→0
+        }
+        else
+        {
+            t = fmod(curve_t / curve_duration, 1.0f); 
+        }
+        position = bezier(t, curve);
     }
-    else
+    else if (go_away)
     {
-        t = fmod(curve_t / curve_duration, 1.0f); 
+        position.x += vel_x * delta_time;
     }
-    position = bezier(t, curve);
     hitbox->Update(position, glm::vec3(1.0, 1.0, 1.0));
 }
 
