@@ -275,7 +275,7 @@ void AnimatedObject::ProcessSkeletonNode(int nodeIndex, glm::mat4 parentTransfor
     }
 }
 
-AABB::AABB(glm::vec3 min, glm::vec3 max) : box_min(min), box_max(max), box_min_original(min), box_max_original(max){}
+AABB::AABB(glm::vec3 min, glm::vec3 max) : box_min(min), box_max(max), box_min_original(min), box_max_original(max),disabled(false) {}
 
 void AABB::Update(glm::vec3 position, glm::vec3 scale)
 {
