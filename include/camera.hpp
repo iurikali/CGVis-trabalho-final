@@ -41,11 +41,18 @@ private:
     float mouseSensitivity;
     float pitch;
     float yaw;
-public:
+
+
+
+    public:
     FirstPersonCamera();
 
     void Rotate(float dx, float dy);
+    void RotateSpin(float speed_degrees_per_second, float dt);
     float get_yaw();
+
+    float accumulated_rotation = 0.0f;
+    bool is_spinning = false;
 };
 
 

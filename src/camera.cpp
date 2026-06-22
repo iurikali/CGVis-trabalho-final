@@ -73,14 +73,46 @@ FirstPersonCamera::FirstPersonCamera():
         view.z = cos(pitch) * cos(yaw);
 
         set_view(glm::normalize(view));
-    }
+    } 
 
     float FirstPersonCamera::get_yaw()
     {
         return yaw;
     }
 
+    void FirstPersonCamera::RotateSpin(float speed_degrees_per_second, float dt)
+    {
+        if (is_spinning)
+        {
+            float speed_rad = glm::radians(speed_degrees_per_second);
+            float delta_yaw = speed_rad * dt;
+            float max_rotation = glm::radians(360.0f); 
+            
+            if (accumulated_rotation + delta_yaw >= max_rotation)
+            {
+                delta_yaw = max_rotation - accumulated_rotation;
+                
+                accumulated_rotation = 0.0f; 
+                is_spinning = false; 
+            }
+            else
+            {
+                accumulated_rotation += delta_yaw;
+            }
 
+            yaw += delta_yaw; 
+
+            if (yaw >= max_rotation) yaw -= max_rotation;
+            if (yaw < 0.0f)          yaw += max_rotation;
+
+            glm::vec3 view;
+            view.x = cos(pitch) * sin(yaw);
+            view.y = sin(pitch);
+            view.z = cos(pitch) * cos(yaw);
+
+            set_view(glm::normalize(view));
+        }
+    }
 
 
     Camera::Camera(): 

@@ -754,7 +754,15 @@ int main(int argc, char* argv[])
         {
             activeCamera = &firstPersonCamera;     
             player->set_walk_angle(firstPersonCamera.get_yaw());           
+
+            if (player->get_current_state() == ATTACKING)
+            {
+                //firstPersonCamera.Rotate(50, 0);
+                firstPersonCamera.RotateSpin(360 * 6, dt);
+            }
         }
+
+
 
         
         // Desenho dos objetos persistentes
@@ -1261,7 +1269,11 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         float dx = xpos - g_LastCursorPosX;
         float dy = ypos - g_LastCursorPosY;
 
-        firstPersonCamera.Rotate(dx, dy);
+        if (player->get_current_state() != ATTACKING)
+        {
+            firstPersonCamera.Rotate(dx, dy);
+        }
+        
     }
     // Atualizamos as variáveis globais para armazenar a posição atual do
     // cursor como sendo a última posição conhecida do cursor.
@@ -1455,6 +1467,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
             player->CreateParticleSpin(orange, 10, 0.6, 0.6, speed);
             player->CreateParticleSpin(orange, 10, 0.8, 0.7, speed);
             player->CreateParticleSpin(orange, 10, 0.8, 0.8, speed);
+
+            if (g_first_person)
+            {
+                firstPersonCamera.is_spinning = true;
+                firstPersonCamera.accumulated_rotation = 0.0;
+            }
         }
     }
 
