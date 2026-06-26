@@ -24,6 +24,7 @@ set(SOURCES
   src/spikes.cpp
   src/sprite.cpp
   src/bezier.cpp
+  src/collisions.cpp
 )
 
 cmake_minimum_required(VERSION 3.5.0)

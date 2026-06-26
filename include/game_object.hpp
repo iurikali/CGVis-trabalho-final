@@ -7,6 +7,7 @@
 #include <glad/glad.h>
 #include <tiny_gltf.h>
 #include <unordered_map>
+#include "collisions.hpp"
 
 // Número de texturas existentes ! atualizar no shader_fragment também
 #define NUM_TEXTURAS 16
@@ -89,40 +90,6 @@ struct AnimatedSceneObject {
 };
 extern std::map<std::string, SceneObject> g_VirtualScene;
 extern std::map<std::string, AnimatedSceneObject> g_AnimatedScene;
-
-//Classe feita com base no site 
-//https://medium.com/@andrebluntindie/3d-aabb-collision-detection-and-resolution-for-voxel-games-5fcbfdb8cdb4
-class AABB
-{
-    public:
-    glm::vec3 box_min_original;
-    glm::vec3 box_max_original;
-
-    glm::vec3    box_min; // Axis-Aligned Bounding Box do objeto
-    glm::vec3    box_max;
-
-    bool disabled = false;
-
-    AABB(glm::vec3 min, glm::vec3 max);
-
-    void Update(glm::vec3 position, glm::vec3 scale);
-
-    bool IntersectsX(AABB against);
-
-    bool IntersectsY(AABB against);
-
-    bool IntersectsZ(AABB against);
-
-    bool Intersects(AABB against);
-
-    float GetClipX(AABB against, float deltaX);
-
-    float GetClipY(AABB against, float deltaY);
-
-    float GetClipZ(AABB against, float deltaZ);
-
-    void DrawDebug();
-};
 
 //GameObject vai ser classe pai dos objetos estáticos e dos animados
 class GameObject

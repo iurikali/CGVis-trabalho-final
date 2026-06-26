@@ -70,6 +70,7 @@
 #include "spikes.hpp"
 #include "sprite.hpp"
 #include "bezier.hpp"
+#include "collisions.hpp"
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
