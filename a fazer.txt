@@ -1,4 +1,0 @@
-hash.txt
-collisions.cpp
-relatório.md
-vídeo
