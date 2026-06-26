@@ -1,3 +1,5 @@
+Prompts do Gemini https://share.gemini.google/JVI5w86iBS7Z
+
 Prompts usadas com Claude AI.
 
 Extraídas da conversa majoritariamente via prompt.
