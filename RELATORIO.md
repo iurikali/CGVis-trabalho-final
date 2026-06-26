@@ -3,7 +3,7 @@ Nós, alunos Iuri Kali e Rafael Alexandrini, recriamos (de forma simplificada) a
 
 Nossa versão possui os movimentos do Crash (andar, pular e girar), a câmera 'em trilho' tradicional do jogo, uma câmera em primeira pessoa, caixas, frutas coletáveis, inimigos e espinhos que forçam o jogador a reiniciar o jogo. 
 
-Testes de colisão são feitos usando hitboxes AABB. A iluminação é uma mistura do modelo de Phong - com parte especular e glossy - com uma iluminação difusa do modelo [Half-Lambert](https://developer.valvesoftware.com/wiki/Half_Lambert), já usado em jogos da Valve, como Half-Life. A instanciação dos objetos no mapa é feito por meio de um arquivo JSON na pasta /src, onde são definidos prefabs e onde são instanciados.
+Testes de colisão são feitos usando hitboxes [AABB](https://medium.com/@andrebluntindie/3d-aabb-collision-detection-and-resolution-for-voxel-games-5fcbfdb8cdb4). A iluminação é uma mistura do modelo de Phong - com parte especular e glossy - com uma iluminação difusa do modelo [Half-Lambert](https://developer.valvesoftware.com/wiki/Half_Lambert), já usado em jogos da Valve, como Half-Life. A instanciação dos objetos no mapa é feito por meio de um arquivo JSON na pasta /src, onde são definidos prefabs e onde são instanciados.
 
 ## Controles
 WASD ou Setinhas para movimentação
@@ -41,4 +41,5 @@ Para tirar dúvidas achei bem útil, já que oferece respostas já no contexto e
 
 Iuri:
 
-<mark> completar </mark>
+<mark> Usei somente o Gemini e todos os prompts que utilizei estão nesse link (https://share.gemini.google/JVI5w86iBS7Z
+). O uso da IA foi fundamental para implementar a [Skeletal Animation] (https://learnopengl.com/Guest-Articles/2020/Skeletal-Animation) através da biblioteca [TinyGLTF] (https://github.com/syoyo/tinygltf), para desenhar as mãos do Crash em primeira pessoa e para criar o VBO do cubo de cor personalizada que foi utilizado no sistema de partículas (giro e quando quebra uma caixa). Também utilizei a IA para arrumar alguns bugs, tirar dúvidas sobre implementações e sobre C++ (que nunca tinha utilizado antes). Toda a lógica do personagem principal eu fiz utilizando os conhecimentos que aprendi sobre desenvolvimento de jogos 2D ao longo dos anos (desenvolvo jogos desde 2020). </mark>
