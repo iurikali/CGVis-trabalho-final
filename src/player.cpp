@@ -521,4 +521,14 @@ void Player::CollisionLimits(float delta_time)
     {
         vel_x = 0.0;
     }
+
+    if (position.z + vel_z * delta_time > Z_LIMIT_POS)
+    {
+        vel_z = 0.0;
+    }
+
+    if (position.z + vel_z * delta_time < Z_LIMIT_NEG)
+    {
+        vel_z = 0.0;
+    }
 }

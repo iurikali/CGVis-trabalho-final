@@ -39,6 +39,8 @@
 #define EPSILON 0.005f
 
 #define X_LIMIT 3.0
+#define Z_LIMIT_POS 1.2
+#define Z_LIMIT_NEG -33.65
 
 struct SceneObject
 {
