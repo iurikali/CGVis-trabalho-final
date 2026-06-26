@@ -2,6 +2,8 @@ Prompts usadas com Claude AI.
 
 Extraídas da conversa majoritariamente via prompt.
 
+Em geral, estes prompts não foram usados para escrita direta do código, mas principalmente para resolver dúvidas.
+
 ===========
 
 Estou mexendo em um projeto em C/C++. 
@@ -670,4 +672,47 @@ std::vector<glm::vec3> trilho1 = {glm::vec3(0.0f, 2.7f, 3.0f), glm::vec3(0.0f, 2
 Olhe o arquivo enemy.cpp e .hpp. Como é feita a movimentação do inimigo? Onde que está definido que ele vai até um limite, depois anda de volta?
 
 ===========
+
+Na função MapCreator, como posso ler um array de vec3 tipo       "curve" : [[0.0, 0.0, 0.0], [3.0, 0.0, 0.0], [-3.0, 0.0, 0.0]]?
+
+===========
+
+Caso não tenha no json, tem como inicializar curve com {(0.0f, 0.0f, 0.0f)}?
+
+===========
+
+Dá pra fazer 
+std::vector<glm::vec3> curve = {glm::vec3(0.0f, 0.0f, 0.0f)};
+if (attrs.contains("curve")) {
+    for (auto& point : attrs["curve"])
+        curve.push_back(glm::vec3(point[0], point[1], point[2]));
+}
+
+?
+
+===========
+
+Eu gostaria de mudar a iluminação. Por exemplo, gostaria que as frutas tivessem um brilho, como se refletindo a luz. Minhas tentativas no shader_fragment não funcionaram, parece uma lanterna 
+Como posso fazer isso?
+
+===========
+
+Agora a luz é pra vir de cima e de z negativo. Estando com o objeto entre a câmera e a luz, ele é iluminado como se a luz viesse da direção oposta (mas ainda de cima). Estando ao lado do objeto, a luz parece vir da direção certa.
+Por que será que está estranho?
+
+===========
+
+Outra coisa: a iluminação parece funcionar diferentemente de acordo com  o y do objeto. Não com o y do pixel, mas do objeto, porque um cubo em certa altura e um cubo escalado para alcançar a mesma altura ficam com iluminações diferentes no topo. Deveriam ser iguais. O cubo que começa em cima fica mais escuro. 
+Qual o motivo?
+
+===========
+
+Como posso fazer um objeto maior (escala dele) de forma que a textura se repita, não fique esticada?
+
+===========
+
+Tinha uma textura que ia como UI na tela. Antes a tela era 800x600 e ficava certo. Agora é 1600x900, como posso ajeitar para ficar na posição certa?
+Sprite* left_hand = new Sprite(LEFT_HAND, 3, 0.2, glm::vec2(20.0f, 20.0f), glm::vec2(245.0f, 144.0f)); 
+    Sprite* right_hand = new Sprite(RIGHT_HAND, 3, 0.2, glm::vec2(500.0f, 20.0f), glm::vec2(245.0f, 144.0f));
+
 ===========
