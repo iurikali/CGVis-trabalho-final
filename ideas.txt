@@ -1,0 +1,14 @@
+ideas:
+
+a cada x frames o agente é chamado. ele pode fazer mais de uma ação por vez?
+o padrão é que escolha a melhor ação. Eu poderia definir que chama todas ações que forem maior que um valor?
+Ex: retorna ações cujo valor é melhor que metade do valor da ação principal.
+Deve ter uma resposta já existente para isso.
+
+Vou começar com esse de uma ação só.
+Eu devo soltar sempre que uma não for ativa?
+
+Tem a parte que chama o qlearning pra fazer a ação, o qlearning em si e a parte que recebe o estado e transforma em features.
+
+Começar por um agente que anda em círculos: se o agente tiver tal z, vai pra direita, etc.
+Demorou, mas consegui. Não duvido que o resto seja mais simples até.

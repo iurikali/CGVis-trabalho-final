@@ -290,10 +290,13 @@ void Player::state_machine(float delta_time)
     }
 }
 
-void Player::jump(float height)
+void Player::jump()
 {
-    vel_y = height;
-    on_air = true;
+    if(!get_on_air())
+    {
+        vel_y = get_jump_height();
+        on_air = true;
+    }
 }
 
 float Player::get_jump_height()
@@ -309,6 +312,23 @@ bool Player::get_spin()
 void Player::set_spin(bool b)
 {
     spin = b;
+}
+
+void Player::spin_attack()
+{
+    if (!get_spin())
+        {
+            set_spin(true);
+            glm::vec3 orange = glm::vec3(0.5, 0.15, 0.0);
+            //glm::vec3 orange = glm::vec3(1.0, 1.0, 1.0);
+            float speed = 5.0;
+            CreateParticleSpin(orange, 10, 0.0, 0.3, speed);
+            CreateParticleSpin(orange, 10, 0.2, 0.4, speed);
+            CreateParticleSpin(orange, 10, 0.4, 0.5, speed);
+            CreateParticleSpin(orange, 10, 0.6, 0.6, speed);
+            CreateParticleSpin(orange, 10, 0.8, 0.7, speed);
+            CreateParticleSpin(orange, 10, 0.8, 0.8, speed);
+        }
 }
 
 //Funcao que cuida da colisao fisica AABB
@@ -478,7 +498,7 @@ void Player::CheckCollisionJump(int sector_index)
                 if (jump_hitbox.Intersects(*(obj->hitbox)) && jump_hitbox.box_max.y > obj->hitbox->box_max.y)
                 {
                     obj->on_trigger_jump();
-                    jump(jump_height);
+                    jump();
                 }
             }
         }

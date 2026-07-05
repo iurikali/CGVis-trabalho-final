@@ -71,6 +71,7 @@
 #include "sprite.hpp"
 #include "bezier.hpp"
 #include "collisions.hpp"
+#include "ai_player.hpp"
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -222,6 +223,9 @@ std::vector<GameObject*> g_destructible_objects;
 
 
 Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 3.0f);
+AIplayer ai_player = AIplayer(player);
+
+bool g_player_ai = false;
 FollowCamera followCamera = FollowCamera();
 FirstPersonCamera firstPersonCamera = FirstPersonCamera();
 BaseCamera railCamera = BaseCamera();
@@ -617,6 +621,7 @@ int main(int argc, char* argv[])
     player->set_walk_angle(M_PI);
 
     float last_time = (float)glfwGetTime();
+    int frame_counter = 0;    
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -683,6 +688,18 @@ int main(int argc, char* argv[])
         float current_time = (float)glfwGetTime();
         float dt = current_time - last_time;
         last_time = current_time;
+
+        frame_counter++;
+        if (frame_counter % 10 == 0 && g_player_ai)
+        {
+            // 
+            AIstate state(player);
+            ai_player.Move(state);
+
+        }
+
+
+
 
         // Personagem animado
         // Se alguma hora eu tiver que mexer nisso aqui, boa sorte.
@@ -1443,11 +1460,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     
     if ((key == GLFW_KEY_SPACE) && action == GLFW_PRESS)
     {
-        if (!player->get_on_air())
-        {
-            //7.5
-            player->jump(player->get_jump_height());
-        }
+        player->jump();
     }
     /*if ((key == GLFW_KEY_SPACE) && action == GLFW_RELEASE)
     {
@@ -1456,25 +1469,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 
     if ((key == GLFW_KEY_J || key == GLFW_KEY_LEFT_CONTROL) && action == GLFW_PRESS)
     {
+        
         if (!player->get_spin())
         {
-            player->set_spin(true);
-            glm::vec3 orange = glm::vec3(0.5, 0.15, 0.0);
-            //glm::vec3 orange = glm::vec3(1.0, 1.0, 1.0);
-            float speed = 5.0;
-            player->CreateParticleSpin(orange, 10, 0.0, 0.3, speed);
-            player->CreateParticleSpin(orange, 10, 0.2, 0.4, speed);
-            player->CreateParticleSpin(orange, 10, 0.4, 0.5, speed);
-            player->CreateParticleSpin(orange, 10, 0.6, 0.6, speed);
-            player->CreateParticleSpin(orange, 10, 0.8, 0.7, speed);
-            player->CreateParticleSpin(orange, 10, 0.8, 0.8, speed);
-
             if (g_first_person)
             {
                 firstPersonCamera.is_spinning = true;
                 firstPersonCamera.accumulated_rotation = 0.0;
             }
         }
+        player->spin_attack();
     }
 
     if (key == GLFW_KEY_P && action == GLFW_PRESS)
@@ -1499,6 +1503,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         //g_first_person_vec.y += .1;
         firstPersonCamera.Rotate(1.0, 0.0);
     }
+
+    if (key == GLFW_KEY_M && action == GLFW_PRESS)
+    {
+        g_player_ai = !g_player_ai;
+        player->set_w_pressed(false);
+        player->set_a_pressed(false);
+        player->set_s_pressed(false);
+        player->set_d_pressed(false);
+    }
+
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal

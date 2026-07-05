@@ -64,7 +64,7 @@ public:
 
     void set_walk_angle(float angle);
 
-    void jump(float height);
+    void jump();
 
     bool get_on_air();
 
@@ -72,6 +72,7 @@ public:
 
     bool get_spin();
     void set_spin(bool b);
+    void spin_attack();
     
     AABB hit_box;
 
