@@ -12,3 +12,15 @@ Tem a parte que chama o qlearning pra fazer a ação, o qlearning em si e a part
 
 Começar por um agente que anda em círculos: se o agente tiver tal z, vai pra direita, etc.
 Demorou, mas consegui. Não duvido que o resto seja mais simples até.
+
+Pra copiar o código original, usei IA pra criar funções de hash pra Values. Não tá bonito. Espero que funcione.
+
+Não sei direito onde colocar o update, mas vou tentar colocar com o Move, vai que dá certo.
+
+Reward é reward, ou delta reward?
+
+Se funcionar, lembrar de tirar o actions_to_string dali. Tá feio 
+
+Meu Deus tá funcionando. Coloquei pra ele pegar frutas e agora ele tá girando no lugar que as caixas spawnam. Ele não sabe que as frutas sumiram. Genial.
+
+Ainda tenho que ver como treinar sem renderizar. Mas já tá bem legal.

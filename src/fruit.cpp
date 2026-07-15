@@ -4,7 +4,7 @@
 #include <cmath>
 #include "player.hpp"
 
-
+extern int g_fruit_eaten;
 
 Fruit::Fruit(std::string name, int obj_id, int tex_id, glm::vec3 pos):
     StaticObject(name, obj_id, tex_id, false, true, true, false, true, pos)
@@ -52,7 +52,10 @@ void Fruit::Update(float delta_time)
 void Fruit::on_trigger_player()
 {
     if (!go_away && velv <= 0)
+    {
         is_destroyed = true;
+        g_fruit_eaten++;
+    }
     
 }
 
@@ -62,6 +65,7 @@ void Fruit::on_trigger_spin(float dir)
     {
         go_away = true;
         this->dir = dir;
+        g_fruit_eaten++;
     }
 }
 

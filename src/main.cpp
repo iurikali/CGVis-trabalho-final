@@ -224,6 +224,7 @@ std::vector<GameObject*> g_destructible_objects;
 
 Player *player = new Player("the_character", CHARACTER, CHARACTER_TEXTURE, glm::vec3(0.0f, 0.0f, 0.0f), 3.0f);
 AIplayer ai_player = AIplayer(player);
+int g_fruit_eaten = 0;
 
 bool g_player_ai = false;
 FollowCamera followCamera = FollowCamera();
@@ -694,7 +695,7 @@ int main(int argc, char* argv[])
         {
             // 
             AIstate state(player);
-            ai_player.Move(state);
+            ai_player.Move(state, -player->position.z + g_fruit_eaten*10);
 
         }
 
@@ -1337,7 +1338,18 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 void Correcao_KeyCallback(int key, int action, int mod);
-
+std::string actions_to_string(Actions a){
+        switch(a){
+            case Actions::W: return "W";
+            case Actions::A: return "A";
+            case Actions::S: return "S";
+            case Actions::D: return "D";
+            case Actions::JUMP: return "JUMP";
+            case Actions::SPIN: return "SPIN";
+            case Actions::NONE: return "NONE";
+        }
+        return "Unknown";
+    }
 // Definição da função que será chamada sempre que o usuário pressionar alguma
 // tecla do teclado. Veja http://www.glfw.org/docs/latest/input_guide.html#input_key
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
@@ -1511,6 +1523,23 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         player->set_a_pressed(false);
         player->set_s_pressed(false);
         player->set_d_pressed(false);
+    }
+    
+
+    if (key == GLFW_KEY_V && action == GLFW_PRESS)
+    {
+        for (const auto& it: ai_player.values){
+            std::cout << "(" << it.first.first.x << ", " << it.first.first.y << ", " << it.first.first.x << ")" << actions_to_string(it.first.second) << ": " << it.second << std::endl;
+        }
+    }
+    if (key == GLFW_KEY_B && action == GLFW_PRESS)
+    {
+        
+        std::vector<Actions> actions = {Actions::W, Actions::A, Actions::S, Actions::D, Actions::JUMP, Actions::SPIN, Actions::NONE};
+        AIstate state(player);
+        for (const auto& action : actions)
+            std::cout << actions_to_string(action) << ": " << ai_player.getQValue(state, action);
+        std::cout << std::endl;
     }
 
 }
@@ -2009,5 +2038,7 @@ void RestartLevel()
         // camera.set_look_at(cam_position + glm::vec3(0.0f, 1.0f, 0.0f));
 
         restart = false;
+
+        g_fruit_eaten = 0;
     }
 }
